@@ -1,0 +1,558 @@
+---
+title: "meta_analysis_NT"
+output: html_document
+date: '2022-03-05'
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r packages}
+library(metafor)
+library(tidyverse)
+library(kableExtra)
+library(openxlsx)
+```
+
+## R Markdown
+
+```{r things_I_dont_know}
+#if(!"tinytex" %in% rownames(installed.packages())) install.packages("tinytex")
+#tinytex::install_tinytex()
+#if(!"devtools" %in% rownames(installed.packages())) install.packages("devtools")
+#devtools::install_github("crsh/papaja")
+```
+
+```{r effect_size_conversion}
+#Converts from Student's t to Pearson's r
+t_to_r <- function(t, n, k){sqrt(
+  (t^2)/((t^2)+(n-1-k))
+  )}
+
+t_to_r(t = 2.34, n = 251, k = 4)
+
+
+######################################################################
+#Cohen's f-squared to r (Cohen, 1988; checked)
+f2_to_r <- function(f2){
+  sqrt(
+    (f2)/(1+f2)
+  )
+}
+
+
+######################################################################
+#r to Fisher's z
+#Fisher's z of r can be calculated using one of the following functions
+#Equation 1:
+r_to_fz <- function(r){
+  (log((1+r)/(1-r)))/2
+  }
+#Equation 2:
+atanh(0.439941345)
+#Proving that both functions are the same 
+r_to_fz (0.439941345) - atanh(0.439941345)
+
+
+######################################################################
+#variance of Fisher's z (checked)
+var_fz <- function(n){1/(n-3)}
+sqrt(var_fz(50))
+
+
+######################################################################
+#Standard error of Fisher's z (checked)
+se_fz <- function(n)(sqrt(1/(n-3)))
+
+
+######################################################################
+#Confidence Interval for Fisher's z 
+ci_fz <- function(fz, se_fz, cl){
+  lower <- fz-(((qnorm(p = ((1-((1-cl)/2))), mean = 0, sd = 1)))*(se_fz))
+  upper <- fz+(((qnorm(p = ((1-((1-cl)/2))), mean = 0, sd = 1)))*(se_fz))
+  return(c(lower, upper))}
+
+
+######################################################################
+#Hybrid function that returns Fisher's z, variance of Fisher's z, Standard Error of Fisher's z, and confidence intervals 
+r_to_fz.2 <- function(r, n, cl){
+  r <- r
+  n <- n
+  fz <- (log((1+r)/(1-r)))/2
+  var_fz <- (1/(n-3))
+  se_fz <- sqrt(1/(n-3))
+  lower_ci <- fz-(((qnorm(p = ((1-(1-cl)/2)), mean = 0, sd = 1)))*(se_fz))
+  upper_ci <- fz+(((qnorm(p = ((1-(1-cl)/2)), mean = 0, sd = 1)))*(se_fz))
+  return(data.frame(r, n, fz, var_fz, se_fz, lower_ci, upper_ci))
+}
+#Example 
+r_to_fz.2(r = 0.778, n = 78, cl = .95)
+
+
+######################################################################
+#A function that convert Pearson's r to Fisher's z 
+#Returns the effect size, variance, standard error, and confidence intervals for both Pearson's r and Fisher's z
+rzr <- function(data, cl){
+  data %>% mutate(fz = (log((1+r)/(1-r)))/2) %>% 
+    mutate(fz.2 = atanh(r)) %>% 
+    mutate(var_fz = 1/(n-3)) %>% 
+    mutate(se_fz = sqrt(1/(n-3))) %>% 
+    mutate(weight = 1/var_fz) %>% 
+    mutate(CI_lower_fz = fz-(((qnorm(p = ((1-((1-cl)/2))), mean = 0, sd = 1)))*(se_fz))) %>% 
+    mutate(CI_upper_fz = fz+(((qnorm(p = ((1-((1-cl)/2))), mean = 0, sd = 1)))*(se_fz))) %>% 
+    mutate(var_r = (exp(2*var_fz)-1)/(exp(2*var_fz)+1)) %>% 
+    mutate(se_r = (exp(2*se_fz)-1)/(exp(2*se_fz)+1)) %>% 
+    mutate(CI_lower_r = (exp(2*CI_lower_fz)-1)/(exp(2*CI_lower_fz)+1)) %>% 
+    mutate(CI_upper_r = (exp(2*CI_upper_fz)-1)/(exp(2*CI_upper_fz)+1))
+}
+######################################################################
+#Fisher's z to r
+#Function 1
+fz_to_r <- function(fz){
+  (exp(2*fz)-1)/(exp(2*fz)+1)
+}
+
+#Proving that both functions are the same 
+fz_to_r(0.56) - tanh(0.56)
+
+
+######################################################################
+#Partial correlation 
+pr <- function(r_ac, r_bc, r_ab.c){
+  r_ab <- (r_ab.c*(sqrt((1-(r_ac^2))*(1-(r_bc^2)))))+(r_ac*r_bc)
+  return(c(r_ab))}
+pr(r_ab.c = 0.343110576, r_ac = 0.493963561, r_bc = 0.42)
+
+######################################################################
+time_converter <- function(min, d, m, y){
+      mins <- ifelse(
+    missing(min),
+    ifelse(
+      missing(d),
+      ifelse(
+        missing(m),
+        y*525960,
+        m*44560.5),
+      d*1440),
+    min*1)
+    days <- ifelse(
+    missing(d),
+    ifelse(
+      missing(min),
+      ifelse(
+        missing(m),
+        y*365.25,
+        m*30.4375),
+      min/1440),
+    d*1)
+  months <- ifelse(
+    missing(m),
+    ifelse(
+      missing(min), 
+      ifelse(
+        missing(d), 
+        y*12, 
+        d/30.4375),
+      min/43830),
+    m*1)
+  years <- ifelse(
+    missing(y),
+    ifelse(
+      missing(min), 
+      ifelse(
+        missing(d), 
+        m/12, 
+        d/365.25),
+      min/525960),
+    y*1)
+  return(tibble(mins,days, months, years))
+}
+
+
+
+time_converter(y = 4)
+time_converter(m = 4)
+time_converter(d = 32.99)
+time_converter(min = 10)
+1461 + 121.75	
+1582.75 + 10.5
+(1132.275 + 1165.265)/2
+qnorm(p = .95, mean = 0, sd = 1)
+
+698/1.644854
+```
+
+
+```{r data_construction}
+#Variables
+study = c("klibanoff_et_al.2006",
+          "levine_et_al.2010",
+          "boonen_et_al.2011",
+          "gunderson_et_al.2013",
+          "susperreguy.2014",
+          "ramani_et_al.2015",
+          "susperreguy_and_davis_kean.2016",
+          "trawick_smith_et_al.2016",
+          "elliott_et_al.2017",
+          "mustaf_yildiz_et_al.2018",
+          "glenn_et_al.2018",
+          "von_spreckelsen_et_al.2019",
+          "son_and_hur.2020", 
+          "gibson_et_al.2020_a", 
+          "gibson_et_al.2020_b"
+          )
+#gibson_et_al.2020_a - Small number
+#gibson_et_al.2020_b - Large number  
+data <- data.frame(study)
+data_2 <- data %>% add_column(
+  effect_size = c(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0), 
+  n = c(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
+  children_mean_age = c(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
+  nt_type = c(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
+  maths_ability_type = c(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, "Cardinality", "Cardinality"),
+  deliverer = c(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
+  intervention_time = c(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
+  time_interval = c(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)) 
+data_3 <- data_2 %>% mutate(
+  effect_size = as.numeric(effect_size),
+  children_mean_age = as.numeric(children_mean_age),
+  n = as.integer(n),
+  nt_type = as.factor(nt_type),
+  maths_ability_type = as.factor(maths_ability_type),
+  deliverer = as.factor(deliverer),
+  intervention_time = as.numeric(intervention_time), 
+  time_interval = as.numeric(time_interval)
+  ) %>% as.data.frame()
+data_3
+data_3 
+```
+
+
+
+```{r son_and_hur.2020}
+son_and_hur.2020_tib <- c(
+  "son_and_hur.2020a", 
+  "son_and_hur.2020b") %>% data.frame() %>% rename(., effect = .) %>% add_column(
+    effect_description = c("Total Math Talk - Fall MA", "Total Maths Talk - Spring MA"),
+    analysis = c("Zero Order Correlation", "Zero Order Correlation"),
+    country = c("US", "US"),
+    design = c("Correlational", "Correlational"),
+    design.2 = c("Longitudinal_Correlational", "Longitudinal_Correlational"), 
+    prop_white = c(0.500, 0.500), 
+    prop_female = c(0.47826087, 0.47826087),
+    SES = c("Low", "Low"),
+    child_age_exp_start = c(1717.284, 1717.284),
+    child_age_NT_start = c(NA, NA),
+    child_age_NT_mid = c(1793.378, 1793.378),
+    child_age_NT_end = c(NA, NA),
+    child_age_MA = c(1793.378, 2067.315),
+    NT_measure_time = c(17.5, 17.5),
+    time_between_NT_mid_end = c(0, 273.937),
+    intervention_dosage = c(NA, NA),
+    deliverer_type = c("Parent", "Parent"),
+    prop_mothers = c(1, 1),
+    main_language = c("English", "English"),
+    NT_context = c("Home", "Home"),
+    MA_context = c("School", "School"),
+    NT_size = c(NA, NA),
+    NT_type = c("Overall", "Overall"),
+    MA_test = c("WJ_AP_Subset"),
+    MA_measure = c("Overall", "Overall"),
+    controlled_variables = c(0, 0),
+    r = c(0.22, 0.21),
+    n = c(29, 29)) 
+son_and_hur.2020_tib
+```
+
+```{r ramani_et_al.2015}
+ramani_et_al.2015_tib <- c(
+  "ramani_et_al.2015a", 
+  "ramani_et_al.2015b", 
+  "ramani_et_al.2015c", 
+  "ramani_et_al.2015d",
+  "ramani_et_al.2015e",
+  "ramani_et_al.2015f",
+  "ramani_et_al.2015g",
+  "ramani_et_al.2015h",
+  "ramani_et_al.2015i",
+  "ramani_et_al.2015j",
+  "ramani_et_al.2015k",
+  "ramani_et_al.2015l") %>% data.frame() %>% rename(., effect = .) %>% add_column(
+    effect_description = c("Foundation Math Talk - Verbal Counting", "Advanced Math Talk  - Verbal Counting", "Foundational Math Talk - Numerical Identification", "Advanced Math Talk - Numerical Identification", "Foundational Math Talk - Counting principles", "Advanced Math Talk - Counting principles", "Foundational Math Talk - Enumeration and Cardinality", "Advanced Math Talk - Enumeration and Cardinality", "Foundational Math Talk - Number Line Estimation", "Advanced Math Talk - Number Line Estimation", "Foundational Math Talk - Magnitude Comparison", "Advanced Math Talk - Magnitude Comparison"),
+    analysis = c("Zero Order Correlation", "Zero Order Correlation", "Zero Order Correlation", "Zero Order Correlation", "Zero Order Correlation", "Zero Order Correlation", "Zero Order Correlation", "Zero Order Correlation", "Zero Order Correlation", "Zero Order Correlation", "Zero Order Correlation", "Zero Order Correlation"),
+    controlled_variables = c(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
+    r = c(-0.12, 0.11, -0.19, 0.10, 0.07, 0.17, -0.31, -0.03, 0.05, 0.37, 0.11, 0.39),
+    n = c(33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33))
+#ramani_et_al.2015_kable <- ramani_et_al.2015_tib %>% 
+  #dplyr::mutate(dplyr::across(where(is.numeric), ~round(., 2))) %>% 
+  #kable(format = "html", caption = "Ramani et al. (2015) effect sizes and associated inferential statistics", col.names = c("Effect id", "Effect Description", "Analysis", "Controlled variables","r", "n", "z", "Var of z", "SE of z", "Weight", "Lower CI for z", "Upper CI for z", "Var of r", "SE of r", "Lower CI for r", "Upper CI for r")) %>% kable_styling(full_width = T, position = "center") %>% row_spec(row = 0, extra_css = "border-bottom: 2px solid black;") #
+ramani_et_al.2015_tib
+```
+
+```{r mutaf_yildiz et al.2018}
+mutaf_yildiz_et_al.2018_tib <- c(
+  "mutaf_yildiz_et_al.2018a", 
+  "mutaf_yildiz_et_al.2018b"
+  ) %>% data.frame() %>% rename(., effect = .) %>% 
+    add_column(
+      effect_description = c("NT during book reading - Calculation skill", "NT during Lego playing - Calculation skill"),
+      analysis = c("Zero Order Correlation", "Zero Order Correlation"),
+      controlled_variables = c(0, 0),
+      r = c(-0.05, -0.35),
+      n = c(44, 44))
+mutaf_yildiz_et_al.2018_tib
+```
+
+```{r elliott_et_al.2017}
+elliott_et_al.2017_tib <- c(
+  "elliott_et_al.2017a", 
+  "elliott_et_al.2017b",
+  "elliott_et_al.2017c", 
+  "elliott_et_al.2017d") %>% 
+  data.frame() %>% rename(., effect = .) %>% 
+    add_column(
+      effect_description = c("Proportion of total NT - TEMA-3", "Proportion of Small NT (1-5) - TEMA-3", "Proportion of Medium NT (6-10) - TEMA-3", "Proportion of Large NT (11+) - TEMA-3"),
+      analysis = c("Zero Order Correlation", "Zero Order Correlation", "Zero Order Correlation", "Zero Order Correlation"),
+      controlled_variables = c(0, 0, 0, 0),
+      r = c(0.16, 0.13, -0.04, 0.39),
+      n = c(44, 44, 44, 44))
+elliott_et_al.2017_tib
+```
+
+```{r levine_et_al.2010}
+levine_et_al.2010_tib <- c(
+  "levine_et_al.2010a") %>% 
+  data.frame() %>% rename(., effect = .) %>% 
+    add_column(
+      effect_description = c("NT - Point-to-X"),
+      analysis = c("Zero Order Correlation"),
+      controlled_variables = c(0),
+      r = c(0.47),
+      n = c(44))
+levine_et_al.2010_tib
+#CHECKS: 2
+```
+
+```{r gunderson_and_levine.2011}
+#Uncontrolling SES 
+#Effect e: NT with present objects, small set predicting Point-to-X (Uncontrolled for SES)
+pr(r_ab.c = 0.343110576, r_ac = 0.493963561, r_bc = 0.42)
+#Effect f: NT without present objects, small set predicting Point-to-X (Uncontrolled for SES)
+pr(r_ab.c = 0.188982236, r_ac = 0.493963561, r_bc = 0.40)
+#Effect g: NT with present objects, large set predicting Point-to-X (Uncontrolled for SES)
+pr(r_ab.c = 0.455710387, r_ac = 0.493963561, r_bc = 0.23)
+#Effect h: NT without present objects, large set predicting Point-to-X (Uncontrolled for SES)
+pr(r_ab.c = 0.178174161, r_ac = 0.493963561, r_bc = 0.06)
+
+(0.4782052 + 0.3481842)/2
+(0.4992211 + 0.184278)/2
+
+gunderson_and_levine.2011_tib <- c(
+  "gunderson_and_levine.2011a", 
+  "gunderson_and_levine.2011b") %>% 
+  data.frame() %>% rename(., effect = .) %>% 
+    add_column(
+      effect_description = c("Small NT predicting Point-to-X", "Large NT predicting Point-to-X"),
+      analysis = c("Calculated manually", "Calculated manually"),
+      controlled_variables = c(0, 0),
+      r = c(0.4131947, 0.3417495),
+      n = c(44, 44)) 
+gunderson_and_levine.2011_tib 
+```
+
+```{r boonen_et_al.2011}
+boonen_et_al.2011_tib <- c(
+  "boonen_et_al.2011a", 
+  "boonen_et_al.2011b", 
+  "boonen_et_al.2011c", 
+  "boonen_et_al.2011d", 
+  "boonen_et_al.2011e", 
+  "boonen_et_al.2011f") %>% 
+  data.frame() %>% rename(., effect = .) %>% 
+    add_column(
+      effect_description = c("Calculation NT predicting General Number Sense", "Conventional Nominatives NT predicting General Number Sense", "Counting NT predicting ENT-R", "Ordering NT predicting ENT-R", "Number Symbols NT predicting ENT-R", "Cardinality NT predicting quantity comparison task"),
+      analysis = c("Multiple Regression", "Multiple Regression", "Multiple Multilevel Regression", "Multiple Multilevel Regression", "Multiple Multilevel Regression", "Multiple Regression"),
+      controlled_variables = c(5, 2, 7, 7, 7, 2),
+      r = c(-0.1394642, 0.1733843, -0.1124199, -0.1356559, -0.1237494, 0.1187748),
+      n = c(251, 251, 251, 251, 251, 251))
+boonen_et_al.2011_tib
+```
+
+
+```{r susperreguy_and_davis_kean.2016}
+susperreguy_and_davis_kean.2016_tib <- c(
+  "susperreguy_and_davis_kean.2016a") %>% 
+  data.frame() %>% rename(., effect = .) %>% 
+    add_column(
+      effect_description = c("Proportion of Cumulative Math Talk - TEMA-3"),
+      analysis = c("Zero Order Correlation"),
+      controlled_variables = c(0),
+      r = c(0.17),
+      n = c(33)) 
+susperreguy_and_davis_kean.2016_tib
+```
+
+```{r casey_et_al.2018}
+casey_et_al.2018_tib <- c(
+  "casey_et_al.2018a", 
+  "casey_et_al.2018b",
+  "casey_et_al.2018c", 
+  "casey_et_al.2018d", 
+  "casey_et_al.2018e", 
+  "casey_et_al.2018f", 
+  "casey_et_al.2018g", 
+  "casey_et_al.2018h") %>% 
+  data.frame() %>% rename(., effect = .) %>% 
+    add_column(
+      effect_description = c("Identify numerals NT - WJ Applied Problems at 4.5 yrs", "Identify numerals NT - WJ Applied Problems at 1st grade", "One-to-one counting NT - WJ Applied Problems at 4.5 yrs", "One-to-one counting NT - WJ Applied Problems at 1st grade", "Label sets NT - WJ Applied Problems at 4.5 yrs", "Label sets NT - WJ Applied Problems at 1st grade", "Sum of numerical supports NT - WJ Applied Problems at 4.5 yrs", "Sum of numerical supports NT - WJ Applied Problems at 1st grade"),
+      analysis = c("Zero Order Correlation", "Zero Order Correlation", "Zero Order Correlation", "Zero Order Correlation","Zero Order Correlation", "Zero Order Correlation", "Zero Order Correlation", "Zero Order Correlation"),
+      controlled_variables = c(0, 0, 0, 0, 0, 0, 0, 0),
+      r = c(-0.02, -0.04, -0.01, 0.05, 0.30, 0.33, 0.06, 0.07),
+      n = c(99, 99, 99, 99, 99, 99, 99, 99))
+casey_et_al.2018_tib
+```
+
+```{r zippert_et_al.2019}
+zippert_et_al.2019_tib <- c(
+  "zippert_et_al.2019a", 
+  "zippert_et_al.2019b", 
+  "zippert_et_al.2019c", 
+  "zippert_et_al.2019d",
+  "zippert_et_al.2019e",
+  "zippert_et_al.2019f",
+  "zippert_et_al.2019g",
+  "zippert_et_al.2019h",
+  "zippert_et_al.2019i",
+  "zippert_et_al.2019j",
+  "zippert_et_al.2019k",
+  "zippert_et_al.2019l",
+  "zippert_et_al.2019m",
+  "zippert_et_al.2019n",
+  "zippert_et_al.2019o",
+  "zippert_et_al.2019p") %>% 
+  data.frame() %>% rename(., effect = .) %>% 
+    add_column(
+      effect_description = c("Counting NT Control - Rote counting", "Number identification NT Control - Rote counting", "Cardinal value NT Control - Rote counting", "Magnitude comparison NT Control - Rote counting", "Counting NT with guidance - Rote counting", "Number identification NT with guidance - Rote counting", "Cardinal value NT with guidance - Rote counting", "Magnitude comparison NT with guidance - Rote counting", "Counting NT Control - Number Line Estimation", "Number identification NT Control - Number Line Estimation", "Cardinal value NT Control - Number Line Estimation", "Magnitude comparison NT Control - Number Line Estimation", "Counting NT with guidance - Number Line Estimation", "Number identification NT with guidance - Number Line Estimation", "Cardinal value NT with guidance - Number Line Estimation", "Magnitude comparison NT with guidance - Number Line Estimation"),
+      analysis = c("Partial Correlation", "Partial Correlation", "Partial Correlation", "Partial Correlation", "Partial Correlation", "Partial Correlation", "Partial Correlation", "Partial Correlation", "Partial Correlation", "Partial Correlation", "Partial Correlation", "Partial Correlation", "Partial Correlation", "Partial Correlation", "Partial Correlation", "Partial Correlation"),
+      controlled_variables = c(2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2),
+      r = c(-0.39, 0.01, -0.05, -0.06, -0.41, -0.07, 0.24, -0.07, 0.31,-0.01, -0.17, -0.17, -0.14, -0.01, -0.10, 0.15),
+      n = c(25, 25, 25, 25, 26, 26, 26, 26, 25, 25, 25, 25, 26, 26, 26, 26))
+zippert_et_al.2019_tib
+
+```
+
+```{r thippana_et_al.2020}
+thippana_et_al.2020_tib <- c(
+  "thippana_et_al.2020a", 
+  "thippana_et_al.2020b") %>% 
+  data.frame() %>% rename(., effect = .) %>% 
+    add_column(
+      effect_description = c("Home NT proportion - TEMA-3 ", "Lab NT proportion - TEMA-3"),
+      analysis = c("Zero Order Correlation", "Zero Order Correlation"),
+      controlled_variables = c(0, 0),
+      r = c(0.20, 0.11),
+      n = c(81, 81))
+thippana_et_al.2020_tib
+```
+
+```{r gibson_et_al.2020}
+gibson_et_al.2020_tib <- c(
+  "gibson_et_al.2020a", 
+  "gibson_et_al.2020b") %>% 
+  data.frame() %>% rename(., effect = .) %>% 
+    add_column(
+      effect_description = c("Small Number Book vs Control", "Large Number vs Control"),
+      analysis = c("Pairwise t", "Pairwise t"),
+      controlled_variables = c(0, 0),
+      r = c(0.3224328, 0.069597355),
+      n = c(97, 97)) 
+gibson_et_al.2020_tib
+```
+
+```{r silver_et_al.2021}
+silver_et_al.2021_tib <- c(
+  "silver_et_al.2021a", 
+  "silver_et_al.2021b",
+  "silver_et_al.2021c") %>% 
+  data.frame() %>% rename(., effect = .) %>% 
+    add_column(
+      effect_description = c("NT - MA","NT predicting MA for children with high inhibitory control", "NT predicting MA for children with low inhibitory control"),
+      analysis = c("Zero Order Correlation", "Simple Slopes", "Simple Slopes"),
+      controlled_variables = c(0, 1, 1),
+      r = c(0.04, 0.1689442, -0.1129433),
+      n = c(123, 123, 123))
+silver_et_al.2021_tib
+
+
+#lower_ci <- fz-(((qnorm(p = ((1-(1-cl)/2)), mean = 0, sd = 1)))*(se_fz))
+#qnorm(p = ((1-(1-cl)/2)))
+#1-((1-0.95)/2)
+#1-pt(q = 1.886838378, df = 113)
+#qt(p = 0.975, df = 113)
+#qnorm(p = 0.975)
+#-(-0.01 - 0.10)/qt(p = 0.975, df = 121)
+#(0.20 - 0.10)/qt(p = 0.975, df = 121)
+#((0.20 - 0.10)/qt(p = 0.975, df = 121) + (-(-0.01 - 0.10)/qt(p = 0.975, df = 121)))/2
+#-(-0.16 - (-0.06))/qt(p = 0.975, df = 121)
+#(0.03 -(-0.06))/qt(p = 0.975, df = 121)
+#((-(-0.16 - (-0.06))/qt(p = 0.975, df = 121))+((0.03 -(-0.06))/qt(p = 0.975, df = 121)))/2
+#qt(p = (1-0.038), df = 121)
+#0.10/qt(p = (1-0.038), df = 121)
+#qt(p = (1-0.0815), df = 121)
+#-(-0.06/qt(p = (1-0.0815), df = 121))
+#0.1 - (1.979764 * 0.05051108)
+#sqrt((1.2503772 ^2)/((1.2503772^2)+121))
+
+```
+
+```{r meta}
+meta_tib <- rbind(
+  levine_et_al.2010_tib, 
+  gunderson_and_levine.2011_tib, 
+  boonen_et_al.2011_tib,
+  ramani_et_al.2015_tib,
+  susperreguy_and_davis_kean.2016_tib,
+  elliott_et_al.2017_tib, 
+  casey_et_al.2018_tib,
+  mutaf_yildiz_et_al.2018_tib, 
+  zippert_et_al.2019_tib,
+  son_and_hur.2020_tib,
+  thippana_et_al.2020_tib, 
+  gibson_et_al.2020_tib, 
+  silver_et_al.2021_tib) %>% dplyr::select(effect, r, n) 
+meta_tib %>% view()
+
+#write.xlsx(meta_tib, "meta_tib.xlsx", overwrite = F)
+meta_tib.escalc <- escalc(measure = "ZCOR", ri = r, ni = n, data = meta_tib) %>% data.frame()
+#rma(yi = ri, vi = vi, data = meta_tib, method  = "DL", data = meta_data)
+
+#Meta-analysis
+meta_model <- rma(yi = yi, vi = vi, data = meta_tib.escalc, method  = "DL")
+meta_model
+#DL - 0.1407, 0.1314
+#HE - 0.1406, 0.1278
+#HSk - 0.1407, 0.1309
+#HS - 0.1406, 0.1283
+#ML - 0.1406, 0.1302
+#REML - 0.1407, 0.1331
+#SJ - 0.1414, 0.1614
+#EB - 0.1407, 0.1319
+#PM - 0.1407, 0.1319
+#In the Forest 
+forest(meta_model, addpred = T, header = T)
+
+#It's a pyramid
+funnel(meta_model)
+
+#Predicting the future
+predict(meta_model, transf = transf.ztor, digits = 5)
+
+#Gosh Plot 
+plot(gosh(meta_model, subset = 2000), out = 10)
+
+#Meta-regression
+#rma(yi = fz, vi = var_fz, mod = ~ moderator_1 + moderator_2 ,data = meta_tib, method  = "DL")
+#Bubble plot 
+#regplot(meta_model, xlab = "x label", xlim = c(-, -), predlim= c(), transf = )
+```
