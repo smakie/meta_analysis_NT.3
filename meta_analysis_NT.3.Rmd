@@ -170,62 +170,6 @@ time_converter <- function(min, d, m, y){
 }
 
 
-
-time_converter(y = 4)
-time_converter(m = 4)
-time_converter(d = 32.99)
-time_converter(min = 10)
-1461 + 121.75	
-1582.75 + 10.5
-(1132.275 + 1165.265)/2
-qnorm(p = .95, mean = 0, sd = 1)
-
-698/1.644854
-```
-
-
-```{r data_construction}
-#Variables
-study = c("klibanoff_et_al.2006",
-          "levine_et_al.2010",
-          "boonen_et_al.2011",
-          "gunderson_et_al.2013",
-          "susperreguy.2014",
-          "ramani_et_al.2015",
-          "susperreguy_and_davis_kean.2016",
-          "trawick_smith_et_al.2016",
-          "elliott_et_al.2017",
-          "mustaf_yildiz_et_al.2018",
-          "glenn_et_al.2018",
-          "von_spreckelsen_et_al.2019",
-          "son_and_hur.2020", 
-          "gibson_et_al.2020_a", 
-          "gibson_et_al.2020_b"
-          )
-#gibson_et_al.2020_a - Small number
-#gibson_et_al.2020_b - Large number  
-data <- data.frame(study)
-data_2 <- data %>% add_column(
-  effect_size = c(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0), 
-  n = c(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
-  children_mean_age = c(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
-  nt_type = c(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
-  maths_ability_type = c(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, "Cardinality", "Cardinality"),
-  deliverer = c(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
-  intervention_time = c(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
-  time_interval = c(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)) 
-data_3 <- data_2 %>% mutate(
-  effect_size = as.numeric(effect_size),
-  children_mean_age = as.numeric(children_mean_age),
-  n = as.integer(n),
-  nt_type = as.factor(nt_type),
-  maths_ability_type = as.factor(maths_ability_type),
-  deliverer = as.factor(deliverer),
-  intervention_time = as.numeric(intervention_time), 
-  time_interval = as.numeric(time_interval)
-  ) %>% as.data.frame()
-data_3
-data_3 
 ```
 
 
@@ -252,7 +196,7 @@ son_and_hur.2020_tib <- c(
     child_age_NT_end = c(NA, NA),
     child_age_MA = c(1793.378, 2067.315),
     NT_measure_time = c(17.5, 17.5),
-    time_between_NT_mid_end = c(0, 273.937),
+    time_between_NT_mid_MA = c(0, 273.937),
     intervention_dosage = c(NA, NA),
     NT_context = c("Home", "Home"),
     MA_context = c("School", "School"),
@@ -260,10 +204,10 @@ son_and_hur.2020_tib <- c(
     NT_type = c("Overall", "Overall"),
     MA_test = c("WJ_AP", "WJ_AP"),
     MA_measure = c("Overall", "Overall"),
-    analysis = c("Zero Order Correlation", "Zero Order Correlation"),
+    analysis = c("Zero_Order_Correlation", "Zero_Order_Correlation"),
     controlled_variables = c(0, 0),
     r = c(0.22, 0.21),
-    n = c(29, 29)) 
+    n = c(29, 29))
 son_and_hur.2020_tib 
 ```
 
@@ -287,7 +231,7 @@ ramani_et_al.2015_tib <- c(
     country = c("US", "US", "US", "US", "US", "US", "US", "US", "US", "US", "US", "US"),
     sample_id = c("c", "c", "c", "c", "c", "c", "c", "c", "c", "c", "c", "c"),
     design = c("Correlational", "Correlational", "Correlational", "Correlational", "Correlational", "Correlational", "Correlational", "Correlational", "Correlational", "Correlational", "Correlational", "Correlational"),
-    design.2 = c("Longitudinal Correlational", "Longitudinal Correlational", "Longitudinal Correlational", "Longitudinal Correlational", "Longitudinal Correlational", "Longitudinal Correlational", "Longitudinal Correlational", "Longitudinal Correlational", "Longitudinal Correlational", "Longitudinal Correlational", "Longitudinal Correlational", "Longitudinal Correlational"), 
+    design.2 = c("Longitudinal_Correlational", "Longitudinal_Correlational", "Longitudinal_Correlational", "Longitudinal_Correlational", "Longitudinal_Correlational", "Longitudinal_Correlational", "Longitudinal_Correlational", "Longitudinal_Correlational", "Longitudinal_Correlational", "Longitudinal_Correlational", "Longitudinal_Correlational", "Longitudinal_Correlational"), 
     SES = c("Low", "Low", "Low", "Low", "Low", "Low", "Low", "Low", "Low", "Low", "Low", "Low"),
     main_language = c("English", "English", "English", "English", "English", "English", "English", "English", "English", "English", "English", "English"),
     deliverer_type = c("Caregiver", "Caregiver", "Caregiver", "Caregiver", "Caregiver", "Caregiver", "Caregiver", "Caregiver", "Caregiver", "Caregiver", "Caregiver", "Caregiver"),
@@ -300,15 +244,15 @@ ramani_et_al.2015_tib <- c(
     child_age_NT_end = c(NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA),
     child_age_MA = c(1593.25, 1593.25, 1593.25, 1593.25, 1593.25, 1593.25, 1593.25, 1593.25, 1593.25, 1593.25, 1593.25, 1593.25),
     NT_measure_time = c(15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15),
-    time_between_NT_mid_end = c(10.5, 10.5, 10.5, 10.5, 10.5, 10.5, 10.5, 10.5, 10.5, 10.5, 10.5, 10.5),
+    time_between_NT_mid_MA = c(10.5, 10.5, 10.5, 10.5, 10.5, 10.5, 10.5, 10.5, 10.5, 10.5, 10.5, 10.5),
     intervention_dosage = c(NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA),
     NT_context = c("Classroom", "Classroom", "Classroom", "Classroom", "Classroom", "Classroom", "Classroom", "Classroom", "Classroom", "Classroom", "Classroom", "Classroom"),
     MA_context = c("Classroom", "Classroom", "Classroom", "Classroom", "Classroom", "Classroom", "Classroom", "Classroom", "Classroom", "Classroom", "Classroom", "Classroom"),
     NT_size = c(NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA),
-    NT_type = c("Counting and Number Identificaton", "Cardinality and Ordering", "Counting and Number Identificaton", "Cardinality and Ordering", "Counting and Number Identificaton", "Cardinality and Ordering", "Counting and Number Identificaton", "Cardinality and Ordering", "Counting and Number Identificaton", "Cardinality and Ordering", "Counting and Number Identificaton", "Cardinality and Ordering"),
-    MA_test = c("Verbal Counting", "Verbal Counting", "Number Identification", "Number Identification", "Counting Principles", "Counting Principles", "Enumeration and Cardinality", "Enumeration and Cardinality", "Number Line Estimation", "Number Line Estimation", "Magnitude Comparison", "Magnitude Comparison"),
-    MA_measure = c("Counting", "Counting", "Number Identificaiton", "Number Identification", "Counting", "Counting", "Cardinality", "Cardinality", "Number Sense", "Number Sense", "Magnitude Comparison", "Magnitude Comparison"),
-    analysis = c("Zero Order Correlation", "Zero Order Correlation", "Zero Order Correlation", "Zero Order Correlation", "Zero Order Correlation", "Zero Order Correlation", "Zero Order Correlation", "Zero Order Correlation", "Zero Order Correlation", "Zero Order Correlation", "Zero Order Correlation", "Zero Order Correlation"),
+    NT_type = c("Counting_and_Number Identificaton", "Cardinality_and_Ordering", "Counting_and_Number_Identification", "Cardinality_and_Ordering", "Counting_and_Number_Identification", "Cardinality_and_Ordering", "Counting_and_Number_Identification", "Cardinality_and_Ordering", "Counting_and_Number_Identification", "Cardinality_and_Ordering", "Counting_and_Number_Identification", "Cardinality_and_Ordering"),
+    MA_test = c("Verbal_Counting", "Verbal_Counting", "Number_Identification", "Number_Identification", "Counting_Principles", "Counting_Principles", "Enumeration_and_Cardinality", "Enumeration_and_Cardinality", "Number_Line_Estimation", "Number_Line_Estimation", "Magnitude_Comparison", "Magnitude_Comparison"),
+    MA_measure = c("Counting", "Counting", "Number_Identification", "Number_Identification", "Counting", "Counting", "Cardinality", "Cardinality", "Number_Sense", "Number_Sense", "Magnitude_Comparison", "Magnitude_Comparison"),
+    analysis = c("Zero_Order_Correlation", "Zero_Order_Correlation", "Zero_Order _orrelation", "Zero_Order_Correlation", "Zero_Order_Correlation", "Zero_Order_Correlation", "Zero_Order_Correlation", "Zero_Order_Correlation", "Zero_Order_Correlation", "Zero_Order_Correlation", "Zero_Order_Correlation", "Zero_Order_Correlation"),
     controlled_variables = c(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
     r = c(-0.12, 0.11, -0.19, 0.10, 0.07, 0.17, -0.31, -0.03, 0.05, 0.37, 0.11, 0.39),
     n = c(33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33))
@@ -329,7 +273,7 @@ mutaf_yildiz_et_al.2018_tib <- c(
       country = c("BE", "BE"),
       sample_id = c("g", "g"),
       design = c("Correlational", "Correlational"),
-      design.2 = c(" Cross_sectional_Correlational"), 
+      design.2 = c("Cross_sectional_Correlational", "Cross_sectional_Correlational"), 
       SES = c("Middle", "Middle"),
       main_language = c("Dutch", "Dutch"),
       deliverer_type = c("Parent", "Parent"),
@@ -342,7 +286,7 @@ mutaf_yildiz_et_al.2018_tib <- c(
       child_age_NT_end = c(NA, NA),
       child_age_MA = c(2060.01, 2060.01),
       NT_measure_time = c(5, 5),
-      time_between_NT_mid_end = c(0, 0),
+      time_between_NT_mid_MA = c(0, 0),
       intervention_dosage = c(NA, NA),
       NT_context = c("Home", "Home"),
       MA_context = c("Home", "Home"),
@@ -350,10 +294,10 @@ mutaf_yildiz_et_al.2018_tib <- c(
       NT_type = c("Overall", "Overall"),
       MA_test = c("TediMath", "TediMath"),
       MA_measure = c("Calculation", "Calculation"),
-      analysis = c("Zero Order Correlation", "Zero Order Correlation"),
+      analysis = c("Zero_Order_Correlation", "Zero_Order_Correlation"),
       controlled_variables = c(0, 0),
       r = c(-0.05, -0.35),
-      n = c(44, 44))
+      n = c(44, 44)) 
 mutaf_yildiz_et_al.2018_tib
 ```
 
@@ -383,7 +327,7 @@ elliott_et_al.2017_tib <- c(
       child_age_NT_end = c(NA, NA, NA, NA),
       child_age_MA = c(2116.928, 2116.928, 2116.928, 2116.928),
       NT_measure_time = c(10, 10, 10, 10),
-      time_between_NT_mid_end = c(0, 0, 0, 0),
+      time_between_NT_mid_MA= c(0, 0, 0, 0),
       intervention_dosage = c(NA, NA, NA, NA),
       NT_context = c("Lab", "Lab", "Lab", "Lab"),
       MA_context = c("Lab", "Lab", "Lab", "Lab"),
@@ -391,7 +335,7 @@ elliott_et_al.2017_tib <- c(
       NT_type = c("Overall", "Overall", "Overall", "Overall"),
       MA_test = c("TEMA_3", "TEMA_3", "TEMA_3", "TEMA_3"),
       MA_measure = c("Overall", "Overall", "Overall", "Overall"),
-      analysis = c("Zero Order Correlation", "Zero Order Correlation", "Zero Order Correlation", "Zero Order Correlation"),
+      analysis = c("Zero_Order_Correlation", "Zero_Order_Correlation", "Zero _Order_Correlation", "Zero_Order_Correlation"),
       controlled_variables = c(0, 0, 0, 0),
       r = c(0.16, 0.13, -0.04, 0.39),
       n = c(44, 44, 44, 44))
@@ -421,13 +365,13 @@ levine_et_al.2010_tib <- c(
       child_age_NT_end = c(913.125),
       child_age_MA = c(1400.125),
       NT_measure_time = c(450),
-      time_between_NT_mid_end = c(730.5),
+      time_between_NT_mid_MA = c(730.5),
       intervention_dosage = c(NA),
       NT_context = c("Home"),
       MA_context = c(NA),
       NT_size = c("Overall"),
       NT_type = c("Overall"),
-      MA_test = c("Point-to-X"),
+      MA_test = c("Point_to_X"),
       MA_measure = c("Cardinality"),
       analysis = c("Zero Order Correlation"),
       controlled_variables = c(0),
@@ -474,18 +418,18 @@ gunderson_and_levine.2011_tib <- c(
       child_age_NT_end = c(913.125, 913.125),
       child_age_MA = c(1400.125, 1400.125),
       NT_measure_time = c(450, 450),
-      time_between_NT_mid_end = c(730.5, 730.5),
+      time_between_NT_mid_MA = c(730.5, 730.5),
       intervention_dosage = c(NA, NA),
       NT_context = c("Home", "Home"),
       MA_context = c(NA, NA),
       NT_size = c("Small", "Large"),
       NT_type = c("Overall", "Overall"),
-      MA_test = c("Point-to-X", "Point-to-X"),
+      MA_test = c("Point_to_X", "Point_to_X"),
       MA_measure = c("Cardinality", "Cardinality"),
-      analysis = c("Calculated manually", "Calculated manually"),
+      analysis = c("Calculated_manually", "Calculated_manually"),
       controlled_variables = c(0, 0),
       r = c(0.4131947, 0.3417495),
-      n = c(44, 44)) 
+      n = c(44, 44))
 gunderson_and_levine.2011_tib 
 ```
 
@@ -517,15 +461,15 @@ boonen_et_al.2011_tib <- c(
       child_age_NT_end = c(NA, NA, NA, NA, NA, NA),
       child_age_MA = c(NA, NA, NA, NA, NA, NA),
       NT_measure_time = c(60, 60, 60, 60, 60, 60),
-      time_between_NT_mid_end = c(NA, NA, NA, NA, NA, NA),
+      time_between_NT_mid_MA = c(NA, NA, NA, NA, NA, NA),
       intervention_dosage = c(NA, NA, NA, NA, NA, NA),
       NT_context = c("Classroom", "Classroom", "Classroom", "Classroom", "Classroom", "Classroom"),
       MA_context = c("Classroom", "Classroom", "Classroom", "Classroom", "Classroom", "Classroom"),
       NT_size = c(NA, NA, NA, NA, NA, NA),
-      NT_type = c("Calculation", "Convetional Normatives", "Counting", "Ordering", "Number Symbols", "Cardinality"),
-      MA_test = c("AD Number Sense", "AD Number Sense", "ENT-R", "ENT-R", "ENT-R", "Quantity Comparison Task"),
-      MA_measure = c("Number Sense", "Number Sense", "Number Sense", "Number Sense", "Number Sense", "Number Sense"),
-      analysis = c("Multiple Regression", "Multiple Regression", "Multiple Multilevel Regression", "Multiple Multilevel Regression", "Multiple Multilevel Regression", "Multiple Regression"),
+      NT_type = c("Calculation", "Convetional_Normatives", "Counting", "Ordering", "Number_Symbols", "Cardinality"),
+      MA_test = c("AD_Number_Sense", "AD_Number_Sense", "ENT_R", "ENT_R", "ENT_R", "Quantity_Comparison_Task"),
+      MA_measure = c("Number_Sense", "Number_Sense", "Number_Sense", "Number_Sense", "Number_Sense", "Number_Sense"),
+      analysis = c("Multiple_Regression", "Multiple_Regression", "Multiple_Multilevel_Regression", "Multiple_Multilevel_Regression", "Multiple_Multilevel_Regression", "Multiple_Regression"),
       controlled_variables = c(5, 2, 7, 7, 7, 2),
       r = c(-0.1394642, 0.1733843, -0.1124199, -0.1356559, -0.1237494, 0.1187748),
       n = c(251, 251, 251, 251, 251, 251))
@@ -556,7 +500,7 @@ susperreguy_and_davis_kean.2016_tib <- c(
       child_age_NT_end = c(1650.625),
       child_age_MA = c(2008.875),
       NT_measure_time = c(240),
-      time_between_NT_mid_end = c(365.25),
+      time_between_NT_mid_MA = c(365.25),
       intervention_dosage = c(NA),
       NT_context = c("Home"),
       MA_context = c(NA),
@@ -564,10 +508,10 @@ susperreguy_and_davis_kean.2016_tib <- c(
       NT_type = c("Overall"),
       MA_test = c("TEMA_3"),
       MA_measure = c("Overall"),
-      analysis = c("Zero Order Correlation"),
+      analysis = c("Zero_Order_Correlation"),
       controlled_variables = c(0),
       r = c(0.17),
-      n = c(33)) 
+      n = c(33))
 susperreguy_and_davis_kean.2016_tib
 ```
       year = c(),
@@ -625,15 +569,15 @@ casey_et_al.2018_tib <- c(
       child_age_NT_end = c(NA, NA, NA, NA, NA, NA, NA, NA),
       child_age_MA = c(1643.625, 2374.125, 1643.625, 2374.125, 1643.625, 2374.125, 1643.625, 2374.125),
       NT_measure_time = c(10, 10, 10, 10, 10, 10, 10, 10),
-      time_between_NT_mid_end = c(547.875, 1278.375, 547.875, 1278.375, 547.875, 1278.375, 547.875, 1278.375),
+      time_between_NT_mid_MA = c(547.875, 1278.375, 547.875, 1278.375, 547.875, 1278.375, 547.875, 1278.375),
       intervention_dosage = c(NA, NA, NA, NA, NA, NA, NA, NA),
       NT_context = c("Lab", "Lab", "Lab", "Lab", "Lab", "Lab", "Lab", "Lab"),
       MA_context = c(NA, NA, NA, NA, NA, NA, NA, NA),
       NT_size = c(NA, NA, NA, NA, NA, NA, NA, NA),
-      NT_type = c("Number Identification", "Number Identification", "Counting", "Counting", "Labelling", "Labelling", "Overall", "Overall"),
-      MA_test = c("WJ-AP", "WJ-AP", "WJ-AP", "WJ-AP", "WJ-AP", "WJ-AP", "WJ-AP", "WJ-AP"),
-      MA_measure = c("Mathematical Problem Solving", "Mathematical Problem Solving", "Mathematical Problem Solving", "Mathematical Problem Solving", "Mathematical Problem Solving", "Mathematical Problem Solving", "Mathematical Problem Solving", "Mathematical Problem Solving"),
-      analysis = c("Zero Order Correlation", "Zero Order Correlation", "Zero Order Correlation", "Zero Order Correlation","Zero Order Correlation", "Zero Order Correlation", "Zero Order Correlation", "Zero Order Correlation"),
+      NT_type = c("Number_Identification", "Number_Identification", "Counting", "Counting", "Labelling", "Labelling", "Overall", "Overall"),
+      MA_test = c("WJ_AP", "WJ_AP", "WJ_AP", "WJ_AP", "WJ_AP", "WJ_AP", "WJ_AP", "WJ_AP"),
+      MA_measure = c("Mathematical_Problem_Solving", "Mathematical_Problem_Solving", "Mathematical_Problem_Solving", "Mathematical_Problem_Solving", "Mathematical_Problem_Solving", "Mathematical_Problem_Solving", "Mathematical_Problem_Solving", "Mathematical_Problem_Solving"),
+      analysis = c("Zero_Order_Correlation", "Zero_Order_Correlation", "Zero_Order_Correlation", "Zero_Order_Correlation","Zero_Order_Correlation", "Zero_Order_Correlation", "Zero_Order_Correlation", "Zero_Order_Correlation"),
       controlled_variables = c(0, 0, 0, 0, 0, 0, 0, 0),
       r = c(-0.02, -0.04, -0.01, 0.05, 0.30, 0.33, 0.06, 0.07),
       n = c(99, 99, 99, 99, 99, 99, 99, 99))
@@ -670,15 +614,15 @@ zippert_et_al.2019_tib <- c(
       child_age_NT_end = c(1835.99, 1835.99, 1835.99, 1835.99, 1835.99, 1835.99, 1835.99, 1835.99),
       child_age_MA = c(1835.99, 1835.99, 1835.99, 1835.99, 1835.99, 1835.99, 1835.99, 1835.99),
       NT_measure_time = c(NA, NA, NA, NA, NA, NA, NA, NA),
-      time_between_NT_mid_end = c(0, 0, 0, 0, 0, 0, 0, 0),
+      time_between_NT_mid_MA = c(0, 0, 0, 0, 0, 0, 0, 0),
       intervention_dosage = c(0.006944444, 0.006944444, 0.006944444, 0.006944444, 0.006944444, 0.006944444, 0.006944444, 0.006944444),
       NT_context = c("Museum", "Museum", "Museum", "Museum", "Museum", "Museum", "Museum", "Museum"),
       MA_context = c("Museum", "Museum", "Museum", "Museum", "Museum", "Museum", "Museum", "Museum"),
       NT_size = c(NA, NA, NA, NA, NA, NA, NA, NA),
-      NT_type = c("Counting", "Number Identification", "Cardinality", "Magnitude Comparison", "Counting", "Number Identification", "Cardinality", "Magnitude Comparison"),
-      MA_test = c("Verbal Counting", "Verbal Counting", "Verbal Counting", "Verbal Counting", "Number Line Estimation", "Number Line Estimation", "Number Line Estimation", "Number Line Estimation"),
-      MA_measure = c("Counting", "Counting", "Counting", "Counting", "Number Sense", "Number Sense", "Number Sense", "Number Sense"),
-      analysis = c("Partial Correlation", "Partial Correlation", "Partial Correlation", "Partial Correlation", "Partial Correlation", "Partial Correlation", "Partial Correlation", "Partial Correlation"),
+      NT_type = c("Counting", "Number_Identification", "Cardinality", "Magnitude_Comparison", "Counting", "Number_Identification", "Cardinality", "Magnitude_Comparison"),
+      MA_test = c("Verbal_Counting", "Verbal_Counting", "Verbal_Counting", "Verbal_Counting", "Number_Line_Estimation", "Number_Line_Estimation", "Number_Line_Estimation", "Number_Line_Estimation"),
+      MA_measure = c("Counting", "Counting", "Counting", "Counting", "Number_Sense", "Number_Sense", "Number_Sense", "Number_Sense"),
+      analysis = c("Partial_Correlation", "Partial_Correlation", "Partial_Correlation", "Partial_Correlation", "Partial_Correlation", "Partial_Correlation", "Partial_Correlation", "Partial_Correlation"),
       controlled_variables = c(2, 2, 2, 2, 2, 2, 2, 2),
       r = c(-0.40, -0.03, 0.095, -0.065, 0.085, -0.01, -0.135, -0.01),
       n = c(51, 51, 51, 51, 51, 51, 51, 51))
@@ -711,7 +655,7 @@ thippana_et_al.2020_tib <- c(
       child_age_NT_end = c(NA, NA),
       child_age_MA = c(1492.442, 1492.442),
       NT_measure_time = c(30, 20),
-      time_between_NT_mid_end = c(46.27, 46.27),
+      time_between_NT_mid_MA = c(46.27, 46.27),
       intervention_dosage = c(NA, NA),
       NT_context = c("Home", "Lab"),
       MA_context = c("Lab", "Lab"),
@@ -719,7 +663,7 @@ thippana_et_al.2020_tib <- c(
       NT_type = c("Overall", "Overall"),
       MA_test = c("TEMA_3", "TEMA_3"),
       MA_measure = c("Overall", "Overall"),
-      analysis = c("Zero Order Correlation", "Zero Order Correlation"),
+      analysis = c("Zero_Order_Correlation", "Zero_Order_Correlation"),
       controlled_variables = c(0, 0),
       r = c(0.20, 0.11),
       n = c(81, 81))
@@ -750,18 +694,18 @@ gibson_et_al.2020_tib <- c(
       child_age_NT_end = c(1165.265, 1165.265),
       child_age_MA = c(1165.265, 1165.265),
       NT_measure_time = c(NA, NA),
-      time_between_NT_mid_end = c(16.495, 16.495),
+      time_between_NT_mid_MA = c(16.495, 16.495),
       intervention_dosage = c(32.99, 32.99),
       NT_context = c("Home", "Home"),
       MA_context = c("Lab", "Lab"),
       NT_size = c("Small", "Large"),
-      NT_type = c("Counting and Labelling", "Counting and Labelling"),
-      MA_test = c("Give-N", "Give-N"),
-      MA_measure = c("Number Knowledge", "Number Knowledge"),
-      analysis = c("Pairwise t", "Pairwise t"),
+      NT_type = c("Counting_and_Labelling", "Counting_and_Labelling"),
+      MA_test = c("Give_N", "Give_N"),
+      MA_measure = c("Number_Knowledge", "Number_Knowledge"),
+      analysis = c("Pairwise_t", "Pairwise_t"),
       controlled_variables = c(0, 0),
       r = c(0.3224328, 0.069597355),
-      n = c(97, 97)) 
+      n = c(97, 97))
 gibson_et_al.2020_tib
 ```
 
@@ -777,7 +721,7 @@ silver_et_al.2021_tib <- c(
       country = c("US", "US", "US"),
       sample_id = c("l", "l", "l"),
       design = c("Correlational", "Correlational", "Correlational"),
-      design.2 = c("Cross-sectional Correlational", "Cross-sectional Correlational", "Cross-sectional Correlational"), 
+      design.2 = c("Cross_sectional_Correlational", "Cross_sectional_Correlational", "Cross_sectional_Correlational"), 
       SES = c("Middle", "Middle", "Middle"),
       main_language = c("English", "English", "English"),
       deliverer_type = c("Parent", "Parent", "Parent"),
@@ -790,7 +734,7 @@ silver_et_al.2021_tib <- c(
       child_age_NT_end = c(1430.562, 1430.562, 1430.562),
       child_age_MA = c(1430.562, 1430.562, 1430.562),
       NT_measure_time = c(10, 10, 10),
-      time_between_NT_mid_end = c(0, 0, 0),
+      time_between_NT_mid_MA = c(0, 0, 0),
       intervention_dosage = c(NA, NA, NA),
       NT_context = c("Lab", "Lab" , "Lab"),
       MA_context = c("Lab", "Lab", "Lab"),
@@ -798,7 +742,7 @@ silver_et_al.2021_tib <- c(
       NT_type = c("Overall", "Overall", "Overall"),
       MA_test = c("TEMA_3", "TEMA_3", "TEMA_3"),
       MA_measure = c("Overall", "Overall", "Overall"),
-      analysis = c("Zero Order Correlation", "Simple Slopes", "Simple Slopes"),
+      analysis = c("Zero_Order_Correlation", "Simple_Slopes", "Simple_Slopes"),
       controlled_variables = c(0, 1, 1),
       r = c(0.04, 0.1689442, -0.1129433),
       n = c(123, 123, 123))
@@ -826,8 +770,8 @@ silver_et_al.2021_tib
 
 ```
 
-```{r meta}
-meta_tib <- rbind(
+```{r meta_analysis}
+meta_tib.p1 <- rbind(
   levine_et_al.2010_tib, 
   gunderson_and_levine.2011_tib, 
   boonen_et_al.2011_tib,
@@ -841,15 +785,46 @@ meta_tib <- rbind(
   thippana_et_al.2020_tib, 
   gibson_et_al.2020_tib, 
   silver_et_al.2021_tib) 
-meta_tib %>% view()
+meta_tib.p1 %>% view()
 
 #write.xlsx(meta_tib, "meta_tib.xlsx", overwrite = F)
-meta_tib.escalc <- escalc(measure = "ZCOR", ri = r, ni = n, data = meta_tib) %>% data.frame()
+meta_tib <- escalc(measure = "ZCOR", ri = r, ni = n, data = meta_tib.p1) %>% data.frame() %>% 
+    mutate(
+    effect_description = as.character(effect_description),
+    year = as.numeric(year),
+    country = as.factor(country),
+    sample_id = as.factor(sample_id),
+    design = as.factor(design),
+    design.2 = as.factor(design.2),
+    SES = as.factor(SES),
+    main_language = as.factor(main_language),
+    deliverer_type = as.factor(deliverer_type),
+    mothers = as.factor(mothers),
+    white = as.factor(white),
+    female = as.factor(female),
+    child_age_exp_start = as.numeric(child_age_exp_start),
+    child_age_NT_start = as.numeric(child_age_NT_start),
+    child_age_NT_mid = as.numeric(child_age_NT_mid),
+    child_age_NT_end = as.numeric(child_age_NT_end),
+    child_age_MA = as.numeric(child_age_MA),
+    NT_measure_time = as.numeric(NT_measure_time),
+    time_between_NT_mid_MA = as.numeric(time_between_NT_mid_MA),
+    intervention_dosage = as.numeric(intervention_dosage),
+    NT_context = as.factor(NT_context),
+    MA_context = as.factor(MA_context),
+    NT_size = as.factor(NT_size),
+    NT_type = as.factor(NT_type),
+    MA_test = as.factor(MA_test),
+    MA_measure = as.factor(MA_measure),
+    analysis = as.factor(analysis),
+    controlled_variables = as.numeric(controlled_variables),
+    r = as.numeric(r),
+    n = as.numeric(n))
 #rma(yi = ri, vi = vi, data = meta_tib, method  = "DL", data = meta_data)
 
 #Meta-analysis
-meta_model <- rma(yi = yi, vi = vi, data = meta_tib.escalc, method  = "DL")
-meta_model
+#meta_model <- rma(yi = yi, vi = vi, data = meta_tib.escalc, method  = "DL")
+#meta_model
 #DL - 0.1407, 0.1314
 #HE - 0.1406, 0.1278
 #HSk - 0.1407, 0.1309
@@ -860,28 +835,46 @@ meta_model
 #EB - 0.1407, 0.1319
 #PM - 0.1407, 0.1319
 #In the Forest 
-forest(meta_model, addpred = T, header = T)
+#forest(meta_model, addpred = T, header = T)
 
 #It's a pyramid
-funnel(meta_model)
+#funnel(meta_model)
 
 #Predicting the future
-predict(meta_model, transf = transf.ztor, digits = 5)
+#predict(meta_model, transf = transf.ztor, digits = 5)
 
 #Gosh Plot 
-plot(gosh(meta_model, subset = 2000), out = 10)
+#plot(gosh(meta_model, subset = 2000), out = 10)
 
-meta_tib.escalc
+#meta_tib
 ```
 
-```{r meta_regression}
+
+```{r ml_meta_analysis}
 #Meta-regression
-rma(yi = yi, vi = vi, mod = ~ NT_measure_time,data = meta_tib.escalc, method  = "DL")
+rma(yi = yi, vi = vi, mod = ~ NT_measure_time,data = meta_tib, method  = "DL")
 #Bubble plot 
 #regplot(meta_model, xlab = "x label", xlim = c(-, -), predlim= c(), transf = )
 #Significant result 
 #Mother
 #child_age_NT_mid
+rma.mv(yi = yi, V = vi, data = meta_tib, struct = "CS", method = "REML", test = "t", 
+       random = list(~ 1 | sample_id/effect))
+
+ml_meta_model <- rma.mv(yi = yi, V = vi, data = meta_tib, struct = "CS", method = "REML", test = "t",
+                        mods = ~ MA_context, 
+                        random = list(~ 1 | sample_id/effect))
+ml_meta_model
+
+#
+#Mothers
+#NT_measure_time
+#main_language
+forest(ml_meta_model , addpred = F, header = T)
+
+contrasts()
+
+meta_tib %>% dplyr::mutate(MA_measure = forcats::fct_relevel(MA_measure, "Overall", "Calculation", "Cardinality", "Counting", "Magnitude_Comparison", "Mathematical_Problem_Solving", "Number_Identification", "Number_Knowledge", "Number_Sense"))
 
 ```
 
