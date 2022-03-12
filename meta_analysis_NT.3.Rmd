@@ -169,7 +169,7 @@ time_converter <- function(min, d, m, y){
   return(tibble(mins,days, months, years))
 }
 
-
+time_converter(y = 1)
 ```
 
 
@@ -190,7 +190,7 @@ son_and_hur.2020_tib <- c(
     mothers = c(1, 1),
     white = c(0.500, 0.500), 
     female = c(0.47826087, 0.47826087),
-    child_age_exp_start = c(1717.284, 1717.284),
+    child_age_study_start = c(1717.284, 1717.284),
     child_age_NT_start = c(NA, NA),
     child_age_NT_mid = c(1793.378, 1793.378),
     child_age_NT_end = c(NA, NA),
@@ -201,7 +201,18 @@ son_and_hur.2020_tib <- c(
     NT_context = c("Home", "Home"),
     MA_context = c("School", "School"),
     NT_size = c(NA, NA),
+    NT_size.1 = c("Overall", "Overall"),
     NT_type = c("Overall", "Overall"),
+    NT_type.1 = c("Overall", "Overall"),
+    NT_type.2 = c("Overall", "Overall"), 
+    NT_type.3 = c("Overall", "Overall"),
+    NT_type.4 = c("Overall", "Overall"),
+    NT_type.5 = c("Overall", "Overall"),
+    NT_type.6 = c("Overall", "Overall"),
+    NT_type.7 = c("Overall", "Overall"),
+    NT_type.8 = c("Overall", "Overall"),
+    NT_type.9 = c("Overall", "Overall"),
+    NT_type.10 = c("Overall", "Overall"),
     MA_test = c("WJ_AP", "WJ_AP"),
     MA_measure = c("Overall", "Overall"),
     analysis = c("Zero_Order_Correlation", "Zero_Order_Correlation"),
@@ -238,7 +249,7 @@ ramani_et_al.2015_tib <- c(
     mothers = c(0.787878788, 0.787878788, 0.787878788, 0.787878788, 0.787878788, 0.787878788, 0.787878788, 0.787878788, 0.787878788, 0.787878788, 0.787878788, 0.787878788),
     white = c(0.33, 0.33, 0.33, 0.33, 0.33, 0.33, 0.33, 0.33, 0.33, 0.33, 0.33, 0.33), 
     female = c(0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6),
-    child_age_exp_start = c(1582.75, 1582.75, 1582.75, 1582.75, 1582.75, 1582.75, 1582.75, 1582.75, 1582.75, 1582.75, 1582.75, 1582.75),
+    child_age_study_start = c(1582.75, 1582.75, 1582.75, 1582.75, 1582.75, 1582.75, 1582.75, 1582.75, 1582.75, 1582.75, 1582.75, 1582.75),
     child_age_NT_start = c(NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA),
     child_age_NT_mid = c(1582.75, 1582.75, 1582.75, 1582.75, 1582.75, 1582.75, 1582.75, 1582.75, 1582.75, 1582.75, 1582.75, 1582.75),
     child_age_NT_end = c(NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA),
@@ -246,10 +257,21 @@ ramani_et_al.2015_tib <- c(
     NT_measure_time = c(15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15),
     time_between_NT_mid_MA = c(10.5, 10.5, 10.5, 10.5, 10.5, 10.5, 10.5, 10.5, 10.5, 10.5, 10.5, 10.5),
     intervention_dosage = c(NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA),
-    NT_context = c("Classroom", "Classroom", "Classroom", "Classroom", "Classroom", "Classroom", "Classroom", "Classroom", "Classroom", "Classroom", "Classroom", "Classroom"),
-    MA_context = c("Classroom", "Classroom", "Classroom", "Classroom", "Classroom", "Classroom", "Classroom", "Classroom", "Classroom", "Classroom", "Classroom", "Classroom"),
+    NT_context = c("School", "School", "School", "School", "School", "School", "School", "School", "School", "School", "School", "School"),
+    MA_context = c("School", "School", "School", "School", "School", "School", "School", "School", "School", "School", "School", "School"),
     NT_size = c(NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA),
-    NT_type = c("Counting_and_Number Identificaton", "Cardinality_and_Ordering", "Counting_and_Number_Identification", "Cardinality_and_Ordering", "Counting_and_Number_Identification", "Cardinality_and_Ordering", "Counting_and_Number_Identification", "Cardinality_and_Ordering", "Counting_and_Number_Identification", "Cardinality_and_Ordering", "Counting_and_Number_Identification", "Cardinality_and_Ordering"),
+    NT_size.1 = c("Overall", "Overall", "Overall", "Overall", "Overall", "Overall", "Overall", "Overall", "Overall", "Overall", "Overall", "Overall"),
+    NT_type = c("Counting_and_Number_Identificaton", "Cardinality_and_Ordering", "Counting_and_Number_Identification", "Cardinality_and_Ordering", "Counting_and_Number_Identification", "Cardinality_and_Ordering", "Counting_and_Number_Identification", "Cardinality_and_Ordering", "Counting_and_Number_Identification", "Cardinality_and_Ordering", "Counting_and_Number_Identification", "Cardinality_and_Ordering"),
+    NT_type.1 = c("Overall", "Overall", "Overall", "Overall", "Overall", "Overall", "Overall", "Overall", "Overall", "Overall", "Overall", "Overall"),
+    NT_type.2 = c("Counting", "Cardinality", "Counting", "Cardinality", "Counting", "Cardinality", "Counting", "Cardinality", "Counting", "Cardinality", "Counting", "Cardinality"),
+    NT_type.3 = c("Number_Identification", "Ordering", "Number_Identification", "Ordering", "Number_Identification", "Ordering", "Number_Identification", "Ordering", "Number_Identification", "Ordering", "Number_Identification", "Ordering"),
+    NT_type.4 = c("Number_Identification", "Ordering", "Number_Identification", "Ordering", "Number_Identification", "Ordering", "Number_Identification", "Ordering", "Number_Identification", "Ordering", "Number_Identification", "Ordering"),
+    NT_type.5 = c("Counting", "Ordering", "Counting", "Ordering", "Counting", "Ordering", "Counting", "Ordering", "Counting", "Ordering", "Counting", "Ordering"),
+    NT_type.6 = c("Counting", "Ordering", "Counting", "Ordering", "Counting", "Ordering", "Counting", "Ordering", "Counting", "Ordering", "Counting", "Ordering"),
+    NT_type.7 = c("Number_Identification", "Cardinality", "Number_Identification", "Cardinality", "Number_Identification", "Cardinality", "Number_Identification", "Cardinality", "Number_Identification", "Cardinality", "Number_Identification", "Cardinality"),
+    NT_type.8 = c("Counting", "Cardinality", "Counting", "Cardinality", "Counting", "Cardinality", "Counting", "Cardinality", "Counting", "Cardinality", "Counting", "Cardinality"),
+    NT_type.9 = c("Number_Identification", "Cardinality", "Number_Identification", "Cardinality", "Number_Identification", "Cardinality", "Number_Identification", "Cardinality", "Number_Identification", "Cardinality", "Number_Identification", "Cardinality"),
+    NT_type.10 = c(NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA),
     MA_test = c("Verbal_Counting", "Verbal_Counting", "Number_Identification", "Number_Identification", "Counting_Principles", "Counting_Principles", "Enumeration_and_Cardinality", "Enumeration_and_Cardinality", "Number_Line_Estimation", "Number_Line_Estimation", "Magnitude_Comparison", "Magnitude_Comparison"),
     MA_measure = c("Counting", "Counting", "Number_Identification", "Number_Identification", "Counting", "Counting", "Cardinality", "Cardinality", "Number_Sense", "Number_Sense", "Magnitude_Comparison", "Magnitude_Comparison"),
     analysis = c("Zero_Order_Correlation", "Zero_Order_Correlation", "Zero_Order _orrelation", "Zero_Order_Correlation", "Zero_Order_Correlation", "Zero_Order_Correlation", "Zero_Order_Correlation", "Zero_Order_Correlation", "Zero_Order_Correlation", "Zero_Order_Correlation", "Zero_Order_Correlation", "Zero_Order_Correlation"),
@@ -280,7 +302,7 @@ mutaf_yildiz_et_al.2018_tib <- c(
       mothers = c(0.682, 0.682),
       white = c(NA, NA), 
       female = c(0.454545455, 0.454545455),
-      child_age_exp_start = c(2060.01, 2060.01),
+      child_age_study_start = c(2060.01, 2060.01),
       child_age_NT_start = c(NA, NA),
       child_age_NT_mid = c(2060.01, 2060.01),
       child_age_NT_end = c(NA, NA),
@@ -291,7 +313,18 @@ mutaf_yildiz_et_al.2018_tib <- c(
       NT_context = c("Home", "Home"),
       MA_context = c("Home", "Home"),
       NT_size = c(NA, NA),
+      NT_size.1 = c("Overall", "Overall"),
       NT_type = c("Overall", "Overall"),
+      NT_type.1 = c("Overall", "Overall"),
+      NT_type.2 = c("Overall", "Overall"), 
+      NT_type.3 = c("Overall", "Overall"),
+      NT_type.4 = c("Overall", "Overall"),
+      NT_type.5 = c("Overall", "Overall"),
+      NT_type.6 = c("Overall", "Overall"),
+      NT_type.7 = c("Overall", "Overall"),
+      NT_type.8 = c("Overall", "Overall"),
+      NT_type.9 = c("Overall", "Overall"),
+      NT_type.10 = c("Overall", "Overall"),
       MA_test = c("TediMath", "TediMath"),
       MA_measure = c("Calculation", "Calculation"),
       analysis = c("Zero_Order_Correlation", "Zero_Order_Correlation"),
@@ -321,7 +354,7 @@ elliott_et_al.2017_tib <- c(
       mothers = c(1, 1, 1, 1),
       white = c(0.89, 0.89, 0.89, 0.89), 
       female = c(0.434782609, 0.434782609, 0.434782609, 0.434782609),
-      child_age_exp_start = c(2116.928, 2116.928, 2116.928, 2116.928),
+      child_age_study_start = c(2116.928, 2116.928, 2116.928, 2116.928),
       child_age_NT_start = c(NA, NA, NA, NA),
       child_age_NT_mid = c(2116.928, 2116.928, 2116.928, 2116.928),
       child_age_NT_end = c(NA, NA, NA, NA),
@@ -332,7 +365,18 @@ elliott_et_al.2017_tib <- c(
       NT_context = c("Lab", "Lab", "Lab", "Lab"),
       MA_context = c("Lab", "Lab", "Lab", "Lab"),
       NT_size = c("Overall", "Small", "Medium", "Large"),
+      NT_size.1 = c("Overall", "Small", "Medium", "Large"),
       NT_type = c("Overall", "Overall", "Overall", "Overall"),
+      NT_type.1 = c("Overall", "Overall", "Overall", "Overall"),
+      NT_type.2 = c("Overall", "Overall", "Overall", "Overall"),
+      NT_type.3 = c("Overall", "Overall", "Overall", "Overall"),
+      NT_type.4 = c("Overall", "Overall", "Overall", "Overall"),
+      NT_type.5 = c("Overall", "Overall", "Overall", "Overall"),
+      NT_type.6 = c("Overall", "Overall", "Overall", "Overall"),
+      NT_type.7 = c("Overall", "Overall", "Overall", "Overall"),
+      NT_type.8 = c("Overall", "Overall", "Overall", "Overall"),
+      NT_type.9 = c("Overall", "Overall", "Overall", "Overall"),
+      NT_type.10 = c("Overall", "Overall", "Overall", "Overall"),
       MA_test = c("TEMA_3", "TEMA_3", "TEMA_3", "TEMA_3"),
       MA_measure = c("Overall", "Overall", "Overall", "Overall"),
       analysis = c("Zero_Order_Correlation", "Zero_Order_Correlation", "Zero _Order_Correlation", "Zero_Order_Correlation"),
@@ -359,7 +403,7 @@ levine_et_al.2010_tib <- c(
       mothers = c(NA),
       white = c(0.704545455), 
       female = c(0.454545455),
-      child_age_exp_start = c(426.125),
+      child_age_study_start = c(426.125),
       child_age_NT_start = c(426.125),
       child_age_NT_mid = c(669.625),
       child_age_NT_end = c(913.125),
@@ -370,7 +414,18 @@ levine_et_al.2010_tib <- c(
       NT_context = c("Home"),
       MA_context = c(NA),
       NT_size = c("Overall"),
+      NT_size.1 = c("Overall"),
       NT_type = c("Overall"),
+      NT_type.1 = c("Overall"),
+      NT_type.2 = c("Overall"),
+      NT_type.3 = c("Overall"),
+      NT_type.4 = c("Overall"),
+      NT_type.5 = c("Overall"),
+      NT_type.6 = c("Overall"),
+      NT_type.7 = c("Overall"),
+      NT_type.8 = c("Overall"),
+      NT_type.9 = c("Overall"),
+      NT_type.10 = c("Overall"),
       MA_test = c("Point_to_X"),
       MA_measure = c("Cardinality"),
       analysis = c("Zero Order Correlation"),
@@ -412,7 +467,7 @@ gunderson_and_levine.2011_tib <- c(
       mothers = c(NA, NA),
       white = c(0.704545455, 0.704545455), 
       female = c(0.454545455, 0.454545455),
-      child_age_exp_start = c(426.125, 426.125),
+      child_age_study_start = c(426.125, 426.125),
       child_age_NT_start = c(426.125, 426.125),
       child_age_NT_mid = c(669.625, 669.625),
       child_age_NT_end = c(913.125, 913.125),
@@ -423,7 +478,18 @@ gunderson_and_levine.2011_tib <- c(
       NT_context = c("Home", "Home"),
       MA_context = c(NA, NA),
       NT_size = c("Small", "Large"),
+      NT_size.1 = c("Small", "Medium"),
       NT_type = c("Overall", "Overall"),
+      NT_type.1 = c("Overall", "Overall"),
+      NT_type.2 = c("Overall", "Overall"),
+      NT_type.3 = c("Overall", "Overall"),
+      NT_type.4 = c("Overall", "Overall"),
+      NT_type.5 = c("Overall", "Overall"),
+      NT_type.6 = c("Overall", "Overall"),
+      NT_type.7 = c("Overall", "Overall"),
+      NT_type.8 = c("Overall", "Overall"),
+      NT_type.9 = c("Overall", "Overall"),
+      NT_type.10 = c("Overall", "Overall"),
       MA_test = c("Point_to_X", "Point_to_X"),
       MA_measure = c("Cardinality", "Cardinality"),
       analysis = c("Calculated_manually", "Calculated_manually"),
@@ -455,7 +521,7 @@ boonen_et_al.2011_tib <- c(
       mothers = c(NA, NA, NA, NA, NA, NA),
       white = c(NA, NA, NA, NA, NA, NA), 
       female = c(0.501992032, 0.501992032, 0.501992032, 0.501992032, 0.501992032, 0.501992032),
-      child_age_exp_start = c(1899.3, 1899.3, 1899.3, 1899.3, 1899.3, 1899.3),
+      child_age_study_start = c(1899.3, 1899.3, 1899.3, 1899.3, 1899.3, 1899.3),
       child_age_NT_start = c(NA, NA, NA, NA, NA, NA),
       child_age_NT_mid = c(NA, NA, NA, NA, NA, NA),
       child_age_NT_end = c(NA, NA, NA, NA, NA, NA),
@@ -463,10 +529,21 @@ boonen_et_al.2011_tib <- c(
       NT_measure_time = c(60, 60, 60, 60, 60, 60),
       time_between_NT_mid_MA = c(NA, NA, NA, NA, NA, NA),
       intervention_dosage = c(NA, NA, NA, NA, NA, NA),
-      NT_context = c("Classroom", "Classroom", "Classroom", "Classroom", "Classroom", "Classroom"),
-      MA_context = c("Classroom", "Classroom", "Classroom", "Classroom", "Classroom", "Classroom"),
-      NT_size = c(NA, NA, NA, NA, NA, NA),
-      NT_type = c("Calculation", "Convetional_Normatives", "Counting", "Ordering", "Number_Symbols", "Cardinality"),
+      NT_context = c("School", "School", "School", "School", "School", "School"),
+      MA_context = c("School", "School", "School", "School", "School", "School"),
+      NT_size = c("Overall", "Overall","Overall","Overall", "Overall", "Overall"),
+      NT_size.1 = c("Overall", "Overall","Overall","Overall", "Overall", "Overall"),
+      NT_type = c("Calculation", "Conventional_Nominatives", "Counting", "Ordering", "Number_Symbols", "Cardinality"),
+      NT_type.1 = c("Calculation", "Conventional_Nominatives", "Counting", "Ordering", "Number_Symbols", "Cardinality"),
+      NT_type.2 = c("Calculation", "Conventional_Nominatives", "Counting", "Ordering", "Number_Symbols", "Cardinality"),
+      NT_type.3 = c("Calculation", "Conventional_Nominatives", "Counting", "Ordering", "Number_Symbols", "Cardinality"),
+      NT_type.4 = c("Calculation", "Conventional_Nominatives", "Counting", "Ordering", "Number_Symbols", "Cardinality"),
+      NT_type.5 = c("Calculation", "Conventional_Nominatives", "Counting", "Ordering", "Number_Symbols", "Cardinality"),
+      NT_type.6 = c("Calculation", "Conventional_Nominatives", "Counting", "Ordering", "Number_Symbols", "Cardinality"),
+      NT_type.7 = c("Calculation", "Conventional_Nominatives", "Counting", "Ordering", "Number_Symbols", "Cardinality"),
+      NT_type.8 = c("Calculation", "Conventional_Nominatives", "Counting", "Ordering", "Number_Symbols", "Cardinality"),
+      NT_type.9 = c("Calculation", "Conventional_Nominatives", "Counting", "Ordering", "Number_Symbols", "Cardinality"),
+      NT_type.10 = c("Calculation", "Conventional_Nominatives", "Counting", "Ordering", "Number_Symbols", "Cardinality"),
       MA_test = c("AD_Number_Sense", "AD_Number_Sense", "ENT_R", "ENT_R", "ENT_R", "Quantity_Comparison_Task"),
       MA_measure = c("Number_Sense", "Number_Sense", "Number_Sense", "Number_Sense", "Number_Sense", "Number_Sense"),
       analysis = c("Multiple_Regression", "Multiple_Regression", "Multiple_Multilevel_Regression", "Multiple_Multilevel_Regression", "Multiple_Multilevel_Regression", "Multiple_Regression"),
@@ -494,7 +571,7 @@ susperreguy_and_davis_kean.2016_tib <- c(
       mothers = c(1),
       white = c(0.686), 
       female = c(0.314285714),
-      child_age_exp_start = c(1643.625),
+      child_age_study_start = c(1643.625),
       child_age_NT_start = c(1643.625),
       child_age_NT_mid = c(1647.125),
       child_age_NT_end = c(1650.625),
@@ -504,8 +581,19 @@ susperreguy_and_davis_kean.2016_tib <- c(
       intervention_dosage = c(NA),
       NT_context = c("Home"),
       MA_context = c(NA),
-      NT_size = c(NA),
+      NT_size = c("Overall"),
+      NT_size.1 = c("Overall"),
       NT_type = c("Overall"),
+      NT_type.1 = c("Overall"),
+      NT_type.2 = c("Overall"),
+      NT_type.3 = c("Overall"),
+      NT_type.4 = c("Overall"),
+      NT_type.5 = c("Overall"),
+      NT_type.6 = c("Overall"),
+      NT_type.7 = c("Overall"),
+      NT_type.8 = c("Overall"),
+      NT_type.9 = c("Overall"),
+      NT_type.10 = c("Overall"),
       MA_test = c("TEMA_3"),
       MA_measure = c("Overall"),
       analysis = c("Zero_Order_Correlation"),
@@ -563,7 +651,7 @@ casey_et_al.2018_tib <- c(
       mothers = c(1, 1, 1, 1, 1, 1, 1, 1),
       white = c(0.84, 0.84, 0.84, 0.84, 0.84, 0.84, 0.84, 0.84), 
       female = c(0.45, 0.45, 0.45, 0.45, 0.45, 0.45, 0.45, 0.45),
-      child_age_exp_start = c(NA, NA, NA, NA, NA, NA, NA, NA),
+      child_age_study_start = c(NA, NA, NA, NA, NA, NA, NA, NA),
       child_age_NT_start = c(NA, NA, NA, NA, NA, NA, NA, NA),
       child_age_NT_mid = c(1095.75, 1095.75, 1095.75, 1095.75, 1095.75, 1095.75, 1095.75, 1095.75),
       child_age_NT_end = c(NA, NA, NA, NA, NA, NA, NA, NA),
@@ -573,8 +661,19 @@ casey_et_al.2018_tib <- c(
       intervention_dosage = c(NA, NA, NA, NA, NA, NA, NA, NA),
       NT_context = c("Lab", "Lab", "Lab", "Lab", "Lab", "Lab", "Lab", "Lab"),
       MA_context = c(NA, NA, NA, NA, NA, NA, NA, NA),
-      NT_size = c(NA, NA, NA, NA, NA, NA, NA, NA),
+      NT_size = c("Overall", "Overall", "Overall", "Overall", "Overall", "Overall", "Overall", "Overall"),
+      NT_size.1 = c("Overall", "Overall", "Overall", "Overall", "Overall", "Overall", "Overall", "Overall"),
       NT_type = c("Number_Identification", "Number_Identification", "Counting", "Counting", "Labelling", "Labelling", "Overall", "Overall"),
+      NT_type.1 = c("Number_Identification", "Number_Identification", "Counting", "Counting", "Labelling", "Labelling", "Overall", "Overall"),
+      NT_type.2 = c("Number_Identification", "Number_Identification", "Counting", "Counting", "Labelling", "Labelling", "Overall", "Overall"),
+      NT_type.3 = c("Number_Identification", "Number_Identification", "Counting", "Counting", "Labelling", "Labelling", "Overall", "Overall"),
+      NT_type.4 = c("Number_Identification", "Number_Identification", "Counting", "Counting", "Labelling", "Labelling", "Overall", "Overall"),
+      NT_type.5 = c("Number_Identification", "Number_Identification", "Counting", "Counting", "Labelling", "Labelling", "Overall", "Overall"),
+      NT_type.6 = c("Number_Identification", "Number_Identification", "Counting", "Counting", "Labelling", "Labelling", "Overall", "Overall"),
+      NT_type.7 = c("Number_Identification", "Number_Identification", "Counting", "Counting", "Labelling", "Labelling", "Overall", "Overall"),
+      NT_type.8 = c("Number_Identification", "Number_Identification", "Counting", "Counting", "Labelling", "Labelling", "Overall", "Overall"),
+      NT_type.9 = c("Number_Identification", "Number_Identification", "Counting", "Counting", "Labelling", "Labelling", "Overall", "Overall"),
+      NT_type.10 = c("Number_Identification", "Number_Identification", "Counting", "Counting", "Labelling", "Labelling", "Overall", "Overall"),
       MA_test = c("WJ_AP", "WJ_AP", "WJ_AP", "WJ_AP", "WJ_AP", "WJ_AP", "WJ_AP", "WJ_AP"),
       MA_measure = c("Mathematical_Problem_Solving", "Mathematical_Problem_Solving", "Mathematical_Problem_Solving", "Mathematical_Problem_Solving", "Mathematical_Problem_Solving", "Mathematical_Problem_Solving", "Mathematical_Problem_Solving", "Mathematical_Problem_Solving"),
       analysis = c("Zero_Order_Correlation", "Zero_Order_Correlation", "Zero_Order_Correlation", "Zero_Order_Correlation","Zero_Order_Correlation", "Zero_Order_Correlation", "Zero_Order_Correlation", "Zero_Order_Correlation"),
@@ -608,7 +707,7 @@ zippert_et_al.2019_tib <- c(
       mothers = c(0.61, 0.61, 0.61, 0.61, 0.61, 0.61, 0.61, 0.61),
       white = c(NA, NA, NA, NA, NA, NA, NA, NA), 
       female = c(0.41, 0.41, 0.41, 0.41, 0.41, 0.41, 0.41, 0.41),
-      child_age_exp_start = c(1835.99, 1835.99, 1835.99, 1835.99, 1835.99, 1835.99, 1835.99, 1835.99),
+      child_age_study_start = c(1835.99, 1835.99, 1835.99, 1835.99, 1835.99, 1835.99, 1835.99, 1835.99),
       child_age_NT_start = c(1835.99, 1835.99, 1835.99, 1835.99, 1835.99, 1835.99, 1835.99, 1835.99),
       child_age_NT_mid = c(1835.99, 1835.99, 1835.99, 1835.99, 1835.99, 1835.99, 1835.99, 1835.99),
       child_age_NT_end = c(1835.99, 1835.99, 1835.99, 1835.99, 1835.99, 1835.99, 1835.99, 1835.99),
@@ -619,7 +718,18 @@ zippert_et_al.2019_tib <- c(
       NT_context = c("Museum", "Museum", "Museum", "Museum", "Museum", "Museum", "Museum", "Museum"),
       MA_context = c("Museum", "Museum", "Museum", "Museum", "Museum", "Museum", "Museum", "Museum"),
       NT_size = c(NA, NA, NA, NA, NA, NA, NA, NA),
+      NT_size.1 = c("Overall", "Overall", "Overall", "Overall", "Overall", "Overall", "Overall", "Overall"),
       NT_type = c("Counting", "Number_Identification", "Cardinality", "Magnitude_Comparison", "Counting", "Number_Identification", "Cardinality", "Magnitude_Comparison"),
+      NT_type.1 = c("Counting", "Number_Identification", "Cardinality", "Magnitude_Comparison", "Counting", "Number_Identification", "Cardinality", "Magnitude_Comparison"),
+      NT_type.2 = c("Counting", "Number_Identification", "Cardinality", "Magnitude_Comparison", "Counting", "Number_Identification", "Cardinality", "Magnitude_Comparison"),
+      NT_type.3 = c("Counting", "Number_Identification", "Cardinality", "Magnitude_Comparison", "Counting", "Number_Identification", "Cardinality", "Magnitude_Comparison"),
+      NT_type.4 = c("Counting", "Number_Identification", "Cardinality", "Magnitude_Comparison", "Counting", "Number_Identification", "Cardinality", "Magnitude_Comparison"),
+      NT_type.5 = c("Counting", "Number_Identification", "Cardinality", "Magnitude_Comparison", "Counting", "Number_Identification", "Cardinality", "Magnitude_Comparison"),
+      NT_type.6 = c("Counting", "Number_Identification", "Cardinality", "Magnitude_Comparison", "Counting", "Number_Identification", "Cardinality", "Magnitude_Comparison"),
+      NT_type.7 = c("Counting", "Number_Identification", "Cardinality", "Magnitude_Comparison", "Counting", "Number_Identification", "Cardinality", "Magnitude_Comparison"),
+      NT_type.8 = c("Counting", "Number_Identification", "Cardinality", "Magnitude_Comparison", "Counting", "Number_Identification", "Cardinality", "Magnitude_Comparison"),
+      NT_type.9 = c("Counting", "Number_Identification", "Cardinality", "Magnitude_Comparison", "Counting", "Number_Identification", "Cardinality", "Magnitude_Comparison"),
+      NT_type.10 = c("Counting", "Number_Identification", "Cardinality", "Magnitude_Comparison", "Counting", "Number_Identification", "Cardinality", "Magnitude_Comparison"),
       MA_test = c("Verbal_Counting", "Verbal_Counting", "Verbal_Counting", "Verbal_Counting", "Number_Line_Estimation", "Number_Line_Estimation", "Number_Line_Estimation", "Number_Line_Estimation"),
       MA_measure = c("Counting", "Counting", "Counting", "Counting", "Number_Sense", "Number_Sense", "Number_Sense", "Number_Sense"),
       analysis = c("Partial_Correlation", "Partial_Correlation", "Partial_Correlation", "Partial_Correlation", "Partial_Correlation", "Partial_Correlation", "Partial_Correlation", "Partial_Correlation"),
@@ -649,7 +759,7 @@ thippana_et_al.2020_tib <- c(
       mothers = c(0.94, 0.94),
       white = c(0.85, 0.85), 
       female = c(0.484536082, 0.484536082),
-      child_age_exp_start = c(1430.562, 1430.562),
+      child_age_study_start = c(1430.562, 1430.562),
       child_age_NT_start = c(NA, NA),
       child_age_NT_mid = c(1446.172, 1446.172),
       child_age_NT_end = c(NA, NA),
@@ -660,7 +770,18 @@ thippana_et_al.2020_tib <- c(
       NT_context = c("Home", "Lab"),
       MA_context = c("Lab", "Lab"),
       NT_size = c(NA, NA),
+      NT_size.1 = c("Overall", "Overall"),
       NT_type = c("Overall", "Overall"),
+      NT_type.1 = c("Overall", "Overall"),
+      NT_type.2 = c("Overall", "Overall"),
+      NT_type.3 = c("Overall", "Overall"),
+      NT_type.4 = c("Overall", "Overall"),
+      NT_type.5 = c("Overall", "Overall"),
+      NT_type.6 = c("Overall", "Overall"),
+      NT_type.7 = c("Overall", "Overall"),
+      NT_type.8 = c("Overall", "Overall"),
+      NT_type.9 = c("Overall", "Overall"),
+      NT_type.10 = c("Overall", "Overall"),
       MA_test = c("TEMA_3", "TEMA_3"),
       MA_measure = c("Overall", "Overall"),
       analysis = c("Zero_Order_Correlation", "Zero_Order_Correlation"),
@@ -688,7 +809,7 @@ gibson_et_al.2020_tib <- c(
       mothers = c(NA, NA),
       white = c(0.52, 0.52), 
       female = c(0.52, 0.52),
-      child_age_exp_start = c(1132.275, 1132.275),
+      child_age_study_start = c(1132.275, 1132.275),
       child_age_NT_start = c(1132.275, 1132.275),
       child_age_NT_mid = c(1148.77, 1148.77),
       child_age_NT_end = c(1165.265, 1165.265),
@@ -699,7 +820,18 @@ gibson_et_al.2020_tib <- c(
       NT_context = c("Home", "Home"),
       MA_context = c("Lab", "Lab"),
       NT_size = c("Small", "Large"),
+      NT_size.1 = c("Small", "Medium"),
       NT_type = c("Counting_and_Labelling", "Counting_and_Labelling"),
+      NT_type.1 = c("Overall", "Overall"),
+      NT_type.2 = c("Counting", "Counting"),
+      NT_type.3 = c("Counting", "Counting"),
+      NT_type.4 = c("Labelling", "Labelling"),
+      NT_type.5 = c("Counting", "Counting"),
+      NT_type.6 = c("Labelling", "Labelling"),
+      NT_type.7 = c("Labelling", "Labelling"),
+      NT_type.8 = c("Labelling", "Labelling"),
+      NT_type.9 = c("Counting", "Counting"),
+      NT_type.10 = c(NA, NA),
       MA_test = c("Give_N", "Give_N"),
       MA_measure = c("Number_Knowledge", "Number_Knowledge"),
       analysis = c("Pairwise_t", "Pairwise_t"),
@@ -728,7 +860,7 @@ silver_et_al.2021_tib <- c(
       mothers = c(0.95, 0.95, 0.95),
       white = c(0.8, 0.8, 0.8), 
       female = c(0.479674797, 0.479674797, 0.479674797),
-      child_age_exp_start = c(1430.562, 1430.562, 1430.562),
+      child_age_study_start = c(1430.562, 1430.562, 1430.562),
       child_age_NT_start = c(1430.562, 1430.562, 1430.562),
       child_age_NT_mid = c(1430.562, 1430.562, 1430.562),
       child_age_NT_end = c(1430.562, 1430.562, 1430.562),
@@ -739,7 +871,18 @@ silver_et_al.2021_tib <- c(
       NT_context = c("Lab", "Lab" , "Lab"),
       MA_context = c("Lab", "Lab", "Lab"),
       NT_size = c("Overall", "Overall", "Overall"),
+      NT_size.1 = c("Overall", "Overall", "Overall"),
       NT_type = c("Overall", "Overall", "Overall"),
+      NT_type.1 = c("Overall", "Overall", "Overall"),
+      NT_type.2 = c("Overall", "Overall", "Overall"),
+      NT_type.3 = c("Overall", "Overall", "Overall"),
+      NT_type.4 = c("Overall", "Overall", "Overall"),
+      NT_type.5 = c("Overall", "Overall", "Overall"),
+      NT_type.6 = c("Overall", "Overall", "Overall"),
+      NT_type.7 = c("Overall", "Overall", "Overall"),
+      NT_type.8 = c("Overall", "Overall", "Overall"),
+      NT_type.9 = c("Overall", "Overall", "Overall"),
+      NT_type.10 = c("Overall", "Overall", "Overall"),
       MA_test = c("TEMA_3", "TEMA_3", "TEMA_3"),
       MA_measure = c("Overall", "Overall", "Overall"),
       analysis = c("Zero_Order_Correlation", "Simple_Slopes", "Simple_Slopes"),
@@ -799,10 +942,10 @@ meta_tib <- escalc(measure = "ZCOR", ri = r, ni = n, data = meta_tib.p1) %>% dat
     SES = as.factor(SES),
     main_language = as.factor(main_language),
     deliverer_type = as.factor(deliverer_type),
-    mothers = as.factor(mothers),
-    white = as.factor(white),
-    female = as.factor(female),
-    child_age_exp_start = as.numeric(child_age_exp_start),
+    mothers = as.numeric(mothers),
+    white = as.numeric(white),
+    female = as.numeric(female),
+    child_age_study_start = as.numeric(child_age_study_start),
     child_age_NT_start = as.numeric(child_age_NT_start),
     child_age_NT_mid = as.numeric(child_age_NT_mid),
     child_age_NT_end = as.numeric(child_age_NT_end),
@@ -813,13 +956,51 @@ meta_tib <- escalc(measure = "ZCOR", ri = r, ni = n, data = meta_tib.p1) %>% dat
     NT_context = as.factor(NT_context),
     MA_context = as.factor(MA_context),
     NT_size = as.factor(NT_size),
+    NT_size.1 = as.factor(NT_size.1),
     NT_type = as.factor(NT_type),
+    NT_type.1 = as.factor(NT_type.1),
+    NT_type.2 = as.factor(NT_type.2),
+    NT_type.3 = as.factor(NT_type.3),
+    NT_type.4 = as.factor(NT_type.4),
+    NT_type.5 = as.factor(NT_type.5),
+    NT_type.6 = as.factor(NT_type.6),
+    NT_type.7 = as.factor(NT_type.7),
+    NT_type.8 = as.factor(NT_type.8),
+    NT_type.9 = as.factor(NT_type.9),
+    NT_type.10 = as.factor(NT_type.10),
     MA_test = as.factor(MA_test),
     MA_measure = as.factor(MA_measure),
     analysis = as.factor(analysis),
     controlled_variables = as.numeric(controlled_variables),
     r = as.numeric(r),
-    n = as.numeric(n))
+    n = as.numeric(n)) %>% 
+  dplyr::mutate(
+    MA_measure = forcats::fct_relevel(MA_measure, "Calculation", "Cardinality", "Counting", "Magnitude_Comparison", "Mathematical_Problem_Solving", "Number_Identification", "Number_Knowledge", "Number_Sense", "Overall"),
+    main_language = forcats::fct_relevel(main_language, "Dutch", "English"),
+    NT_type.2 = forcats::fct_relevel(NT_type.2, "Calculation", "Cardinality", "Conventional_Nominatives", "Counting", "Labelling", "Magnitude_Comparison", "Number_Identification", "Number_Symbols", "Ordering", "Overall"),
+    NT_type.3 = forcats::fct_relevel(NT_type.3, "Calculation", "Cardinality", "Conventional_Nominatives", "Counting", "Labelling", "Magnitude_Comparison", "Number_Identification", "Number_Symbols", "Ordering", "Overall"),
+    NT_type.4 = forcats::fct_relevel(NT_type.4, "Calculation", "Cardinality", "Conventional_Nominatives", "Counting", "Labelling", "Magnitude_Comparison", "Number_Identification", "Number_Symbols", "Ordering", "Overall"),
+    NT_type.5 = forcats::fct_relevel(NT_type.5, "Calculation", "Cardinality", "Conventional_Nominatives", "Counting", "Labelling", "Magnitude_Comparison", "Number_Identification", "Number_Symbols", "Ordering", "Overall"),
+    NT_type.6 = forcats::fct_relevel(NT_type.6, "Calculation", "Cardinality", "Conventional_Nominatives", "Counting", "Labelling", "Magnitude_Comparison", "Number_Identification", "Number_Symbols", "Ordering", "Overall"),
+    NT_type.7 = forcats::fct_relevel(NT_type.7, "Calculation", "Cardinality", "Conventional_Nominatives", "Counting", "Labelling", "Magnitude_Comparison", "Number_Identification", "Number_Symbols", "Ordering", "Overall"),
+    NT_type.8 = forcats::fct_relevel(NT_type.8, "Calculation", "Cardinality", "Conventional_Nominatives", "Counting", "Labelling", "Magnitude_Comparison", "Number_Identification", "Number_Symbols", "Ordering", "Overall"),
+    NT_type.9 = forcats::fct_relevel(NT_type.9, "Calculation", "Cardinality", "Conventional_Nominatives", "Counting", "Labelling", "Magnitude_Comparison", "Number_Identification", "Number_Symbols", "Ordering", "Overall"),
+    NT_type.10 = forcats::fct_relevel(NT_type.10, "Calculation", "Cardinality", "Conventional_Nominatives", "Counting", "Labelling", "Magnitude_Comparison", "Number_Identification", "Number_Symbols", "Ordering", "Overall"),
+    MA_context = forcats::fct_relevel(MA_context, "Home", "Lab", "School", "Museum"),
+    NT_size.1 = forcats::fct_relevel(NT_size.1, "Small", "Medium", "Large", "Overall"))
+
+levels(meta_tib$NT_type.2)
+levels(meta_tib$NT_type.3)
+levels(meta_tib$NT_type.4)
+levels(meta_tib$NT_type.5)
+levels(meta_tib$NT_type.6)
+levels(meta_tib$NT_type.7)
+levels(meta_tib$NT_type.8)
+levels(meta_tib$NT_type.9)
+levels(meta_tib$NT_type.10)
+levels(meta_tib$NT_size.1)
+meta_tib %>% view()
+
 #rma(yi = ri, vi = vi, data = meta_tib, method  = "DL", data = meta_data)
 
 #Meta-analysis
@@ -846,7 +1027,7 @@ meta_tib <- escalc(measure = "ZCOR", ri = r, ni = n, data = meta_tib.p1) %>% dat
 #Gosh Plot 
 #plot(gosh(meta_model, subset = 2000), out = 10)
 
-#meta_tib
+meta_tib
 ```
 
 
@@ -856,26 +1037,575 @@ rma(yi = yi, vi = vi, mod = ~ NT_measure_time,data = meta_tib, method  = "DL")
 #Bubble plot 
 #regplot(meta_model, xlab = "x label", xlim = c(-, -), predlim= c(), transf = )
 #Significant result 
-#Mother
-#child_age_NT_mid
-rma.mv(yi = yi, V = vi, data = meta_tib, struct = "CS", method = "REML", test = "t", 
-       random = list(~ 1 | sample_id/effect))
 
-ml_meta_model <- rma.mv(yi = yi, V = vi, data = meta_tib, struct = "CS", method = "REML", test = "t",
-                        mods = ~ MA_context, 
-                        random = list(~ 1 | sample_id/effect))
-ml_meta_model
 
-#
-#Mothers
-#NT_measure_time
-#main_language
-forest(ml_meta_model , addpred = F, header = T)
 
-contrasts()
 
-meta_tib %>% dplyr::mutate(MA_measure = forcats::fct_relevel(MA_measure, "Overall", "Calculation", "Cardinality", "Counting", "Magnitude_Comparison", "Mathematical_Problem_Solving", "Number_Identification", "Number_Knowledge", "Number_Sense"))
+
+rma(yi = yi, vi = vi, data = meta_tib, method  = "REML", test = "t")
+
+rma.mv(yi = yi, V = vi, data = meta_tib, struct = "CS", method = "REML", test = "t")
+
+ml_meta_model <- rma.mv(yi = yi, V = vi, data = meta_tib, struct = "CS", method = "REML", test = "t", 
+       random = ~ 1 | sample_id/effect)
+
 
 ```
+
+```{r moderator_analysis_main_language}
+#Checking the levels 
+levels(meta_tib$main_language)
+#Setting contrast weights
+english_vs_mean <- c(-1/2, 1/2)
+contrasts(meta_tib$main_language) <- english_vs_mean
+
+#Moderator analysis
+ml_meta_model_mod_main_language <- rma.mv(yi = yi, V = vi, data = meta_tib, struct = "CS", method = "REML", test = "t",
+       mods = ~ factor(main_language),
+       random = ~ 1 | sample_id/effect)
+ml_meta_model_mod_main_language
+#Moderator analysis indicates that the language significantly moderated the effect
+#English has a stronger positive effect than Dutch
+
+#Regression Plot
+regplot(ml_meta_model_mod_main_language, xlab = "Language")
+
+```
+
+```{r moderator_analysis_NT_type.1}
+#Checking the levels for NT_type.2
+levels(meta_tib$NT_type.1)
+
+#Setting contrast weights 
+calculationNT.1_vs_mean <-             c(0.5, 0, 0, 0, 0, 0, 0, 0, 0, -0.5)
+cardinalityNT.1_vs_mean <-             c(0, 0.5, 0, 0, 0, 0, 0, 0, 0, -0.5)
+conventional_nominativesNT.1_vs_mean <- c(0, 0, 0.5, 0, 0, 0, 0, 0, 0, -0.5)
+countingNT.1_vs_mean <-                c(0, 0, 0, 0.5, 0, 0, 0, 0, 0, -0.5)
+labellingNT.1_vs_mean <-               c(0, 0, 0, 0, 0.5, 0, 0, 0, 0, -0.5)
+magnitude_comparisonNT.1_vs_mean <-    c(0, 0, 0, 0, 0, 0.5, 0, 0, 0, -0.5)
+number_identificationNT.1_vs_mean <-   c(0, 0, 0, 0, 0, 0, 0.5, 0, 0, -0.5)
+number_symbolsNT.1_vs_mean <-          c(0, 0, 0, 0, 0, 0, 0, 0.5, 0, -0.5)
+orderingNT.1_vs_mean <-                c(0, 0, 0, 0, 0, 0, 0, 0, 0.5, -0.5)
+
+contrasts(meta_tib$NT_type.1) <- cbind(
+  calculationNT.1_vs_mean, 
+  cardinalityNT.1_vs_mean,            
+  conventional_nominativesNT.1_vs_mean, 
+  countingNT.1_vs_mean, 
+  labellingNT.1_vs_mean,
+  magnitude_comparisonNT.1_vs_mean,  
+  number_identificationNT.1_vs_mean, 
+  number_symbolsNT.1_vs_mean,        
+  orderingNT.1_vs_mean)
+
+#contrasts(meta_tib$NT_type.2) <- contr.sum(10) - This is for sum coding - The p-values/results are all the same as with my manual coding (which was deviation coding)
+
+ml_meta_model_mod_NT_type.1 <- rma.mv(yi = yi, V = vi, data = meta_tib, struct = "CS", method = "REML", test = "t",
+                                      mods = ~ NT_type.1, 
+                                      random = ~ 1 | sample_id)
+ml_meta_model_mod_NT_type.1
+#SIGNIFICANT RESULTS
+#INTERCEPT = 0.0501
+#NT that have significantly greater effect 
+#---Conventional_Nominatives (0.3242)
+#---Labelling (0.5616)
+#NT that have significantly smaller effect 
+#---Calculation NT (-0.3069)
+#---Counting NT (-0.1831)
+#---Ordering NT (-0.2991)
+
+```
+
+
+```{r moderator_analysis_NT_type.2}
+#Checking the levels for NT_type.2
+levels(meta_tib$NT_type.2)
+
+#Setting contrast weights 
+calculationNT.2_vs_mean <-             c(0.5, 0, 0, 0, 0, 0, 0, 0, 0, -0.5)
+cardinalityNT.2_vs_mean <-             c(0, 0.5, 0, 0, 0, 0, 0, 0, 0, -0.5)
+conventional_nominativesNT.2_vs_mean <- c(0, 0, 0.5, 0, 0, 0, 0, 0, 0, -0.5)
+countingNT.2_vs_mean <-                c(0, 0, 0, 0.5, 0, 0, 0, 0, 0, -0.5)
+labellingNT.2_vs_mean <-               c(0, 0, 0, 0, 0.5, 0, 0, 0, 0, -0.5)
+magnitude_comparisonNT.2_vs_mean <-    c(0, 0, 0, 0, 0, 0.5, 0, 0, 0, -0.5)
+number_identificationNT.2_vs_mean <-   c(0, 0, 0, 0, 0, 0, 0.5, 0, 0, -0.5)
+number_symbolsNT.2_vs_mean <-          c(0, 0, 0, 0, 0, 0, 0, 0.5, 0, -0.5)
+orderingNT.2_vs_mean <-                c(0, 0, 0, 0, 0, 0, 0, 0, 0.5, -0.5)
+
+contrasts(meta_tib$NT_type.2) <- cbind(
+  calculationNT.2_vs_mean, 
+  cardinalityNT.2_vs_mean,            
+  conventional_nominativesNT.2_vs_mean, 
+  countingNT.2_vs_mean, 
+  labellingNT.2_vs_mean,
+  magnitude_comparisonNT.2_vs_mean,  
+  number_identificationNT.2_vs_mean, 
+  number_symbolsNT.2_vs_mean,        
+  orderingNT.2_vs_mean)
+
+#contrasts(meta_tib$NT_type.2) <- contr.sum(10) - This is for sum coding - The p-values/results are all the same as with my manual coding (which was deviation coding)
+
+ml_meta_model_mod_NT_type.2 <- rma.mv(yi = yi, V = vi, data = meta_tib, struct = "CS", method = "REML", test = "t",
+                                      mods = ~ NT_type.2, 
+                                      random = ~ 1 | sample_id)
+ml_meta_model_mod_NT_type.2
+#SIGNIFICANT RESULTS
+#INTERCEPT = 	0.0861
+#NT that have significantly greater effect 
+#---Cardinality (0.2025)
+#---Conventional_Nominatives (0.3382)
+#---Labelling (0.5344)
+#NT that have significantly smaller effect 
+#---Calculation NT (-0.2928)
+#---Counting NT (-0.1805)
+#---Ordering NT (-0.2851)
+
+```
+
+```{r moderator_analysis_NT_type.3}
+levels(meta_tib$NT_type.3)
+
+#Setting contrast weights 
+calculationNT.3_vs_mean <-             c(0.5, 0, 0, 0, 0, 0, 0, 0, 0, -0.5)
+cardinalityNT.3_vs_mean <-             c(0, 0.5, 0, 0, 0, 0, 0, 0, 0, -0.5)
+conventional_nominativesNT.3_vs_mean <- c(0, 0, 0.5, 0, 0, 0, 0, 0, 0, -0.5)
+countingNT.3_vs_mean <-                c(0, 0, 0, 0.5, 0, 0, 0, 0, 0, -0.5)
+labellingNT.3_vs_mean <-               c(0, 0, 0, 0, 0.5, 0, 0, 0, 0, -0.5)
+magnitude_comparisonNT.3_vs_mean <-    c(0, 0, 0, 0, 0, 0.5, 0, 0, 0, -0.5)
+number_identificationNT.3_vs_mean <-   c(0, 0, 0, 0, 0, 0, 0.5, 0, 0, -0.5)
+number_symbolsNT.3_vs_mean <-          c(0, 0, 0, 0, 0, 0, 0, 0.5, 0, -0.5)
+orderingNT.3_vs_mean <-                c(0, 0, 0, 0, 0, 0, 0, 0, 0.5, -0.5)
+
+contrasts(meta_tib$NT_type.3) <- cbind(
+  calculationNT.3_vs_mean, 
+  cardinalityNT.3_vs_mean,            
+  conventional_nominativesNT.3_vs_mean, 
+  countingNT.3_vs_mean, 
+  labellingNT.3_vs_mean,
+  magnitude_comparisonNT.3_vs_mean,  
+  number_identificationNT.3_vs_mean, 
+  number_symbolsNT.3_vs_mean,        
+  orderingNT.3_vs_mean)
+
+#contrasts(meta_tib$NT_type.2) <- contr.sum(10) - This is for sum coding - The p-values/results are all the same as with my manual coding (which was deviation coding)
+
+ml_meta_model_mod_NT_type.3 <- rma.mv(yi = yi, V = vi, data = meta_tib, struct = "CS", method = "REML", test = "t",
+                                      mods = ~ NT_type.3, 
+                                      random = ~ 1 | sample_id)
+ml_meta_model_mod_NT_type.3
+#SIGNIFICANT RESULTS
+#INTERCEPT = 	0.0861
+#NT that have significantly greater effect 
+#---Cardinality (0.2025)
+#---Conventional Nominatives (0.3382)
+#---Labelling(0.5344)
+#NT that have significantly smaller effect 
+#---Calculation NT (-0.2928)
+#---Counting NT (-0.1805)
+#---Ordering NT (-0.2851)
+##DIFFERENT LUMPING DID NOT AFFECT THE RESULT
+```
+
+
+```{r}
+levels(meta_tib$NT_type.4)
+
+#Setting contrast weights 
+calculationNT.4_vs_mean <-             c(0.5, 0, 0, 0, 0, 0, 0, 0, 0, -0.5)
+cardinalityNT.4_vs_mean <-             c(0, 0.5, 0, 0, 0, 0, 0, 0, 0, -0.5)
+conventional_nominativesNT.4_vs_mean <- c(0, 0, 0.5, 0, 0, 0, 0, 0, 0, -0.5)
+countingNT.4_vs_mean <-                c(0, 0, 0, 0.5, 0, 0, 0, 0, 0, -0.5)
+labellingNT.4_vs_mean <-               c(0, 0, 0, 0, 0.5, 0, 0, 0, 0, -0.5)
+magnitude_comparisonNT.4_vs_mean <-    c(0, 0, 0, 0, 0, 0.5, 0, 0, 0, -0.5)
+number_identificationNT.4_vs_mean <-   c(0, 0, 0, 0, 0, 0, 0.5, 0, 0, -0.5)
+number_symbolsNT.4_vs_mean <-          c(0, 0, 0, 0, 0, 0, 0, 0.5, 0, -0.5)
+orderingNT.4_vs_mean <-                c(0, 0, 0, 0, 0, 0, 0, 0, 0.5, -0.5)
+
+contrasts(meta_tib$NT_type.4) <- cbind(
+  calculationNT.4_vs_mean, 
+  cardinalityNT.4_vs_mean,            
+  conventional_nominativesNT.4_vs_mean, 
+  countingNT.4_vs_mean, 
+  labellingNT.4_vs_mean,
+  magnitude_comparisonNT.4_vs_mean,  
+  number_identificationNT.4_vs_mean, 
+  number_symbolsNT.4_vs_mean,        
+  orderingNT.4_vs_mean)
+
+#contrasts(meta_tib$NT_type.2) <- contr.sum(10) - This is for sum coding - The p-values/results are all the same as with my manual coding (which was deviation coding)
+
+ml_meta_model_mod_NT_type.4 <- rma.mv(yi = yi, V = vi, data = meta_tib, struct = "CS", method = "REML", test = "t",
+                                      mods = ~ NT_type.4, 
+                                      random = ~ 1 | sample_id)
+ml_meta_model_mod_NT_type.4
+#SIGNIFICANT RESULTS
+#NT that have significantly greater effect 
+#---Conventional_Nominatives (0.3902)
+#---Labelling (0.4267)
+#NT that have significantly smaller effect 
+#---Counting NT (Negative effect: estimate = -0.1953)
+#---Number Identification NT (Negative Effect: estimate = -0.2644)
+##DIFFERENT LUMPING DID NOT AFFECT THE RESULT
+```
+
+```{r moderator_analysis_NT_type.5}
+#Checking the levels for NT_type.2
+levels(meta_tib$NT_type.5)
+
+#Setting contrast weights 
+calculationNT.5_vs_mean <-             c(0.5, 0, 0, 0, 0, 0, 0, 0, 0, -0.5)
+cardinalityNT.5_vs_mean <-             c(0, 0.5, 0, 0, 0, 0, 0, 0, 0, -0.5)
+conventional_nominativesNT.5_vs_mean <- c(0, 0, 0.5, 0, 0, 0, 0, 0, 0, -0.5)
+countingNT.5_vs_mean <-                c(0, 0, 0, 0.5, 0, 0, 0, 0, 0, -0.5)
+labellingNT.5_vs_mean <-               c(0, 0, 0, 0, 0.5, 0, 0, 0, 0, -0.5)
+magnitude_comparisonNT.5_vs_mean <-    c(0, 0, 0, 0, 0, 0.5, 0, 0, 0, -0.5)
+number_identificationNT.5_vs_mean <-   c(0, 0, 0, 0, 0, 0, 0.5, 0, 0, -0.5)
+number_symbolsNT.5_vs_mean <-          c(0, 0, 0, 0, 0, 0, 0, 0.5, 0, -0.5)
+orderingNT.5_vs_mean <-                c(0, 0, 0, 0, 0, 0, 0, 0, 0.5, -0.5)
+
+contrasts(meta_tib$NT_type.5) <- cbind(
+  calculationNT.5_vs_mean, 
+  cardinalityNT.5_vs_mean,            
+  conventional_nominativesNT.5_vs_mean, 
+  countingNT.5_vs_mean, 
+  labellingNT.5_vs_mean,
+  magnitude_comparisonNT.5_vs_mean,  
+  number_identificationNT.5_vs_mean, 
+  number_symbolsNT.5_vs_mean,        
+  orderingNT.5_vs_mean)
+
+#contrasts(meta_tib$NT_type.2) <- contr.sum(10) - This is for sum coding - The p-values/results are all the same as with my manual coding (which was deviation coding)
+
+ml_meta_model_mod_NT_type.5 <- rma.mv(yi = yi, V = vi, data = meta_tib, struct = "CS", method = "REML", test = "t",
+                                      mods = ~ NT_type.5, 
+                                      random = ~ 1 | sample_id)
+ml_meta_model_mod_NT_type.5
+#SIGNIFICANT RESULTS
+#INTERCEPT = 0.1149
+#NT that have significantly greater effect 
+#---Conventional_Nominatives (Estimate = 0.3687)
+#---Labelling (Estimate = 0.4821)
+#NT that have significantly smaller effect 
+#---Counting NT (-0.2330)
+```
+
+
+```{r moderator_analysis_NT_type.6}
+#Checking the levels for NT_type.2
+levels(meta_tib$NT_type.6)
+
+#Setting contrast weights 
+calculationNT.6_vs_mean <-             c(0.5, 0, 0, 0, 0, 0, 0, 0, 0, -0.5)
+cardinalityNT.6_vs_mean <-             c(0, 0.5, 0, 0, 0, 0, 0, 0, 0, -0.5)
+conventional_nominativesNT.6_vs_mean <- c(0, 0, 0.5, 0, 0, 0, 0, 0, 0, -0.5)
+countingNT.6_vs_mean <-                c(0, 0, 0, 0.5, 0, 0, 0, 0, 0, -0.5)
+labellingNT.6_vs_mean <-               c(0, 0, 0, 0, 0.5, 0, 0, 0, 0, -0.5)
+magnitude_comparisonNT.6_vs_mean <-    c(0, 0, 0, 0, 0, 0.5, 0, 0, 0, -0.5)
+number_identificationNT.6_vs_mean <-   c(0, 0, 0, 0, 0, 0, 0.5, 0, 0, -0.5)
+number_symbolsNT.6_vs_mean <-          c(0, 0, 0, 0, 0, 0, 0, 0.5, 0, -0.5)
+orderingNT.6_vs_mean <-                c(0, 0, 0, 0, 0, 0, 0, 0, 0.5, -0.5)
+
+contrasts(meta_tib$NT_type.6) <- cbind(
+  calculationNT.6_vs_mean, 
+  cardinalityNT.6_vs_mean,            
+  conventional_nominativesNT.6_vs_mean, 
+  countingNT.6_vs_mean, 
+  labellingNT.6_vs_mean,
+  magnitude_comparisonNT.6_vs_mean,  
+  number_identificationNT.6_vs_mean, 
+  number_symbolsNT.6_vs_mean,        
+  orderingNT.6_vs_mean)
+
+#contrasts(meta_tib$NT_type.2) <- contr.sum(10) - This is for sum coding - The p-values/results are all the same as with my manual coding (which was deviation coding)
+
+ml_meta_model_mod_NT_type.6 <- rma.mv(yi = yi, V = vi, data = meta_tib, struct = "CS", method = "REML", test = "t",
+                                      mods = ~ NT_type.6, 
+                                      random = ~ 1 | sample_id)
+ml_meta_model_mod_NT_type.6
+#SIGNIFICANT RESULTS
+#INTERCEPT = 	0.0691
+#NT that have significantly greater effect 
+#---Conventional_Nominatives (Estimate = 0.3647)
+#---Labelling (Estimate = 0.4460)
+#NT that have significantly smaller effect 
+#---Counting NT (Negative effect: Estimate = -0.2510)
+```
+
+
+```{r moderator_analysis_NT_type.7}
+#Checking the levels for NT_type.2
+levels(meta_tib$NT_type.7)
+
+#Setting contrast weights 
+calculationNT.7_vs_mean <-             c(0.5, 0, 0, 0, 0, 0, 0, 0, 0, -0.5)
+cardinalityNT.7_vs_mean <-             c(0, 0.5, 0, 0, 0, 0, 0, 0, 0, -0.5)
+conventional_nominativesNT.7_vs_mean <- c(0, 0, 0.5, 0, 0, 0, 0, 0, 0, -0.5)
+countingNT.7_vs_mean <-                c(0, 0, 0, 0.5, 0, 0, 0, 0, 0, -0.5)
+labellingNT.7_vs_mean <-               c(0, 0, 0, 0, 0.5, 0, 0, 0, 0, -0.5)
+magnitude_comparisonNT.7_vs_mean <-    c(0, 0, 0, 0, 0, 0.5, 0, 0, 0, -0.5)
+number_identificationNT.7_vs_mean <-   c(0, 0, 0, 0, 0, 0, 0.5, 0, 0, -0.5)
+number_symbolsNT.7_vs_mean <-          c(0, 0, 0, 0, 0, 0, 0, 0.5, 0, -0.5)
+orderingNT.7_vs_mean <-                c(0, 0, 0, 0, 0, 0, 0, 0, 0.5, -0.5)
+
+contrasts(meta_tib$NT_type.7) <- cbind(
+  calculationNT.7_vs_mean, 
+  cardinalityNT.7_vs_mean,            
+  conventional_nominativesNT.7_vs_mean, 
+  countingNT.7_vs_mean, 
+  labellingNT.7_vs_mean,
+  magnitude_comparisonNT.7_vs_mean,  
+  number_identificationNT.7_vs_mean, 
+  number_symbolsNT.7_vs_mean,        
+  orderingNT.7_vs_mean)
+
+#contrasts(meta_tib$NT_type.2) <- contr.sum(10) - This is for sum coding - The p-values/results are all the same as with my manual coding (which was deviation coding)
+
+ml_meta_model_mod_NT_type.7 <- rma.mv(yi = yi, V = vi, data = meta_tib, struct = "CS", method = "REML", test = "t",
+                                      mods = ~ NT_type.7, 
+                                      random = ~ 1 | sample_id)
+ml_meta_model_mod_NT_type.7
+#SIGNIFICANT RESULTS
+#INTERCEPT = 0.0397
+#NT that have significantly greater effect 
+#--- Cardinality (0.2148)
+#---Conventional_Nominatives (Estimate = 0.3469)
+#---Labelling (Estimate = 0.4860)
+#NT that have significantly smaller effect 
+#---Counting NT (Negative effect: Estimate = -0.1846)
+#--- Calculation NT (-0.2841)
+#--- Ordering (-0.2764)
+```
+
+```{r moderator_analysis_NT_type.8}
+#Checking the levels for NT_type.2
+levels(meta_tib$NT_type.8)
+
+#Setting contrast weights 
+calculationNT.8_vs_mean <-             c(0.5, 0, 0, 0, 0, 0, 0, 0, 0, -0.5)
+cardinalityNT.8_vs_mean <-             c(0, 0.5, 0, 0, 0, 0, 0, 0, 0, -0.5)
+conventional_nominativesNT.8_vs_mean <- c(0, 0, 0.5, 0, 0, 0, 0, 0, 0, -0.5)
+countingNT.8_vs_mean <-                c(0, 0, 0, 0.5, 0, 0, 0, 0, 0, -0.5)
+labellingNT.8_vs_mean <-               c(0, 0, 0, 0, 0.5, 0, 0, 0, 0, -0.5)
+magnitude_comparisonNT.8_vs_mean <-    c(0, 0, 0, 0, 0, 0.5, 0, 0, 0, -0.5)
+number_identificationNT.8_vs_mean <-   c(0, 0, 0, 0, 0, 0, 0.5, 0, 0, -0.5)
+number_symbolsNT.8_vs_mean <-          c(0, 0, 0, 0, 0, 0, 0, 0.5, 0, -0.5)
+orderingNT.8_vs_mean <-                c(0, 0, 0, 0, 0, 0, 0, 0, 0.5, -0.5)
+
+contrasts(meta_tib$NT_type.8) <- cbind(
+  calculationNT.8_vs_mean, 
+  cardinalityNT.8_vs_mean,            
+  conventional_nominativesNT.8_vs_mean, 
+  countingNT.8_vs_mean, 
+  labellingNT.8_vs_mean,
+  magnitude_comparisonNT.8_vs_mean,  
+  number_identificationNT.8_vs_mean, 
+  number_symbolsNT.8_vs_mean,        
+  orderingNT.8_vs_mean)
+
+#contrasts(meta_tib$NT_type.2) <- contr.sum(10) - This is for sum coding - The p-values/results are all the same as with my manual coding (which was deviation coding)
+
+ml_meta_model_mod_NT_type.8 <- rma.mv(yi = yi, V = vi, data = meta_tib, struct = "CS", method = "REML", test = "t",
+                                      mods = ~ NT_type.8, 
+                                      random = ~ 1 | sample_id)
+ml_meta_model_mod_NT_type.8
+#SIGNIFICANT RESULTS
+#INTERCEPT = 	0.0390
+#NT that have significantly greater effect 
+#--- Cardinality (0.2026)
+#---Conventional_Nominatives (Estimate = 0.3348)
+#---Labelling (Estimate = 0.4960)
+#NT that have significantly smaller effect 
+#---Counting NT (Negative effect: Estimate = -0.2010)
+#--- Calculation NT (	-0.2963)
+#--- Ordering (	-0.2885)
+```
+
+```{r moderator_analysis_NT_type.9}
+#Checking the levels for NT_type.2
+levels(meta_tib$NT_type.9)
+
+#Setting contrast weights 
+calculationNT.9_vs_mean <-             c(0.5, 0, 0, 0, 0, 0, 0, 0, 0, -0.5)
+cardinalityNT.9_vs_mean <-             c(0, 0.5, 0, 0, 0, 0, 0, 0, 0, -0.5)
+conventional_nominativesNT.9_vs_mean <- c(0, 0, 0.5, 0, 0, 0, 0, 0, 0, -0.5)
+countingNT.9_vs_mean <-                c(0, 0, 0, 0.5, 0, 0, 0, 0, 0, -0.5)
+labellingNT.9_vs_mean <-               c(0, 0, 0, 0, 0.5, 0, 0, 0, 0, -0.5)
+magnitude_comparisonNT.9_vs_mean <-    c(0, 0, 0, 0, 0, 0.5, 0, 0, 0, -0.5)
+number_identificationNT.9_vs_mean <-   c(0, 0, 0, 0, 0, 0, 0.5, 0, 0, -0.5)
+number_symbolsNT.9_vs_mean <-          c(0, 0, 0, 0, 0, 0, 0, 0.5, 0, -0.5)
+orderingNT.9_vs_mean <-                c(0, 0, 0, 0, 0, 0, 0, 0, 0.5, -0.5)
+
+contrasts(meta_tib$NT_type.9) <- cbind(
+  calculationNT.9_vs_mean, 
+  cardinalityNT.9_vs_mean,            
+  conventional_nominativesNT.9_vs_mean, 
+  countingNT.9_vs_mean, 
+  labellingNT.9_vs_mean,
+  magnitude_comparisonNT.9_vs_mean,  
+  number_identificationNT.9_vs_mean, 
+  number_symbolsNT.9_vs_mean,        
+  orderingNT.9_vs_mean)
+
+#contrasts(meta_tib$NT_type.2) <- contr.sum(10) - This is for sum coding - The p-values/results are all the same as with my manual coding (which was deviation coding)
+
+ml_meta_model_mod_NT_type.9 <- rma.mv(yi = yi, V = vi, data = meta_tib, struct = "CS", method = "REML", test = "t",
+                                      mods = ~ NT_type.9, 
+                                      random = ~ 1 | sample_id)
+ml_meta_model_mod_NT_type.9
+#SIGNIFICANT RESULTS
+#INTERCEPT = 	0.0863
+#NT that have significantly greater effect 
+#--- Cardinality (0.2102)
+#---Conventional_Nominatives (Estimate = 0.3522)
+#---Labelling (Estimate = 0.5215)
+#NT that have significantly smaller effect 
+#--- Calculation NT (-0.2789)
+#--- Ordering (-0.2711)
+```
+
+```{r moderator_analysis_NT_type.10}
+#Checking the levels for NT_type.2
+levels(meta_tib$NT_type.10)
+
+#Setting contrast weights 
+calculationNT.10_vs_mean <-             c(0.5, 0, 0, 0, 0, 0, 0, 0, 0, -0.5)
+cardinalityNT.10_vs_mean <-             c(0, 0.5, 0, 0, 0, 0, 0, 0, 0, -0.5)
+conventional_nominativesNT.10_vs_mean <- c(0, 0, 0.5, 0, 0, 0, 0, 0, 0, -0.5)
+countingNT.10_vs_mean <-                c(0, 0, 0, 0.5, 0, 0, 0, 0, 0, -0.5)
+labellingNT.10_vs_mean <-               c(0, 0, 0, 0, 0.5, 0, 0, 0, 0, -0.5)
+magnitude_comparisonNT.10_vs_mean <-    c(0, 0, 0, 0, 0, 0.5, 0, 0, 0, -0.5)
+number_identificationNT.10_vs_mean <-   c(0, 0, 0, 0, 0, 0, 0.5, 0, 0, -0.5)
+number_symbolsNT.10_vs_mean <-          c(0, 0, 0, 0, 0, 0, 0, 0.5, 0, -0.5)
+orderingNT.10_vs_mean <-                c(0, 0, 0, 0, 0, 0, 0, 0, 0.5, -0.5)
+
+contrasts(meta_tib$NT_type.10) <- cbind(
+  calculationNT.10_vs_mean, 
+  cardinalityNT.10_vs_mean,            
+  conventional_nominativesNT.10_vs_mean, 
+  countingNT.10_vs_mean, 
+  labellingNT.10_vs_mean,
+  magnitude_comparisonNT.10_vs_mean,  
+  number_identificationNT.10_vs_mean, 
+  number_symbolsNT.10_vs_mean,        
+  orderingNT.10_vs_mean)
+
+#contrasts(meta_tib$NT_type.2) <- contr.sum(10) - This is for sum coding - The p-values/results are all the same as with my manual coding (which was deviation coding)
+
+ml_meta_model_mod_NT_type.10 <- rma.mv(yi = yi, V = vi, data = meta_tib, struct = "CS", method = "REML", test = "t",
+                                      mods = ~ NT_type.10, 
+                                      random = ~ 1 | sample_id)
+ml_meta_model_mod_NT_type.10
+#SIGNIFICANT RESULTS
+#INTERCEPT = 0.0501
+#NT that have significantly greater effect 
+#---Conventional_Nominatives (Estimate =	0.3242)
+#---Labelling (Estimate = 0.5215)
+#NT that have significantly smaller effect 
+#---Counting NT (Negative effect: Estimate = -0.1831)
+#--- Calculation NT (-0.3069)
+#--- Ordering (-0.2991)
+```
+
+
+```{r moderator_analysis_NT_size.1}
+#Checking the levels for NT_type.2
+levels(meta_tib$NT_type.10)
+
+#Setting contrast weights 
+small_vs_mean <- c(0.5, 0, 0, -0.5)
+medium_vs_mean <- c(0, 0.5, 0, -0.5)
+large_vs_mean <- c(0, 0, 0.5, -0.5)
+
+contrasts(meta_tib$NT_size.1) <- cbind(
+  small_vs_mean, 
+  medium_vs_mean,            
+  large_vs_mean)
+
+ml_meta_model_mod_NT_size.1 <- rma.mv(yi = yi, V = vi, data = meta_tib, struct = "CS", method = "REML", test = "t",
+                                      mods = ~ NT_size.1, 
+                                      random = ~ 1 | sample_id)
+ml_meta_model_mod_NT_size.1
+
+```
+
+
+```{r MA_context}
+#Checking the levels for NT_type.2
+levels(meta_tib$MA_context)
+
+#Setting contrast weights 
+home_vs_mean <- c(1/2, 0, 0, -1/2)
+lab_vs_mean <- c(0, 1/2, 0, -1/2)
+school_vs_mean <- c(0, 0, 1/2, -1/2)
+
+contrasts(meta_tib$MA_context) <- cbind(
+  home_vs_mean,
+  lab_vs_mean,
+  school_vs_mean)
+
+#Moderator Analysis
+ml_meta_model_mod_MA_context <- rma.mv(yi = yi, V = vi, data = meta_tib, struct = "CS", method = "REML", test = "t",
+                                       mods = ~ MA_context, 
+                                       random = ~ 1 | sample_id)
+ml_meta_model_mod_MA_context
+
+#RESULTS 
+#Measuring MA in Lab has a greater effect 
+
+```
+
+
+```{r moderator_analysis_mothers}
+#Multilevel Simple Regression
+ml_meta_model_mod_mothers <- rma.mv(yi = yi, V = vi, data = meta_tib, struct = "CS", method = "REML", test = "t",
+                                    mods = ~ mothers, 
+                                    random = ~ 1 | sample_id/effect)
+ml_meta_model_mod_mothers
+#RESULTS
+#The proportion of mothers significantly enhanced the effect NT on MA
+
+#Regression Plot
+regplot(ml_meta_model_mod_mothers, xlab = "Proportion of Mothers")
+```
+
+
+```{r moderator_analysis_child_age_NT_mid}
+#Multilevel Simple Regression
+ml_meta_model_mod_child_age_NT_mid <- rma.mv(yi = yi, V = vi, data = meta_tib, struct = "CS", method = "REML", test = "t",
+                                             mods = ~ child_age_NT_mid, 
+                                             random = ~ 1 | sample_id/effect)
+ml_meta_model_mod_child_age_NT_mid
+#The time between NT measure and MA measure significantly diminished the effect NT on MA
+
+#Regression Plot
+regplot(ml_meta_model_mod_child_age_NT_mid, xlab = "Time Between Number Talk and Maths Ability Measure (Days)")
+```
+```{r moderator_analysis_controlled_variables}
+#Multilevel Simple Regression
+ml_meta_model_mod_controlled_variables <- rma.mv(yi = yi, V = vi, data = meta_tib, struct = "CS", method = "REML", test = "t",
+                                             mods = ~ controlled_variables, 
+                                             random = ~ 1 | sample_id/effect)
+ml_meta_model_mod_controlled_variables
+#Multilevel Simple Regression indicated that the number of controlled variables in the effect significantly moderated the effects
+#The more number of controlled variables the smaller the effect 
+
+#Regression Plot
+regplot(ml_meta_model_mod_controlled_variables, xlab = "The Number of Controlled Variables in the Effect")
+```
+
+
+```{r moderator_analysis_NT_measure_time}
+ml_meta_model_mod_NT_measure_time <- rma.mv(yi = yi, V = vi, data = meta_tib, struct = "CS", method = "REML", test = "t",
+                                    mods = ~ NT_measure_time, 
+                                    random = ~ 1 | sample_id/effect)
+
+#Multilevel Simple Regression shows that the proportion of mothers significantly enhanced the effect NT on MA
+
+#Regression Plot
+
+
+```
+
+
 
 
