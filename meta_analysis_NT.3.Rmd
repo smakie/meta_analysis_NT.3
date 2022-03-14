@@ -810,8 +810,6 @@ meta_tib.p1 <- rbind(
   gibson_et_al.2020_tib, 
   silver_et_al.2021_tib) 
 
-
-#write.xlsx(meta_tib, "meta_tib.xlsx", overwrite = F)
 meta_tib <- escalc(measure = "ZCOR", ri = r, ni = n, data = meta_tib.p1) %>% data.frame() %>% 
     mutate(
     effect_description = as.character(effect_description),
@@ -859,10 +857,13 @@ meta_tib <- escalc(measure = "ZCOR", ri = r, ni = n, data = meta_tib.p1) %>% dat
 
 meta_tib
 meta_tib %>% view()
+
+#Export data 
+#write.xlsx(meta_tib, "meta_tib.xlsx", overwrite = T)
 ```
 
 
-```{r fix_effect_meta_analysis}
+```{r random_effect_meta_analysis}
 #Random-effect meta-analysis
 re_meta_model <- rma(yi = yi, vi = vi, data = meta_tib, method  = "DL")
 re_meta_model
@@ -878,6 +879,9 @@ predict(re_meta_model, transf = transf.ztor, digits = 5)
 #Gosh Plot 
 plot(gosh(re_meta_model, subset = 1000), out = 10)
 
+#RESULTS
+# Fisher's z = 0.0596
+
 ```
 
 
@@ -886,6 +890,8 @@ plot(gosh(re_meta_model, subset = 1000), out = 10)
 ml_meta_model <- rma.mv(yi = yi, V = vi, data = meta_tib, struct = "CS", method = "REML", test = "t",
                         random = ~ 1 | study_id)
 ml_meta_model 
+
+meta_tib$NT_type.1
 
 #Forest plot
 forest(ml_meta_model, addpred = T, header = T)
@@ -896,6 +902,23 @@ funnel(ml_meta_model)
 
 #Bubble plot 
 #regplot(meta_model, xlab = "x label", xlim = c(-, -), predlim= c(), transf = )
+
+ml_meta_model$k
+#RESULTS
+# Fisher's z = 0.0844, se = 0.0376, p = 0.0296
+# tau^2 = 0.0092 
+  
+meta_test <- function(data){
+  para_estimate <- data$b
+  within_study_var <- data$se^2
+  between_study_var <- data$sigma2
+  total_var = within_study_var + between_study_var
+  t <- para_estimate/sqrt(total_var)
+  p <- pt(q = t, df = data$k -1, lower.tail = F)*2
+  return(tibble(para_estimate, within_study_var, between_study_var, total_var, t, p))
+}
+
+meta_test(data = ml_meta_model)
 
 ```
 
@@ -916,13 +939,17 @@ ml_meta_model_mod_main_language
 #Regression Plot
 regplot(ml_meta_model_mod_main_language, xlab = "Language")
 
+
+#--RESULTS
+# English has a greater positive effect 
+
 ```
 
 ```{r moderator_analysis_NT_type.1}
 #Checking the levels for NT_type.1
 levels(meta_tib$NT_type.1)
 
-#Setting contrast weights 
+#Setting contrast weights (deviation coding)
 calculationNT_vs_mean <-                c(0.5, 0, 0, 0, 0, 0, 0, -0.5)
 cardinalityNT_vs_mean <-                c(0, 0.5, 0, 0, 0, 0, 0, -0.5)
 conventional_nominativesNT.1_vs_mean <- c(0, 0, 0.5, 0, 0, 0, 0, -0.5)
@@ -930,8 +957,6 @@ countingNT_vs_mean <-                   c(0, 0, 0, 0.5, 0, 0, 0, -0.5)
 number_identificationNT_vs_mean <-      c(0, 0, 0, 0, 0.5, 0, 0, -0.5)
 orderingNT_vs_mean <-                   c(0, 0, 0, 0, 0, 0.5, 0, -0.5)
 quantity_comparisonNT_vs_mean <-        c(0, 0, 0, 0, 0, 0, 0.5, -0.5)
-
-
 
 contrasts(meta_tib$NT_type.1) <- cbind(
   calculationNT_vs_mean, 
@@ -942,17 +967,20 @@ contrasts(meta_tib$NT_type.1) <- cbind(
   orderingNT_vs_mean,
   quantity_comparisonNT_vs_mean)
 
-#contrasts(meta_tib$NT_type.1) <- contr.sum(10) - This is for sum coding - The p-values/results are all the same as with my manual coding (which was deviation coding)
+#contrasts(meta_tib$NT_type.1) <- contr.sum(10) - This is for sum coding - The p-values/results are all the same as deviation coding
 
 ml_meta_model_mod_NT_type.1 <- rma.mv(yi = yi, V = vi, data = meta_tib, struct = "CS", method = "REML", test = "t",
                                       mods = ~ NT_type.1, 
                                       random = ~ 1 | study_id)
 ml_meta_model_mod_NT_type.1
 #SIGNIFICANT RESULTS
+
 #INTERCEPT = 	0.0462
+
 #NT that have significantly greater effect 
 #--- Cardinality (b = 0.3365, p = 0.0009)
 #--- Conventional_Nominatives (b = 0.5149,p = <.0001)
+
 #NT that have significantly smaller effect 
 #---Calculation NT (b = -0.2238, p = 0.0323)==
 #--- Number Identification (b = -0.1757, p = 0.0701)
@@ -981,7 +1009,7 @@ ml_meta_model_mod_MA_context
 
 #RESULTS 
 #Measuring MA in a Lab has a greater effect 
-#Measuring MA at home as a lower effect 
+#Measuring MA at home has a lower effect 
 
 
 ```
@@ -1023,18 +1051,6 @@ regplot(ml_meta_model_mod_child_age_NT_mid.M1, xlab = "Child Age During Number T
 time_converter(d = 500)
 ```
 
-```{r moderator_analysis_controlled_variables}
-#Multilevel Simple Regression
-ml_meta_model_mod_controlled_variables <- rma.mv(yi = yi, V = vi, data = meta_tib, struct = "CS", method = "REML", test = "t",
-                                             mods = ~ controlled_variables, 
-                                             random = ~ 1 | study_id)
-ml_meta_model_mod_controlled_variables
-
-
-#Regression Plot
-regplot(ml_meta_model_mod_controlled_variables, xlab = "The Number of Controlled Variables in the Effect")
-```
-
 ```{r NT_context}
 #Checking the levels
 levels(meta_tib$NT_context)
@@ -1056,6 +1072,45 @@ ml_meta_model_mod_NT_context <- rma.mv(yi = yi, V = vi, data = meta_tib, struct 
 ml_meta_model_mod_NT_context
 
 
+```
+
+```{r MA_measure}
+#Checking the levels for MA_measure
+levels(meta_tib$MA_measure)
+
+#Setting contrast weights (deviation coding)
+calculationMA_vs_mean <-             c(0.5, 0, 0, 0, 0, 0, 0, -0.5)
+cardinalityMA_vs_mean <-             c(0, 0.5, 0, 0, 0, 0, 0, -0.5)
+countingMA_vs_mean <-                c(0, 0, 0.5, 0, 0, 0, 0, -0.5)
+number_identificationMA_vs_mean <-   c(0, 0, 0, 0.5, 0, 0, 0, -0.5)
+number_knowledgeMA_vs_mean <-        c(0, 0, 0, 0, 0.5, 0, 0, -0.5)
+number_line_estimation_MA_vs_mean <- c(0, 0, 0, 0, 0, 0.5, 0, -0.5)
+quantity_comparisonMA_vs_mean <-     c(0, 0, 0, 0, 0, 0, 0.5, -0.5)
+
+contrasts(meta_tib$MA_measure) <- cbind(
+  calculationMA_vs_mean, 
+  cardinalityMA_vs_mean,
+  countingMA_vs_mean,
+  number_identificationMA_vs_mean, 
+  number_knowledgeMA_vs_mean,
+  number_line_estimation_MA_vs_mean,
+  quantity_comparisonMA_vs_mean)
+
+#contrasts(meta_tib$NT_type.1) <- contr.sum(10) - This is for sum coding - The p-values/results are all the same as with my manual coding (which was deviation coding)
+
+ml_meta_model_mod_MA_measure <- rma.mv(yi = yi, V = vi, data = meta_tib, struct = "CS", method = "REML", test = "t",
+                                      mods = ~ MA_measure, 
+                                      random = ~ 1 | study_id)
+ml_meta_model_mod_MA_measure
+#SIGNIFICANT RESULTS
+#INTERCEPT = 	0.0497
+
+#Type of MA on which NT has greater positive effect 
+#-- Quantity Comparison (0.3003, p = 0.0183)
+
+#Type of MA on which NT has negative effects
+#-- Calculation (-0.5150, p = 0.0346)
+#-- Number Identification (-0.2509, p = 0.0466)
 ```
 
 
