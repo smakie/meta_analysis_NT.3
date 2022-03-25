@@ -15,7 +15,7 @@ library(kableExtra)
 library(openxlsx)
 ```
 
-## R Markdown
+
 
 ```{r things_I_dont_know}
 #if(!"tinytex" %in% rownames(installed.packages())) install.packages("tinytex")
@@ -24,13 +24,12 @@ library(openxlsx)
 #devtools::install_github("crsh/papaja")
 ```
 
-```{r effect_size_conversion}
+```{r functions}
+######################################################################
 #Converts from Student's t to Pearson's r
 t_to_r <- function(t, n, k){sqrt(
   (t^2)/((t^2)+(n-1-k))
   )}
-
-t_to_r(t = 2.34, n = 251, k = 4)
 
 
 ######################################################################
@@ -169,7 +168,6 @@ time_converter <- function(min, d, m, y){
   return(tibble(mins,days, months, years))
 }
 
-time_converter(y = 1)
 ```
 
 
@@ -182,7 +180,7 @@ son_and_hur.2020_tib <- c(
     effect_id = c("Overall_Overall", "Overall_Overall"),
     year = c(2020, 2020),
     country = c("US", "US"),
-    study_id = c("i", "i"),
+    study_id = c("son_and_hur.2020", "son_and_hur.2020"),
     design = c("Correlational", "Correlational"),
     design.2 = c("Longitudinal_Correlational", "Longitudinal_Correlational"), 
     SES = c("Low", "Low"),
@@ -212,7 +210,6 @@ son_and_hur.2020_tib <- c(
     controlled_variables = c(0, 0),
     r = c(0.22, 0.21),
     n = c(29, 29))
-son_and_hur.2020_tib 
 ```
 
 
@@ -234,7 +231,7 @@ ramani_et_al.2015_tib <- c(
     effect_id = c("Overall_Counting", "Overall_Counting", "Overall_Number_Identification", "Overall_Number_Identification", "Overall_Counting", "Overall_Counting", "Overall_Cardinality", "Overall_Cardinality",  "Overall_Number_Line_Estimation",  "Overall_Number_Line_Estimation", "Overall_Quantity_Comparison", "Overall_Quantity_Comparison"),
     year = c(2015, 2015, 2015, 2015, 2015, 2015, 2015, 2015, 2015, 2015, 2015, 2015),
     country = c("US", "US", "US", "US", "US", "US", "US", "US", "US", "US", "US", "US"),
-    study_id = c("c", "c", "c", "c", "c", "c", "c", "c", "c", "c", "c", "c"),
+    study_id = c("ramani_et_al.2015", "ramani_et_al.2015", "ramani_et_al.2015", "ramani_et_al.2015", "ramani_et_al.2015", "ramani_et_al.2015", "ramani_et_al.2015", "ramani_et_al.2015", "ramani_et_al.2015", "ramani_et_al.2015", "ramani_et_al.2015", "ramani_et_al.2015"),
     design = c("Correlational", "Correlational", "Correlational", "Correlational", "Correlational", "Correlational", "Correlational", "Correlational", "Correlational", "Correlational", "Correlational", "Correlational"),
     design.2 = c("Longitudinal_Correlational", "Longitudinal_Correlational", "Longitudinal_Correlational", "Longitudinal_Correlational", "Longitudinal_Correlational", "Longitudinal_Correlational", "Longitudinal_Correlational", "Longitudinal_Correlational", "Longitudinal_Correlational", "Longitudinal_Correlational", "Longitudinal_Correlational", "Longitudinal_Correlational"), 
     SES = c("Low", "Low", "Low", "Low", "Low", "Low", "Low", "Low", "Low", "Low", "Low", "Low"),
@@ -267,7 +264,7 @@ ramani_et_al.2015_tib <- c(
 #ramani_et_al.2015_kable <- ramani_et_al.2015_tib %>% 
   #dplyr::mutate(dplyr::across(where(is.numeric), ~round(., 2))) %>% 
   #kable(format = "html", caption = "Ramani et al. (2015) effect sizes and associated inferential statistics", col.names = c("Effect id", "Effect Description", "Analysis", "Controlled variables","r", "n", "z", "Var of z", "SE of z", "Weight", "Lower CI for z", "Upper CI for z", "Var of r", "SE of r", "Lower CI for r", "Upper CI for r")) %>% kable_styling(full_width = T, position = "center") %>% row_spec(row = 0, extra_css = "border-bottom: 2px solid black;") #
-ramani_et_al.2015_tib
+
 ```
 
 ```{r mutaf_yildiz et al.2018}
@@ -280,7 +277,7 @@ mutaf_yildiz_et_al.2018_tib <- c(
       effect_id = c("Overall_Calculation", "Overall_Calculation"),
       year = c(2018, 2018),
       country = c("BE", "BE"),
-      study_id = c("g", "g"),
+      study_id = c("mutaf_yildiz_et_al.2018", "mutaf_yildiz_et_al.2018"),
       design = c("Correlational", "Correlational"),
       design.2 = c("Cross_sectional_Correlational", "Cross_sectional_Correlational"), 
       SES = c("Middle", "Middle"),
@@ -310,7 +307,7 @@ mutaf_yildiz_et_al.2018_tib <- c(
       controlled_variables = c(0, 0),
       r = c(-0.05, -0.35),
       n = c(44, 44)) 
-mutaf_yildiz_et_al.2018_tib
+
 ```
 
 ```{r elliott_et_al.2017}
@@ -322,7 +319,7 @@ elliott_et_al.2017_tib <- c(
       effect_id = c("Overall_Overall"),
       year = c(2017),
       country = c("US"),
-      study_id = c("e"),
+      study_id = c("elliott_et_al.2017"),
       design = c("Correlational"),
       design.2 = c("Cross_sectional_Correlational"), 
       SES = c("Middle"),
@@ -352,7 +349,7 @@ elliott_et_al.2017_tib <- c(
       controlled_variables = c(0),
       r = c(0.16),
       n = c(44))
-elliott_et_al.2017_tib
+
 ```
 
 ```{r levine_et_al.2010}
@@ -394,8 +391,7 @@ levine_et_al.2010_tib <- c(
       controlled_variables = c(0),
       r = c(0.47),
       n = c(44))
-levine_et_al.2010_tib
-#CHECKS: 2
+
 ```
 
 ```{r gunderson_and_levine.2011}
@@ -420,7 +416,7 @@ gunderson_and_levine.2011_tib <- c(
       effect_description = c("Small NT predicting Point-to-X", "Large NT predicting Point-to-X"),
       year = c(2010, 2010),
       country = c("US", "US"),
-      study_id = c("a", "a"),
+      study_id = c("levine_et_al.2010", "levine_et_al.2010"),
       design = c("Correlational", "Correlational"),
       design.2 = c("Longitudinal_Correlational", "Longitudinal_Correlational"), 
       SES = c("Middle", "Middle"),
@@ -450,7 +446,7 @@ gunderson_and_levine.2011_tib <- c(
       controlled_variables = c(0, 0),
       r = c(0.4131947, 0.3417495),
       n = c(44, 44))
-gunderson_and_levine.2011_tib 
+
 ```
 
 ```{r boonen_et_al.2011}
@@ -470,7 +466,7 @@ boonen_et_al.2011_tib <- c(
       effect_id = c("Calculation_Overall", "Conventional_Nominatives_Overall", "Conventional_Nominatives_Overall", "Conventional_Nominatives_Overall", "Counting_Overall", "Ordering_Overall", "Number_Identification_Overall", "Cardinality_Quantity_Comparison", "Calculation_Number_Identification"),
       year = c(2011, 2011, 2011, 2011, 2011, 2011, 2011, 2011,2011),
       country = c("NE", "NE", "NE", "NE", "NE", "NE", "NE", "NE", "NE"),
-      study_id = c("b", "b", "b", "b", "b", "b", "b", "b", "b"),
+      study_id = c("boonen_et_al.2011", "boonen_et_al.2011", "boonen_et_al.2011", "boonen_et_al.2011", "boonen_et_al.2011", "boonen_et_al.2011", "boonen_et_al.2011", "boonen_et_al.2011", "boonen_et_al.2011"),
       design = c("Correlational", "Correlational", "Correlational", "Correlational", "Correlational", "Correlational", "Correlational", "Correlational", "Correlational"),
       design.2 = c("Longitudinal_Correlational", "Longitudinal_Correlational", "Longitudinal_Correlational", "Longitudinal_Correlational", "Longitudinal_Correlational", "Longitudinal_Correlational", "Longitudinal_Correlational", "Longitudinal_Correlational", "Longitudinal_Correlational"), 
       SES = c("Middle", "Middle", "Middle", "Middle", "Middle", "Middle", "Middle", "Middle", "Middle"),
@@ -500,7 +496,7 @@ boonen_et_al.2011_tib <- c(
       controlled_variables = c(5, 5, 2, 7, 7, 7, 7, 2, 3),
       r = c(-0.1394642, 0.2006911, 0.1733843, 0.2875227, -0.1124199, -0.1356559, -0.1237494, 0.1187748, -0.1475598),
       n = c(251, 251, 251, 251, 251, 251, 251, 251, 251))
-boonen_et_al.2011_tib
+
 ```
 
 
@@ -513,7 +509,7 @@ susperreguy_and_davis_kean.2016_tib <- c(
       effect_id = c("Overall_Overall"),
       year = c(2016),
       country = c("US"),
-      study_id = c("d"),
+      study_id = c("susperreguy_and_davis_kean.2016"),
       design = c("Correlational"),
       design.2 = c("Longitudinal_Correlational"), 
       SES = c("Middle"),
@@ -543,7 +539,7 @@ susperreguy_and_davis_kean.2016_tib <- c(
       controlled_variables = c(0),
       r = c(0.17),
       n = c(33))
-susperreguy_and_davis_kean.2016_tib
+
 ```
 
 ```{r casey_et_al.2018}
@@ -562,7 +558,7 @@ casey_et_al.2018_tib <- c(
       effect_id = c("Number_Identification_Overall", "Number_Identification_Overall", "Counting_Overall", "Counting_Overall", "Cardinality_Overall", "Cardinality_Overall", "Overall_Overall", "Overall_Overall" ), 
       year = c(2018, 2018, 2018, 2018, 2018, 2018, 2018, 2018),
       country = c("US", "US", "US", "US", "US", "US", "US", "US"),
-      study_id = c("f", "f", "f", "f", "f", "f", "f", "f"),
+      study_id = c("casey_et_al.2018", "casey_et_al.2018", "casey_et_al.2018", "casey_et_al.2018", "casey_et_al.2018", "casey_et_al.2018", "casey_et_al.2018", "casey_et_al.2018"),
       design = c("Correlational", "Correlational", "Correlational", "Correlational", "Correlational", "Correlational", "Correlational", "Correlational"),
       design.2 = c("Longitudinal_Correlational", "Longitudinal_Correlational", "Longitudinal_Correlational", "Longitudinal_Correlational", "Longitudinal_Correlational", "Longitudinal_Correlational", "Longitudinal_Correlational", "Longitudinal_Correlational"), 
       SES = c("Middle", "Middle", "Middle", "Middle", "Middle", "Middle", "Middle", "Middle"),
@@ -592,7 +588,7 @@ casey_et_al.2018_tib <- c(
       controlled_variables = c(0, 0, 0, 0, 0, 0, 0, 0),
       r = c(-0.02, -0.04, -0.01, 0.05, 0.30, 0.33, 0.06, 0.07),
       n = c(99, 99, 99, 99, 99, 99, 99, 99))
-casey_et_al.2018_tib
+
 ```
 
 ```{r zippert_et_al.2019}
@@ -611,7 +607,7 @@ zippert_et_al.2019_tib <- c(
       effect_id = c("Counting_Counting", "Number_Identification_Counting", "Cardinality_Counting", "Quantity_Comparison_Counting", "Counting_Number_Line_Estimation", "Number_Identification_Number_Line_Estimation", "Cardinality_Number_Line_Estimation", "Quantity_Comparison_Number_Line_Estimation"), 
       year = c(2019, 2019, 2019, 2019, 2019, 2019, 2019, 2019),
       country = c("US", "US", "US", "US", "US", "US", "US", "US"),
-      study_id = c("h", "h", "h", "h", "h", "h", "h", "h"),
+      study_id = c("zippert_et_al.2019", "zippert_et_al.2019", "zippert_et_al.2019", "zippert_et_al.2019", "zippert_et_al.2019", "zippert_et_al.2019", "zippert_et_al.2019", "zippert_et_al.2019"),
       design = c("Experimental", "Experimental", "Experimental", "Experimental", "Experimental", "Experimental", "Experimental", "Experimental"),
       design.2 = c("Short_term_Experimental", "Short_term_Experimental", "Short_term_Experimental", "Short_term_Experimental", "Short_term_Experimental", "Short_term_Experimental", "Short_term_Experimental", "Short_term_Experimental"), 
       SES = c(NA, NA, NA, NA, NA, NA, NA, NA),
@@ -641,9 +637,6 @@ zippert_et_al.2019_tib <- c(
       controlled_variables = c(2, 2, 2, 2, 2, 2, 2, 2),
       r = c(-0.39, 0.01, -0.05, -0.06, 0.31, -0.01, -0.17, -0.17),
       n = c(25, 25, 25, 25, 25, 25, 25, 25))
-zippert_et_al.2019_tib
-
-
 ```
 
 ```{r thippana_et_al.2020}
@@ -656,7 +649,7 @@ thippana_et_al.2020_tib <- c(
       effect_id = c("Overall_Overall", "Overall_Overall"),
       year = c(2020, 2020),
       country = c(NA, NA),
-      study_id = c("j", "j"),
+      study_id = c("thippana_et_al.2020", "thippana_et_al.2020"),
       design = c("Correlational", "Correlational"),
       design.2 = c("Longitudinal_Correlational", "Longitudinal_Correlational"), 
       SES = c("Middle",  "Middle"),
@@ -686,7 +679,7 @@ thippana_et_al.2020_tib <- c(
       controlled_variables = c(0, 0),
       r = c(0.20, 0.11),
       n = c(81, 81))
-thippana_et_al.2020_tib
+
 ```
 
 ```{r gibson_et_al.2020}
@@ -699,7 +692,7 @@ gibson_et_al.2020_tib <- c(
       effect_id = c("Overall_Number_Knowledge", "Overall_Number_Knowledge"),
       year = c(2020, 2020),
       country = c("US", "US"),
-      study_id = c("k", "k"),
+      study_id = c("gibson_et_al.2020", "gibson_et_al.2020"),
       design = c("Experimental", "Experimental"),
       design.2 = c("Long_term_Experimental", "Long_term_Experimental"), 
       SES = c("Middle", "Middle"),
@@ -729,7 +722,7 @@ gibson_et_al.2020_tib <- c(
       controlled_variables = c(0, 0),
       r = c(0.3224328, 0.069597355),
       n = c(97, 97))
-gibson_et_al.2020_tib
+
 ```
 
 ```{r silver_et_al.2021}
@@ -741,7 +734,7 @@ silver_et_al.2021_tib <- c(
       effect_id = c("Overall_Overall"),
       year = c(2021),
       country = c("US"),
-      study_id = c("l"),
+      study_id = c("silver_et_al.2021"),
       design = c("Correlational"),
       design.2 = c("Cross_sectional_Correlational"), 
       SES = c("Middle"),
@@ -771,7 +764,7 @@ silver_et_al.2021_tib <- c(
       controlled_variables = c(0),
       r = c(0.04),
       n = c(123))
-silver_et_al.2021_tib
+
 
 
 #lower_ci <- fz-(((qnorm(p = ((1-(1-cl)/2)), mean = 0, sd = 1)))*(se_fz))
@@ -856,8 +849,15 @@ meta_tib <- escalc(measure = "ZCOR", ri = r, ni = n, data = meta_tib.p1) %>% dat
     NT_context = forcats::fct_relevel(NT_context, "Home", "Lab", "School", "Museum")) %>% 
   select(-NT_size.1) 
 
-meta_tib
-meta_tib %>% view()
+
+#REPORT TABLEZ
+#The number of effects in each study
+num_eff_tib <- meta_tib %>% select(study_id, year) %>% group_by(study_id) %>% summarise(effects = n()) %>% add_column(as.tibble(str_sub(.$study_id, - 4, - 1))) %>% rename(year = value) %>% arrange(year) %>% select(study_id, effects)
+num_eff_tib 
+
+#Stem and leaf diagram
+stem(meta_tib$yi) 
+
 
 #Export data 
 #write.xlsx(meta_tib, "meta_tib.xlsx", overwrite = T)
@@ -872,32 +872,34 @@ re_meta_model
 forest(re_meta_model, addpred = T, header = T)
 
 rma(yi = yi, vi = vi, data = meta_tib, method  = "FE")
-#Fixed effect SE = 0.0153
+
+
 #Funnel plot
 funnel(re_meta_model)
 
-reporter(re_meta_model)
-reporter(rma(yi = yi, vi = vi, data = meta_tib, method  = "FE"))
-sqrt(0.0216 + (0.0153^2))
 
 #Prediction
 predict(re_meta_model, transf = transf.ztor, digits = 5)
 
 #Gosh Plot 
-plot(gosh(re_meta_model, subset = 1000), out = 10)
+plot(gosh(re_meta_model, subset = 30000), out = 10)
 
 #RESULTS
 # Fisher's z = 0.0596
-
 ```
 
 
 ```{r ml_meta_analysis}
+#2-level model (This is basically an RE model)
+ml_meta_model.2lre <- rma.mv(yi = yi, V = vi, data = meta_tib, struct = "CS", method = "ML", test = "t",
+                        random = ~ 1 | effect)
+ml_meta_model.2lre %>% summary()
+ml_meta_model.2lre
+
 #2-level meta-analysis
 ml_meta_model.2l <- rma.mv(yi = yi, V = vi, data = meta_tib, struct = "CS", method = "REML", test = "t",
                         random = ~ 1 | study_id)
-ml_meta_model.2l %>% summary()
-
+ml_meta_model.2l
 
 #3-level meta-analysis
 ml_meta_model.3l <- rma.mv(yi = yi, V = vi, data = meta_tib, struct = "CS", method = "ML", test = "t",
@@ -905,93 +907,40 @@ ml_meta_model.3l <- rma.mv(yi = yi, V = vi, data = meta_tib, struct = "CS", meth
 ml_meta_model.3l %>% summary()
 ml_meta_model.3l
 
-#Comparing between the 2-level with the 3-level model
-fitstats(ml_meta_model.2l, ml_meta_model.3l)
-#RESULTS 
-#-- The 3-level model has better fit than the 2-level model 
-#CONCLUSION 
-#-- The 3-level model is selected 
 
+#Comparing all the models
+fitstats(re_meta_model, ml_meta_model.2lre, ml_meta_model.2l, ml_meta_model.3l)
 
-
-#However, level 3 variance is negligible, I will create a second model without the level 3, thus reducing the model to 2 levels (Level 1: Sampling variance, Level 2 = Effect level)
-#2-level meta-analysis
-ml_meta_model.2lb <- rma.mv(yi = yi, V = vi, data = meta_tib, struct = "CS", method = "ML", test = "t",
-                        random = ~ 1 | effect)
-ml_meta_model.2lb %>% summary()
-ml_meta_model.2lb
-
-#Comparing models
-fitstats(ml_meta_model.3l, ml_meta_model.2lb)
-
-fitstats(ml_meta_model.3l, ml_meta_model.3lb)
+#Selecting the model 
 ml_meta_model.3l
-
-
-
-
-#Outlier analysis for the 2-level model (RESULTS: NO OUTLIERS)
-#2-level model
-#Cook's d at level 1 
-ml_meta_model.2lb_cooks.d_lev1 <- cooks.distance(ml_meta_model.2lb, progbar=FALSE, reestimate=TRUE, parallel="no", ncpus=1) %>% tibble() %>% rename(., cooks.d = .) %>% arrange(desc(cooks.d))
-ml_meta_model.2lb_cooks.d_lev1 
-#Cook's d plot
-plot(cooks.distance(ml_meta_model.2lb, progbar=FALSE, reestimate=TRUE, parallel="no", ncpus=1), type="o", pch=19, xlab="Observed Outcome", ylab="Cook's Distance")
-#RESULTS 
-#-- All Cook's distances are well below 1
-
-#Cook's d at level 2 (The Effect level)
-ml_meta_model.2lb_cooks.d_lev2 <- cooks.distance(ml_meta_model.2lb, progbar=FALSE, reestimate=TRUE, parallel="no", ncpus=1, cluster = meta_tib$effect) %>% tibble() %>% rename(., cooks.d = .) %>% arrange(desc(cooks.d))
-ml_meta_model.2lb_cooks.d_lev2 
-plot(cooks.distance(ml_meta_model.2lb, progbar=FALSE, reestimate=TRUE, parallel="no", ncpus=1, cluster = meta_tib$effect), type="o", pch=19, xlab="Observed Outcome", ylab="Cook's Distance")
-#RESULTS 
-#-- All Cook's distances are well below 1
+#3-level model is selected because this model structure is based on theory (e.g. Cheung, 2019)
 
 
 
 #Outlier analysis for the 3-level model (RESULTS: NO OUTLIERS)
 #3-level model
-#Cook's d at level 1 
-ml_meta_model.3l_cooks.d_lev1 <- cooks.distance(ml_meta_model.3l, progbar=FALSE, reestimate=TRUE, parallel="no", ncpus=1) %>% tibble() %>% rename(., cooks.d = .) %>% arrange(desc(cooks.d))
-ml_meta_model.3l_cooks.d_lev1
-plot(cooks.distance(ml_meta_model.3l, progbar=FALSE, reestimate=TRUE, parallel="no", ncpus=1), type="o", pch=19, xlab="Observed Outcome", ylab="Cook's Distance")
-#RESULTS 
-#-- All Cook's distances are well below 1
-
 #Cook's d at level 2 (The Effect level)
-ml_meta_model.3l_cooks.d_lev2 <- cooks.distance(ml_meta_model.2lb, progbar=FALSE, reestimate=TRUE, parallel="no", ncpus=1, cluster = meta_tib$effect) %>% tibble() %>% rename(., cooks.d = .) %>% arrange(desc(cooks.d))
-ml_meta_model.3l_cooks.d_lev2 
-plot(cooks.distance(ml_meta_model.2lb, progbar=FALSE, reestimate=TRUE, parallel="no", ncpus=1, cluster = meta_tib$effect), type="o", pch=19, xlab="Observed Outcome", ylab="Cook's Distance")
+ml_meta_model.3l_cooks.d_lev2 <- cooks.distance(ml_meta_model.2lre, progbar=FALSE, reestimate=TRUE, parallel="no", ncpus=1, cluster = meta_tib$effect) %>% tibble() %>% rename(., cooks.d = .) %>% arrange(desc(cooks.d))
+ml_meta_model.3l_cooks.d_lev2
+plot(cooks.distance(ml_meta_model.2lre, progbar=FALSE, reestimate=TRUE, parallel="no", ncpus=1, cluster = meta_tib$effect), type="o", pch=19, xlab="Observed Outcome", ylab="Cook's Distance")
 #RESULTS 
 #-- All Cook's distances are well below 1
 
 #Cook's d at level 3 (The Study level)
-ml_meta_model.3l_cooks.d_lev3 <- cooks.distance(ml_meta_model.2lb, progbar=FALSE, reestimate=TRUE, parallel="no", ncpus=1, cluster = meta_tib$study_id) %>% tibble() %>% rename(., cooks.d = .) %>% arrange(desc(cooks.d))
+ml_meta_model.3l_cooks.d_lev3 <- cooks.distance(ml_meta_model.2lre, progbar=FALSE, reestimate=TRUE, parallel="no", ncpus=1, cluster = meta_tib$study_id) %>% tibble() %>% rename(., cooks.d = .) %>% arrange(desc(cooks.d))
 ml_meta_model.3l_cooks.d_lev3 
-ml_meta_model.3l_cooks.d_lev2 
-plot(cooks.distance(ml_meta_model.2lb, progbar=FALSE, reestimate=TRUE, parallel="no", ncpus=1, cluster = meta_tib$study_id), type="o", pch=19, xlab="Observed Outcome", ylab="Cook's Distance")
+plot(cooks.distance(ml_meta_model.2lre, progbar=FALSE, reestimate=TRUE, parallel="no", ncpus=1, cluster = meta_tib$study_id), type="o", pch=19, xlab="Observed Outcome", ylab="Cook's Distance")
 #RESULTS 
 #-- All Cook's distances are well below 1
 
 
 
-#CONCLUSION
-#2 MODDELS ARE SELECTED AS WORKING MODELS 
-ml_meta_model.3l
-ml_meta_model.2lb
-
-```
-```{r visualising_the_models}
 #Forest plots
 forest(ml_meta_model.3l, addpred = T, header = T)
-forest(ml_meta_model.2lb, addpred = T, header = T)
+forest(ml_meta_model.2lre, addpred = T, header = T)
 
-
-#Funnel plot
-funnel(ml_meta_model.3l)
 
 ```
-
 
 ```{r robust_ml_meta_analysis}
 #Clustered Robust SE
@@ -1043,74 +992,57 @@ contrasts(meta_tib$main_language) <- english_vs_dutch
 
 #Moderator analysis
 #----------------------------------------------------------------------------------------------------
-#2-level model 
-ml_meta_model.2l_mod_main_language <- rma.mv(yi = yi, V = vi, data = meta_tib, struct = "CS", method = "ML", test = "t",
-                                          mods = ~ main_language,
-                                          random = ~ 1 | study_id)
-ml_meta_model.2l_mod_main_language
-
 #3-level model
 ml_meta_model.3l_mod_main_language <- rma.mv(yi = yi, V = vi, data = meta_tib, struct = "CS", method = "ML", test = "t",
                                           mods = ~ main_language,
                                           random = ~ 1 | study_id/effect)
 ml_meta_model.3l_mod_main_language
 
-#2-level model b
-ml_meta_model.2lb_mod_main_language <- rma.mv(yi = yi, V = vi, data = meta_tib, struct = "CS", method = "ML", test = "t",
+#2-level re
+ml_meta_model.2lre_mod_main_language <- rma.mv(yi = yi, V = vi, data = meta_tib, struct = "CS", method = "ML", test = "t",
                                           mods = ~ main_language,
                                           random = ~ 1 | effect)
-ml_meta_model.2lb_mod_main_language
+ml_meta_model.2lre_mod_main_language
 
-
-
-regplot(ml_meta_model.3l_mod_main_language, xlab = "Language")
-
+#2-level model 
+ml_meta_model.2l_mod_main_language <- rma.mv(yi = yi, V = vi, data = meta_tib, struct = "CS", method = "ML", test = "t",
+                                          mods = ~ main_language,
+                                          random = ~ 1 | study_id)
+ml_meta_model.2l_mod_main_language
 
 #--RESULTS
 #-- Only the 2-level model is significant
 
 
+#Visualize 
+regplot(ml_meta_model.3l_mod_main_language, xlab = "Language")
+
+
+
+
+
 #Outlier Analysis
 #Cook's d
 
-#2-level model
-ml_meta_model.2l_mod_main_language_cooks.d <- cooks.distance(ml_meta_model.2l_mod_main_language, progbar=FALSE,
-               reestimate=TRUE, parallel="no", ncpus=1) %>% tibble() %>% rename(., cooks.d = .) %>% add_column(select(drop_na(data = meta_tib, main_language), effect)) %>% rowid_to_column(., var = "Effect_no") %>% select(Effect_no, effect, cooks.d) %>% arrange(desc(cooks.d))
-ml_meta_model.2l_mod_main_language_cooks.d  
+#3-level model 
+#Level 2
+ml_meta_model.3l_mod_main_language_cooks.d_lev.2 <- cooks.distance(ml_meta_model.3l_mod_main_language, progbar=FALSE,
+               reestimate=TRUE, parallel="no", ncpus=1, cluster = meta_tib$effect) %>% tibble() %>% rename(., cooks.d = .) %>% add_column(select(drop_na(data = meta_tib, main_language), effect)) %>% select(effect, cooks.d) %>% arrange(desc(cooks.d))
+ml_meta_model.3l_mod_main_language_cooks.d_lev.2 
 #RESULTS
-#There are 2 outliers 
+#No influential cases
 
+#Level 3
+ml_meta_model.3l_mod_main_language_cooks.d_lev.3 <- cooks.distance(ml_meta_model.3l_mod_main_language, progbar=FALSE,
+               reestimate=TRUE, parallel="no", ncpus=1, cluster = meta_tib$study_id) %>% tibble() %>% rename(., cooks.d = .) %>% add_column(num_eff_tib$study_id) %>% arrange(desc(cooks.d))
+ml_meta_model.3l_mod_main_language_cooks.d_lev.3
+#RESULTS
+#No outlier 
 
+#DFBETAS
 #3-level model
-ml_meta_model.3l_mod_main_language_cooks.d <- cooks.distance(ml_meta_model.3l_mod_main_language, progbar=FALSE,
-               reestimate=TRUE, parallel="no", ncpus=1) %>% tibble() %>% rename(., cooks.d = .) %>% add_column(select(drop_na(data = meta_tib, main_language), effect)) %>% rowid_to_column(., var = "Effect_no") %>% select(Effect_no, effect, cooks.d) %>% arrange(desc(cooks.d))
-ml_meta_model.3l_mod_main_language_cooks.d  
-#RESULTS
-#No outlier (same as 2-level model b)
-
-#2-level model b
-ml_meta_model.2lb_mod_main_language_cooks.d <- cooks.distance(ml_meta_model.2lb_mod_main_language, progbar=FALSE,
-               reestimate=TRUE, parallel="no", ncpus=1) %>% tibble() %>% rename(., cooks.d = .) %>% add_column(select(drop_na(data = meta_tib, main_language), effect)) %>% rowid_to_column(., var = "Effect_no") %>% select(Effect_no, effect, cooks.d) %>% arrange(desc(cooks.d))
-ml_meta_model.2lb_mod_main_language_cooks.d  
-#RESULTS
-#No outlier (same as 2-level model b)
-
-
-
-
-
-#DFBETA
-#2-level model
-dfbetas(ml_meta_model.2l_mod_main_language, progbar=FALSE,reestimate=TRUE, parallel="no", ncpus=1) %>% 
-  add_column(select(drop_na(data = meta_tib, main_language), effect)) %>% 
-  select(effect, intrcpt, main_language1) %>% 
-  mutate(absDFBETAS = abs(main_language1)) %>% 
-  arrange(desc(absDFBETAS))
-#DFBETAS RESULTS
-#-- Biggest DFBETA was boonen_et_al.2011d (1.126)
-
-#3-level model
-dfbetas(ml_meta_model.3l_mod_main_language, progbar=FALSE,reestimate=TRUE, parallel="no", ncpus=1) %>% 
+#Effect level 
+dfbetas(ml_meta_model.3l_mod_main_language, progbar=FALSE,reestimate=TRUE, parallel="no", ncpus=1, cluster= meta_tib$effect) %>% 
   add_column(select(drop_na(data = meta_tib, main_language), effect)) %>% 
   select(effect, intrcpt, main_language1) %>% 
   mutate(absDFBETAS = abs(main_language1)) %>% 
@@ -1118,16 +1050,21 @@ dfbetas(ml_meta_model.3l_mod_main_language, progbar=FALSE,reestimate=TRUE, paral
 #DFBETAS RESULTS
 #-- All DFBETAS are well below 1
 
-#2-level model b
-dfbetas(ml_meta_model.2lb_mod_main_language, progbar=FALSE,reestimate=TRUE, parallel="no", ncpus=1) %>% 
-  add_column(select(drop_na(data = meta_tib, main_language), effect)) %>% 
+#Effect level 
+dfbetas_mod_main_language.p1 <- dfbetas(ml_meta_model.3l_mod_main_language, progbar=FALSE,reestimate=TRUE, parallel="no", ncpus=1, cluster= meta_tib$study_id) %>% 
   select(effect, intrcpt, main_language1) %>% 
   mutate(absDFBETAS = abs(main_language1)) %>% 
   arrange(desc(absDFBETAS))
 #DFBETAS RESULTS
 #-- All DFBETAS are well below 1
+dfbetas_mod_main_language.p2 <- as.data.frame(dfbetas_mod_main_language.p1)
+dfbetas_mod_main_language.p2$study_id <- rownames(dfbetas_mod_main_language.p1)
 
-
+dfbetas_mod_main_language <- dfbetas_mod_main_language.p2 %>% select(study_id, intrcpt, main_language1) %>% mutate(absDFBETAS = abs(main_language1)) %>% arrange(desc(absDFBETAS))
+dfbetas_mod_main_language 
+#RESULTS 
+#1 influential study
+#Boonen
 
 
 
@@ -1177,8 +1114,80 @@ contrasts(meta_tib$NT_type.1) <- cbind(
 
 #contrasts(meta_tib$NT_type.1) <- contr.sum(10) - This is for sum coding - The p-values/results are all the same as deviation coding
 
+
 #----------------------------------------------------------------------------------------------------
 #Moderator analysis 
+#3-level model
+ml_meta_model.3l_mod_NT_type.1 <- rma.mv(yi = yi, V = vi, data = meta_tib, struct = "CS", method = "REML", test = "t",
+                                      mods = ~ NT_type.1, 
+                                      random = ~ 1 | study_id/effect)
+ml_meta_model.3l_mod_NT_type.1
+#SIGNIFICANT RESULTS
+#INTERCEPT = 	0.0462
+#NT that have significantly greater effect 
+#--- Cardinality (b = 0.3109, p = 0.0391)
+#--- Conventional_Nominatives (b = 0.4566, p = 0.0214)
+#NT that have significantly negative effect 
+#--- Calculation (b = -0.2238, p = 0.0323)
+
+#Outlier diagnostics for the 3-level model
+#Cook's d 
+#Cook's d at level 2
+ml_meta_model.3l_mod_NT_type.1_cooks.d_lev2 <- cooks.distance(ml_meta_model.3l_mod_NT_type.1, progbar=FALSE, reestimate=TRUE, parallel="no", ncpus=1, cluster = meta_tib$effect) %>% data.frame() %>% rownames_to_column(var = "effect_id") %>% rename(., cooks.d = .) %>% arrange(desc(cooks.d))
+ml_meta_model.3l_mod_NT_type.1_cooks.d_lev2
+#RESULTS 
+#No influential effects (but why tf is the Cook's d for a study NA??)
+
+#Cook's d at level 3
+ml_meta_model.3l_mod_NT_type.1_cooks.d_lev3 <- cooks.distance(ml_meta_model.3l_mod_NT_type.1, progbar=FALSE, reestimate=TRUE, parallel="no", ncpus=1, cluster = meta_tib$study_id) %>% data.frame() %>% rownames_to_column(var = "study_id") %>% rename(., cooks.d = .) %>% arrange(desc(cooks.d))
+ml_meta_model.3l_mod_NT_type.1_cooks.d_lev3
+#RESULTS 
+#1 influential study (casey_et_al.2018)
+
+#DFBETAS
+#Effect level 
+dfbetas(ml_meta_model.3l_mod_NT_type.1, progbar=FALSE,reestimate=TRUE, parallel="no", ncpus=1, cluster= meta_tib$effect) %>% filter(abs(NT_type.1quantity_comparisonNT_vs_mean)>1)
+
+#DFBETAS RESULTS
+#There are no outliers 
+#-- Intercept: All DFBETAS are below 1
+#-- NT_type.1calculationNT_vs_mean: All DFBETAS are below 1
+#-- NT_type.1cardinalityNT_vs_mean: All DFBETAS are below 1
+#-- NT_type.1conventional_nominativesNT.1_vs_mean: ALL DFBETAS are below 1
+#-- NT_type.1countingNT_vs_mean: All DFBETAS are below 1
+#-- NT_type.1number_identificationNT_vs_mean: All DFBETAS are below 1
+#-- NT_type.1orderingNT_vs_mean: All DFBETAS are below 1
+#-- NT_type.1quantity_comparisonNT_vs_mean: All DFBETAS are below 1
+
+#Study level 
+dfbetas(ml_meta_model.3l_mod_NT_type.1, progbar=FALSE,reestimate=TRUE, parallel="no", ncpus=1, cluster= meta_tib$study_id) %>% filter(abs(NT_type.1quantity_comparisonNT_vs_mean)>1)
+
+#DFBETAS RESULTS
+#There is 1 outlier for the intercept and the cardinality (both are casey_et_al.2018)
+#-- Intercept: 1 outlier (casey_et_al.2018)
+#-- NT_type.1calculationNT_vs_mean: All DFBETAS are below 1
+#-- NT_type.1cardinalityNT_vs_mean: 1 outlier (casey_et_al.2018)
+#-- NT_type.1conventional_nominativesNT.1_vs_mean: ALL DFBETAS are below 1
+#-- NT_type.1countingNT_vs_mean: All DFBETAS are below 1
+#-- NT_type.1number_identificationNT_vs_mean: All DFBETAS are below 1
+#-- NT_type.1orderingNT_vs_mean: All DFBETAS are below 1
+#-- NT_type.1quantity_comparisonNT_vs_mean: All DFBETAS are below 1
+
+
+#----------------------------------------------------------------------------------------------------
+#2-level model re
+ml_meta_model.2lre_mod_NT_type.1 <- rma.mv(yi = yi, V = vi, data = meta_tib, struct = "CS", method = "REML", test = "t",
+                                      mods = ~ NT_type.1, 
+                                      random = ~ 1 | effect)
+ml_meta_model.2lre_mod_NT_type.1  
+#SIGNIFICANT RESULTS
+#INTERCEPT = 	0.0462
+#NT that have significantly greater effect 
+#--- Cardinality (b = 0.3655, p = 0.0025)
+#--- Conventional_Nominatives (b = 0.4486, p = 0.0001)
+#NT that have significantly negative effect 
+#--- Calcuation (b = -0.2900, p = 0.0224)
+
 
 #2-level model
 ml_meta_model.2l_mod_NT_type.1 <- rma.mv(yi = yi, V = vi, data = meta_tib, struct = "CS", method = "REML", test = "t",
@@ -1193,93 +1202,6 @@ ml_meta_model.2l_mod_NT_type.1
 #NT that have significantly smaller effect 
 #---Calculation NT (b = -0.2238, p = 0.0323)==
 #--- Number Identification (b = -0.1757, p = 0.0701)
-
-#Outlier diagnostics for the 2-level model
-#Cook's d 
-#Cook's d at level 1
-ml_meta_model.2l_mod_NT_type.1_cooks.d_lev1 <- cooks.distance(ml_meta_model.2l_mod_NT_type.1, progbar=FALSE,
-               reestimate=TRUE, parallel="no", ncpus=1) %>% tibble() %>% rename(., cooks.d = .) %>% add_column(select(drop_na(data = meta_tib, NT_type.1), effect)) %>% rowid_to_column(., var = "Effect_no") %>% select(Effect_no, effect, cooks.d) %>% arrange(desc(cooks.d))
-ml_meta_model.2l_mod_NT_type.1_cooks.d_lev1
-#RESULTS 
-#--- All Cook's d are well below 1
-
-#Cook's d at level 2
-ml_meta_model.2l_mod_NT_type.1_cooks.d_lev2 <- cooks.distance(ml_meta_model.2l_mod_NT_type.1, progbar=FALSE,
-               reestimate=TRUE, parallel="no", ncpus=1, cluster = meta_tib$study_id) %>% tibble() %>% rename(., cooks.d = .) %>% arrange(desc(cooks.d))
-ml_meta_model.2l_mod_NT_type.1_cooks.d_lev2
-#RESULTS 
-#--- Levine's study has a huge Cook's d
-
-
-
-
-#3-level model
-ml_meta_model.3l_mod_NT_type.1 <- rma.mv(yi = yi, V = vi, data = meta_tib, struct = "CS", method = "REML", test = "t",
-                                      mods = ~ NT_type.1, 
-                                      random = ~ 1 | study_id/effect)
-ml_meta_model.3l_mod_NT_type.1 
-#SIGNIFICANT RESULTS
-#INTERCEPT = 	0.0462
-#NT that have significantly greater effect 
-#--- Cardinality (b = 0.3109, p = 0.0391)
-#--- Conventional_Nominatives (b = 0.4566, p = 0.0214)
-#NT that have significantly negative effect 
-#--- Calculation (b = -0.2238, p = 0.0323)
-
-#Outlier diagnostics for the 3-level model
-#Cook's d 
-#Cook's d at level 1
-ml_meta_model.3l_mod_NT_type.1_cooks.d_lev1 <- cooks.distance(ml_meta_model.3l_mod_NT_type.1, progbar=FALSE,
-               reestimate=TRUE, parallel="no", ncpus=1) %>% tibble() %>% rename(., cooks.d = .) %>% add_column(select(drop_na(data = meta_tib, NT_type.1), effect)) %>% rowid_to_column(., var = "Effect_no") %>% select(Effect_no, effect, cooks.d) %>% arrange(desc(cooks.d))
-ml_meta_model.3l_mod_NT_type.1_cooks.d_lev1
-#RESULTS 
-#--- All Cook's d are well below 1
-
-#Cook's d at level 2
-ml_meta_model.3l_mod_NT_type.1_cooks.d_lev2 <- cooks.distance(ml_meta_model.3l_mod_NT_type.1, progbar=FALSE,
-               reestimate=TRUE, parallel="no", ncpus=1, cluster = meta_tib$effect) %>% tibble() %>% rename(., cooks.d = .) %>% add_column(select(drop_na(data = meta_tib, NT_type.1), effect)) %>% rowid_to_column(., var = "Effect_no") %>% select(Effect_no, effect, cooks.d) %>% arrange(desc(cooks.d))
-ml_meta_model.3l_mod_NT_type.1_cooks.d_lev2
-#RESULTS 
-#--- All Cook's d are well below 1
-
-#Cook's d at level 3
-ml_meta_model.3l_mod_NT_type.1_cooks.d_lev3 <- cooks.distance(ml_meta_model.3l_mod_NT_type.1, progbar=FALSE,
-               reestimate=TRUE, parallel="no", ncpus=1, cluster = meta_tib$study_id) %>% tibble() %>% rename(., cooks.d = .) %>% arrange(desc(cooks.d))
-ml_meta_model.3l_mod_NT_type.1_cooks.d_lev3
-#RESULTS 
-#--- Levine's study has a huge Cook's d
-
-
-
-#2-level model b
-ml_meta_model.2lb_mod_NT_type.1 <- rma.mv(yi = yi, V = vi, data = meta_tib, struct = "CS", method = "REML", test = "t",
-                                      mods = ~ NT_type.1, 
-                                      random = ~ 1 | effect)
-ml_meta_model.2lb_mod_NT_type.1  
-#SIGNIFICANT RESULTS
-#INTERCEPT = 	0.0462
-#NT that have significantly greater effect 
-#--- Cardinality (b = 0.3655, p = 0.0025)
-#--- Conventional_Nominatives (b = 0.4486, p = 0.0001)
-#NT that have significantly negative effect 
-#--- Calcuation (b = -0.2900, p = 0.0224)
-
-#Outlier diagnostics for the 2-level model b
-#Cook's d 
-#Cook's d at level 1
-ml_meta_model.2lb_mod_NT_type.1_cooks.d_lev1 <- cooks.distance(ml_meta_model.2lb_mod_NT_type.1, progbar=FALSE,
-               reestimate=TRUE, parallel="no", ncpus=1) %>% tibble() %>% rename(., cooks.d = .) %>% add_column(select(drop_na(data = meta_tib, NT_type.1), effect)) %>% rowid_to_column(., var = "Effect_no") %>% select(Effect_no, effect, cooks.d) %>% arrange(desc(cooks.d))
-ml_meta_model.2lb_mod_NT_type.1_cooks.d_lev1
-#RESULTS 
-#--- All Cook's d are well below 1
-
-#Cook's d at level 2
-ml_meta_model.2lb_mod_NT_type.1_cooks.d_lev2 <- cooks.distance(ml_meta_model.2lb_mod_NT_type.1, progbar=FALSE,
-               reestimate=TRUE, parallel="no", ncpus=1, cluster = meta_tib$effect) %>% tibble() %>% rename(., cooks.d = .) %>% add_column(select(drop_na(data = meta_tib, NT_type.1), effect)) %>% rowid_to_column(., var = "Effect_no") %>% select(Effect_no, effect, cooks.d) %>% arrange(desc(cooks.d))
-ml_meta_model.2lb_mod_NT_type.1_cooks.d_lev2
-#RESULTS 
-#--- All Cook's d are well below 1
-
 
 ```
 
@@ -1300,35 +1222,6 @@ contrasts(meta_tib$MA_context) <- cbind(
 
 #Moderator Analysis
 #----------------------------------------------------------------------------------------------------
-
-#2-level model
-ml_meta_model.2l_mod_MA_context <- rma.mv(yi = yi, V = vi, data = meta_tib, struct = "CS", method = "REML", test = "t",
-                                       mods = ~ MA_context, 
-                                       random = ~ 1 | study_id)
-ml_meta_model.2l_mod_MA_context 
-#RESULTS 
-#Measuring MA in a Lab has a greater effect (b = 0.3437, p = 0.0010)
-#Measuring MA at home has a lower effect (b = -0.3639, p = 0.0419)
-
-
-#Outlier diagnostics for the 2-level model
-#Cook's d 
-#Cook's d at level 1
-ml_meta_model.2l_mod_MA_context_cooks.d_lev1 <- cooks.distance(ml_meta_model.2l_mod_MA_context, progbar=FALSE,
-               reestimate=TRUE, parallel="no", ncpus=1) %>% tibble() %>% rename(., cooks.d = .) %>% add_column(select(drop_na(data = meta_tib, MA_context), effect)) %>% rowid_to_column(., var = "Effect_no") %>% select(Effect_no, effect, cooks.d) %>% arrange(desc(cooks.d))
-ml_meta_model.2l_mod_MA_context_cooks.d_lev1
-#RESULTS 
-#--- 3 outliers
-
-#Cook's d at level 2
-ml_meta_model.2l_mod_MA_context_cooks.d_lev2 <- cooks.distance(ml_meta_model.2l_mod_MA_context, progbar=FALSE,
-               reestimate=TRUE, parallel="no", ncpus=1, cluster = meta_tib$study_id) %>% tibble() %>% rename(., cooks.d = .) %>% arrange(desc(cooks.d))
-ml_meta_model.2l_mod_MA_context_cooks.d_lev2
-#RESULTS 
-#--- 1 outlier
-
-#----------------------------------------------------------------------------------------------------
-
 #3-level model
 ml_meta_model.3l_mod_MA_context <- rma.mv(yi = yi, V = vi, data = meta_tib, struct = "CS", method = "REML", test = "t",
                                        mods = ~ MA_context, 
@@ -1340,62 +1233,67 @@ ml_meta_model.3l_mod_MA_context
 
 #Outlier diagnostics for the 3-level model
 #Cook's d 
-#Cook's d at level 1
-ml_meta_model.3l_mod_MA_context_cooks.d_lev1 <- cooks.distance(ml_meta_model.3l_mod_MA_context, progbar=FALSE,
-               reestimate=TRUE, parallel="no", ncpus=1) %>% tibble() %>% rename(., cooks.d = .) %>% add_column(select(drop_na(data = meta_tib, MA_context), effect)) %>% rowid_to_column(., var = "Effect_no") %>% select(Effect_no, effect, cooks.d) %>% arrange(desc(cooks.d))
-ml_meta_model.3l_mod_MA_context_cooks.d_lev1 
-#RESULTS 
-#--- 1 outlier
-
 #Cook's d at level 2
-ml_meta_model.3l_mod_MA_context_cooks.d_lev2 <- cooks.distance(ml_meta_model.2l_mod_MA_context, progbar=FALSE,
-               reestimate=TRUE, parallel="no", ncpus=1, cluster = meta_tib$effect) %>% tibble() %>% rename(., cooks.d = .) %>% arrange(desc(cooks.d))
+ml_meta_model.3l_mod_MA_context_cooks.d_lev2 <- cooks.distance(ml_meta_model.3l_mod_MA_context, progbar=FALSE, reestimate=TRUE, parallel="no", ncpus=1, cluster = meta_tib$effect) %>% data.frame() %>% rownames_to_column(var = "effect_id") %>% rename(., cooks.d = .) %>% arrange(desc(cooks.d))
 ml_meta_model.3l_mod_MA_context_cooks.d_lev2
 #RESULTS 
-#--- 3 outliers
+#There are 2 outliers (mutaf_yildiz_et_al.2018a, mutaf_yildiz_et_al.2018b)
 
 #Cook's d at level 3
-ml_meta_model.3l_mod_MA_context_cooks.d_lev3 <- cooks.distance(ml_meta_model.2l_mod_MA_context, progbar=FALSE,
-               reestimate=TRUE, parallel="no", ncpus=1, cluster = meta_tib$study_id) %>% tibble() %>% rename(., cooks.d = .) %>% arrange(desc(cooks.d))
+ml_meta_model.3l_mod_MA_context_cooks.d_lev3 <- cooks.distance(ml_meta_model.3l_mod_MA_context, progbar=FALSE, reestimate=TRUE, parallel="no", ncpus=1, cluster = meta_tib$study_id) %>% data.frame() %>% rownames_to_column(var = "effect_id") %>% rename(., cooks.d = .) %>% arrange(desc(cooks.d))
 ml_meta_model.3l_mod_MA_context_cooks.d_lev3
 #RESULTS 
-#--- 1 outlier
-
-
-#2-level model b
-ml_meta_model.2lb_mod_MA_context <- rma.mv(yi = yi, V = vi, data = meta_tib, struct = "CS", method = "REML", test = "t",
-                                       mods = ~ MA_context, 
-                                       random = ~ 1 | effect)
-ml_meta_model.2lb_mod_MA_context 
-#RESULTS 
-#Measuring MA in a Lab has a greater effect (b = 0.3432, p = 0.0178)
-
-#Outlier diagnostics for the 2-level model b
-#Cook's d 
-#Cook's d at level 2
-ml_meta_model.2lb_mod_MA_context_cooks.d_lev2 <- cooks.distance(ml_meta_model.2lb_mod_MA_context, progbar=FALSE,
-               reestimate=TRUE, parallel="no", ncpus=1, cluster = meta_tib$effect) %>% tibble() %>% rename(., cooks.d = .) %>% add_column(select(drop_na(data = meta_tib, MA_context), effect)) %>% rowid_to_column(., var = "Effect_no") %>% select(Effect_no, effect, cooks.d) %>% arrange(desc(cooks.d))
-ml_meta_model.2lb_mod_MA_context_cooks.d_lev2 
-#RESULTS 
-#--- 2 outliers
+#--- 1 outlier (boonen_et_al.2011)
 
 
 ```
 
 
 ```{r moderator_analysis_mothers}
-#Moderator analysis for mothers (treating mothers as a continuous variable)
-#2-level Regression
-ml_meta_model.2l_mod_mothers_cont <- rma.mv(yi = yi, V = vi, data = meta_tib, struct = "CS", method = "REML", test = "t",
+#Mothers as cont 
+#3-level model
+ml_meta_model.3l_mod_mothers_cont <- rma.mv(yi = yi, V = vi, data = meta_tib, struct = "CS", method = "REML", test = "t",
                                     mods = ~ mothers, 
-                                    random = ~ 1 | study_id)
-ml_meta_model.2l_mod_mothers_cont
+                                    random = ~ 1 | study_id/effect)
+ml_meta_model.3l_mod_mothers_cont
 #RESULTS
 #The proportion of mothers significantly enhanced the effect NT on MA
 
+#Outlier
+#Cook's d 
+#Cook's d at level 2
+ml_meta_model.3l_mod_mothers_cont_cooks.d_lev2 <- cooks.distance(ml_meta_model.3l_mod_mothers_cont, progbar=FALSE, reestimate=TRUE, parallel="no", ncpus=1, cluster = meta_tib$effect) %>% data.frame() %>% rownames_to_column(var = "effect_id") %>% rename(., cooks.d = .) %>% arrange(desc(cooks.d))
+ml_meta_model.3l_mod_mothers_cont_cooks.d_lev2
+#RESULTS 
+#All Cook's d are below 1
+
+#Cook's d 
+#Cook's d at level 3
+ml_meta_model.3l_mod_mothers_cont_cooks.d_lev3 <- cooks.distance(ml_meta_model.3l_mod_mothers_cont, progbar=FALSE, reestimate=TRUE, parallel="no", ncpus=1, cluster = meta_tib$study_id) %>% data.frame() %>% rownames_to_column(var = "effect_id") %>% rename(., cooks.d = .) %>% arrange(desc(cooks.d))
+ml_meta_model.3l_mod_mothers_cont_cooks.d_lev3
+#RESULTS 
+#There is 1 outlier (casey_et_al.2018)
+
+#DFBETAS
+#Effect level 
+dfbetas(ml_meta_model.3l_mod_mothers_cont, progbar=FALSE,reestimate=TRUE, parallel="no", ncpus=1, cluster= meta_tib$effect) %>% rownames_to_column(var = "effect_id") %>% filter(abs(mothers)>1)
+
+#DFBETAS RESULTS
+#-- There are no outliers 
+#-- Intercept: All DFBETAS are below 1
+#-- mothers: All DFBETAS are below 1
+
+
+#Study level 
+dfbetas(ml_meta_model.3l_mod_mothers_cat, progbar=FALSE,reestimate=TRUE, parallel="no", ncpus=1, cluster= meta_tib$study_id) %>% filter(abs(mothers_cat1)>1)
+
+#DFBETAS RESULTS
+#There is 1 outlier for the intercept and the cardinality (both are casey_et_al.2018)
+#-- Intercept: There is 1 outlier (ramani_et_al.2015)
+#-- mothers_cat1: There is 1 outlier (ramani_et_al.2015)
 
 #----------------------------------------------------------------------------------------------------
-#Moderator analysis for mothers (treating mothers as a categorical variable)(High vs Low, cut-off defined by the mean)
+#Mothers as cat
 #Create the mothers as a factor 
 meta_tib_mod_mothers <- meta_tib %>% mutate(mothers_cat = ifelse(mothers > 0.8250958, "high", "low")) %>% mutate(mothers_cat = as.factor(mothers_cat)) %>% mutate(mothers_cat = fct_relevel(mothers_cat, "low", "high"))
 
@@ -1403,10 +1301,57 @@ meta_tib_mod_mothers <- meta_tib %>% mutate(mothers_cat = ifelse(mothers > 0.825
 #Checking the levels 
 levels(meta_tib_mod_mothers$mothers_cat)
 #Setting contrast weights 
-mothers_cat.high_vs_low <- c(0, 1)
+mothers_cat.high_vs_low <- c(-0.5, 0.5)
 contrasts(meta_tib_mod_mothers$mothers_cat) <- mothers_cat.high_vs_low
 
 #Moderator analysis for mothers as a cat
+#----------------------------------------------------------------------------------------------------
+#3-level model 
+ml_meta_model.3l_mod_mothers_cat <- rma.mv(yi = yi, V = vi, data = meta_tib_mod_mothers, struct = "CS", method = "REML", test = "t",
+                                            mods = ~ mothers_cat, 
+                                            random = ~ 1 | study_id/effect)
+ml_meta_model.3l_mod_mothers_cat 
+#RESULTS
+#Mothers was significant (p = 0.0468)
+
+#Regression Plot
+regplot(ml_meta_model.3l_mod_mothers_cat, xlab = "Proportion of Mothers")
+
+#Outlier
+#Cook's d 
+#Cook's d at level 2
+ml_meta_model.3l_mod_mothers_cat_cooks.d_lev2 <- cooks.distance(ml_meta_model.3l_mod_mothers_cat, progbar=FALSE, reestimate=TRUE, parallel="no", ncpus=1, cluster = meta_tib$effect) %>% data.frame() %>% rownames_to_column(var = "effect_id") %>% rename(., cooks.d = .) %>% arrange(desc(cooks.d))
+ml_meta_model.3l_mod_mothers_cat_cooks.d_lev2
+#RESULTS 
+#All Cook's d are below 1
+
+#Cook's d 
+#Cook's d at level 3
+ml_meta_model.3l_mod_mothers_cat_cooks.d_lev3 <- cooks.distance(ml_meta_model.3l_mod_mothers_cat, progbar=FALSE, reestimate=TRUE, parallel="no", ncpus=1, cluster = meta_tib$study_id) %>% data.frame() %>% rownames_to_column(var = "effect_id") %>% rename(., cooks.d = .) %>% arrange(desc(cooks.d))
+ml_meta_model.3l_mod_mothers_cat_cooks.d_lev3
+#RESULTS 
+#There is 1 outlier (ramani)
+
+#DFBETAS
+#Effect level 
+dfbetas(ml_meta_model.3l_mod_mothers_cat, progbar=FALSE,reestimate=TRUE, parallel="no", ncpus=1, cluster= meta_tib$effect) %>% rownames_to_column(var = "effect_id") %>% filter(abs(mothers_cat1)>1)
+
+#DFBETAS RESULTS
+#-- There are no outliers 
+#-- Intercept: All DFBETAS are below 1
+#-- mothers_cat1: All DFBETAS are below 1
+
+
+#Study level 
+dfbetas(ml_meta_model.3l_mod_mothers_cat, progbar=FALSE,reestimate=TRUE, parallel="no", ncpus=1, cluster= meta_tib$study_id) %>% filter(abs(mothers_cat1)>1)
+
+#DFBETAS RESULTS
+#There is 1 outlier for the intercept and the cardinality (both are casey_et_al.2018)
+#-- Intercept: There is 1 outlier (ramani_et_al.2015)
+#-- mothers_cat1: There is 1 outlier (ramani_et_al.2015)
+
+
+
 #----------------------------------------------------------------------------------------------------
 #2-level model
 ml_meta_model.2l_mod_mothers_cat <- rma.mv(yi = yi, V = vi, data = meta_tib_mod_mothers, struct = "CS", method = "REML", test = "t",
@@ -1421,46 +1366,20 @@ ml_meta_model.2l_mod_mothers_cat
 regplot(ml_meta_model.2l_mod_mothers_cat, xlab = "Proportion of Mothers")
 
 
-#----------------------------------------------------------------------------------------------------
-#3-level model 
-ml_meta_model.3l_mod_mothers_cat <- rma.mv(yi = yi, V = vi, data = meta_tib_mod_mothers, struct = "CS", method = "REML", test = "t",
-                                            mods = ~ mothers_cat, 
-                                            random = ~ 1 | study_id/effect)
-ml_meta_model.3l_mod_mothers_cat 
-#RESULTS
-#Mothers was significant (p = 0.0468)
 
-#Regression Plot
-regplot(ml_meta_model.3l_mod_mothers_cat, xlab = "Proportion of Mothers")
 #----------------------------------------------------------------------------------------------------
-#2-level model b
-ml_meta_model.2lb_mod_mothers_cat <- rma.mv(yi = yi, V = vi, data = meta_tib_mod_mothers, struct = "CS", method = "REML", test = "t",
+#2-level model re
+ml_meta_model.2lre_mod_mothers_cat <- rma.mv(yi = yi, V = vi, data = meta_tib_mod_mothers, struct = "CS", method = "REML", test = "t",
                                     mods = ~ mothers_cat, 
                                     random = ~ 1 | effect)
-ml_meta_model.2lb_mod_mothers_cat 
+ml_meta_model.2lre_mod_mothers_cat 
 #RESULTS
 #Mothers was significant (p = 0.0424)
-regplot(ml_meta_model.2lb_mod_mothers_cat, xlab = "Proportion of Mothers")
+regplot(ml_meta_model.2lre_mod_mothers_cat, xlab = "Proportion of Mothers")
 ```
 
 
 ```{r moderator_analysis_child_age_NT_mid}
-#Moderator analysis for child age during NT
-#2-level model 
-ml_meta_model.2l_mod_child_age_NT_mid.M1 <- rma.mv(yi = yi, V = vi, data = meta_tib, struct = "CS", method = "REML", test = "t",
-                                                mods = ~ child_age_NT_mid, 
-                                                random = ~ 1 | study_id)
-ml_meta_model.2l_mod_child_age_NT_mid.M1
-#RESULTS
-#Child age during NT has a significant effect (p = 0.0091)
-
-#Regression Plot
-regplot(ml_meta_model.2l_mod_child_age_NT_mid.M1, xlab = "Child Age During Number Talk (Days)")
-
-
-
-
-#----------------------------------------------------------------------------------------------------
 #3-level model 
 ml_meta_model.3l_mod_child_age_NT_mid <- rma.mv(yi = yi, V = vi, data = meta_tib, struct = "CS", method = "REML", test = "t",
                                                 mods = ~ child_age_NT_mid, 
@@ -1483,82 +1402,63 @@ ml_meta_model.3l_mod_child_age_NT_mid.M3
 
 #Outlier diagnostics for the 3-level model 
 #Cook's d
-#Cook's d plot using plot
-plot(cooks.distance(ml_meta_model.3l_mod_child_age_NT_mid, progbar=FALSE,
-               reestimate=TRUE, parallel="no", ncpus=1), type="o", pch=19, xlab="Observed Outcome", ylab="Cook's Distance")
-#Cook's d RESULTS 
-#-- All Cook's d were well below 1
+#Level 2
+ml_meta_model.3l_mod_child_age_NT_mid_cooks.d_lev2 <- cooks.distance(ml_meta_model.3l_mod_child_age_NT_mid , progbar=FALSE, reestimate=TRUE, parallel="no", ncpus=1, cluster = meta_tib$effect) %>% data.frame() %>% rownames_to_column(var = "effect_id") %>% rename(., cooks.d = .) %>% arrange(desc(cooks.d))
+ml_meta_model.3l_mod_child_age_NT_mid_cooks.d_lev2 
+#RESULTS 
+#All Cook's d are below 1
+
+#Level 3
+ml_meta_model.3l_mod_child_age_NT_mid_cooks.d_lev3 <- cooks.distance(ml_meta_model.3l_mod_child_age_NT_mid , progbar=FALSE, reestimate=TRUE, parallel="no", ncpus=1, cluster = meta_tib$study_id) %>% data.frame() %>% rownames_to_column(var = "effect_id") %>% rename(., cooks.d = .) %>% arrange(desc(cooks.d))
+ml_meta_model.3l_mod_child_age_NT_mid_cooks.d_lev3 
+#RESULTS 
+#There is 1 outier (casey_et_al.2018)
+
 
 #DFBETA
-dfbetas(ml_meta_model.3l_mod_child_age_NT_mid, progbar=FALSE,reestimate=TRUE, parallel="no", ncpus=1) %>% 
-  add_column(select(drop_na(data = meta_tib, child_age_NT_mid), effect)) %>% 
-  select(effect, intrcpt, child_age_NT_mid) %>% 
-  mutate(absDFBETAS = abs(child_age_NT_mid)) %>% 
-  arrange(desc(absDFBETAS))
+#Level 2
+dfbetas(ml_meta_model.3l_mod_child_age_NT_mid, progbar=FALSE,reestimate=TRUE, parallel="no", ncpus=1, cluster = meta_tib$effect) %>% rownames_to_column(var = "effect_id") %>% filter(abs(child_age_NT_mid)>1)
 #DFBETAS RESULTS
-#-- Biggest absolute DFBETA was levine_et_al.2010 (0.67)
+#-- Intercept: All DFBETAS are below 1
+#-- child_age_NT_mid: All DFBETAS are below 1
 
+#Level 3
+dfbetas(ml_meta_model.3l_mod_child_age_NT_mid, progbar=FALSE,reestimate=TRUE, parallel="no", ncpus=1, cluster = meta_tib$study_id) %>% rownames_to_column(var = "effect_id") %>% filter(abs(child_age_NT_mid)>1)
+#DFBETAS RESULTS
+#-- Intercept: There is 1 outlier (casey_et_al.2018)
+#-- child_age_NT_mid: There is 1 outlier (casey_et_al.2018)
 
 #OVERALL OUTLIER ANALYSIS RESULT
 #-- No outlier problems 
+#Moderator analysis for child age during NT
 
 
 #----------------------------------------------------------------------------------------------------
-#2-level model b
-ml_meta_model.2lb_mod_child_age_NT_mid <- rma.mv(yi = yi, V = vi, data = meta_tib, struct = "CS", method = "REML", test = "t",
+#2-level model 
+ml_meta_model.2l_mod_child_age_NT_mid.M1 <- rma.mv(yi = yi, V = vi, data = meta_tib, struct = "CS", method = "REML", test = "t",
+                                                mods = ~ child_age_NT_mid, 
+                                                random = ~ 1 | study_id)
+ml_meta_model.2l_mod_child_age_NT_mid.M1
+#RESULTS
+#Child age during NT has a significant effect (p = 0.0091)
+
+#Regression Plot
+regplot(ml_meta_model.2l_mod_child_age_NT_mid.M1, xlab = "Child Age During Number Talk (Days)")
+
+
+#----------------------------------------------------------------------------------------------------
+#2-level model re
+ml_meta_model.2lre_mod_child_age_NT_mid <- rma.mv(yi = yi, V = vi, data = meta_tib, struct = "CS", method = "REML", test = "t",
                                                 mods = ~ child_age_NT_mid, 
                                                 random = ~ 1 | effect)
-ml_meta_model.2lb_mod_child_age_NT_mid
+ml_meta_model.2lre_mod_child_age_NT_mid
 #RESULTS 
 #--- Child age during NT has a significant effect (p = 0.0149)
-regplot(ml_meta_model.2lb_mod_child_age_NT_mid, xlab = "Child Age During Number Talk (Days)")
-
-
-
-#CRAP 
-#----------------------------------------------------------------------------------------------------
-
-
-time_converter(y = 3)
+regplot(ml_meta_model.2lre_mod_child_age_NT_mid, xlab = "Child Age During Number Talk (Days)")
 
 
 
 
-
-
-#Outlier Analysis
-#Cook's d
-child_age_NT_mid_mod_cooks.d <- cooks.distance(ml_meta_model_mod_child_age_NT_mid.M1, progbar=FALSE,
-               reestimate=TRUE, parallel="no", ncpus=1) %>% tibble() %>% rename(., cooks.d = .) %>% add_column(select(drop_na(data = meta_tib, child_age_NT_mid), effect)) %>% rowid_to_column(., var = "Effect_no") %>% select(effect, Effect_no, cooks.d) 
-child_age_NT_mid_mod_cooks.d %>% filter(cooks.d > 0.5)
-#Cook's d plot using ggplot
-ggplot(data = child_age_NT_mid_mod_cooks.d) + 
-  geom_col(mapping = aes(x = Effect_no, y = cooks.d),  width = 0.3, fill = "black")  + 
-  scale_y_continuous(expand = c(0,0), limits = c(0, 1)) +
-  scale_x_continuous(breaks = seq(1, 40, by = 1)) +
-  theme_classic()
-
-#Cook's d plot using plot
-plot(cooks.distance(ml_meta_model_mod_child_age_NT_mid.M1, progbar=FALSE,
-               reestimate=TRUE, parallel="no", ncpus=1), type="o", pch=19, xlab="Observed Outcome", ylab="Cook's Distance")
-#Cook's d RESULTS 
-#-- The biggest Cook's d was levine_et_al.2010a (0.85)
-
-#DFBETA
-dfbetas(ml_meta_model_mod_child_age_NT_mid.M1, progbar=FALSE,reestimate=TRUE, parallel="no", ncpus=1) %>% 
-  add_column(select(drop_na(data = meta_tib, child_age_NT_mid), effect)) %>% 
-  select(effect, intrcpt, child_age_NT_mid) %>% 
-  mutate(absDFBETAS = abs(child_age_NT_mid)) %>% 
-  arrange(desc(absDFBETAS))
-#DFBETAS RESULTS
-#-- Biggest DFBETA was levine_et_al.2010 (0.89)
-
-# Hatvalues (I have no idea what this is)
-hatvalues(ml_meta_model_mod_child_age_NT_mid.M1, type = "diagonal")
-
-
-#OVERALL OUTLIER ANALYSIS RESULT
-#-- No outlier problems 
 ```
 
 ```{r NT_context}
@@ -1578,17 +1478,6 @@ contrasts(meta_tib$NT_context) <- cbind(
 
 #Moderator analysis 
 #----------------------------------------------------------------------------------------------------
-#2-level model
-ml_meta_model.2l_mod_NT_context <- rma.mv(yi = yi, V = vi, data = meta_tib, struct = "CS", method = "REML", test = "t",
-                                       mods = ~ NT_context, 
-                                       random = ~ 1 | study_id)
-ml_meta_model.2l_mod_NT_context
-#RESULTS 
-#No significant results 
-#But note that home shows a positive trend (b = 0.2134, p = 0.0838)
-
-
-#----------------------------------------------------------------------------------------------------
 #3-level regression
 ml_meta_model.3l_mod_NT_context <- rma.mv(yi = yi, V = vi, data = meta_tib, struct = "CS", method = "REML", test = "t",
                                        mods = ~ NT_context, 
@@ -1598,21 +1487,60 @@ ml_meta_model.3l_mod_NT_context
 #No significant results 
 #But note that home shows a positive trend (b = 0.1937, p = 0.0996)
 
-cooks.distance(ml_meta_model.3l_mod_NT_context) %>% tibble() %>% arrange(desc(.))
+#Outliers 
+#Cook's d 
+#Level 2
+ml_meta_model.3l_mod_NT_context_cooks.d_lev2 <- cooks.distance(ml_meta_model.3l_mod_NT_context , progbar=FALSE, reestimate=TRUE, parallel="no", ncpus=1, cluster = meta_tib$effect) %>% data.frame() %>% rownames_to_column(var = "effect_id") %>% rename(., cooks.d = .) %>% arrange(desc(cooks.d))
+ml_meta_model.3l_mod_NT_context_cooks.d_lev2
 #RESULTS 
 #All Cook's distances are below 0
 
+#Level 3
+ml_meta_model.3l_mod_NT_context_cooks.d_lev3 <- cooks.distance(ml_meta_model.3l_mod_NT_context , progbar=FALSE, reestimate=TRUE, parallel="no", ncpus=1, cluster = meta_tib$study_id) %>% data.frame() %>% rownames_to_column(var = "study_id") %>% rename(., cooks.d = .) %>% arrange(desc(cooks.d))
+ml_meta_model.3l_mod_NT_context_cooks.d_lev3
+#RESULTS
+#There is 1 outlier (mutaf_yildiz_et_al.2018)
+
+
+#DFBETA
+#Level 2
+dfbetas(ml_meta_model.3l_mod_NT_context, progbar=FALSE,reestimate=TRUE, parallel="no", ncpus=1, cluster = meta_tib$effect) %>% rownames_to_column(var = "effect_id") %>% filter(abs(NT_contextNTschool_vs_mean)>1)
+#DFBETAS RESULTS
+#-- Intercept: All DFBETAS are below 1
+#-- NT_contextNThome_vs_mean: All DFBETAS are below 1
+#-- NT_contextNTlab_vs_mean: All DFBETAS are below 1
+#-- NT_contextNTschool_vs_mean: All DFBETAS are below 1
+
+#Level 3
+dfbetas(ml_meta_model.3l_mod_NT_context, progbar=FALSE,reestimate=TRUE, parallel="no", ncpus=1, cluster = meta_tib$study_id) %>% rownames_to_column(var = "study_id") %>% filter(abs(NT_contextNTschool_vs_mean)>1)
+#DFBETAS RESULTS
+#-- Intercept: All DFBETAS are below 1
+#-- NT_contextNThome_vs_mean: There is 1 outlier (mutaf_yildiz_et_al.2018)
+#-- NT_contextNTlab_vs_mean: All DFBETAS are below 1
+#-- NT_contextNTschool_vs_mean: All DFBETAS are below 1
+
+
+
+
 #----------------------------------------------------------------------------------------------------
-#2-level model b
-ml_meta_model.2lb_mod_NT_context <- rma.mv(yi = yi, V = vi, data = meta_tib, struct = "CS", method = "REML", test = "t",
+#2-level model re
+ml_meta_model.2lre_mod_NT_context <- rma.mv(yi = yi, V = vi, data = meta_tib, struct = "CS", method = "REML", test = "t",
                                        mods = ~ NT_context, 
                                        random = ~ 1 | effect)
-ml_meta_model.2lb_mod_NT_context
-
-
+ml_meta_model.2lre_mod_NT_context
 #RESULTS 
 #No significant results 
 #But note that home shows a positive trend (b = 0.1937, p = 0.0996)
+
+#----------------------------------------------------------------------------------------------------
+#2-level model
+ml_meta_model.2l_mod_NT_context <- rma.mv(yi = yi, V = vi, data = meta_tib, struct = "CS", method = "REML", test = "t",
+                                       mods = ~ NT_context, 
+                                       random = ~ 1 | study_id)
+ml_meta_model.2l_mod_NT_context
+#RESULTS 
+#No significant results 
+#But note that home shows a positive trend (b = 0.2134, p = 0.0838)
 
 ```
 
@@ -1642,6 +1570,72 @@ contrasts(meta_tib$MA_measure) <- cbind(
 
 #Moderator analysis 
 #----------------------------------------------------------------------------------------------------
+#3-level model
+ml_meta_model.3l_mod_MA_measure <- rma.mv(yi = yi, V = vi, data = meta_tib, struct = "CS", method = "REML", test = "t",
+                                      mods = ~ MA_measure, 
+                                      random = ~ 1 | study_id/effect)
+ml_meta_model.3l_mod_MA_measure
+#RESULTS 
+#No significant results 
+#But note that calculation NT show a positive trend (b = -0.4919, 0.0745)
+
+
+#Outliers 
+#Cook's d 
+#Level 2
+ml_meta_model.3l_mod_MA_measure_cooks.d_lev2 <- cooks.distance(ml_meta_model.3l_mod_MA_measure, progbar=FALSE, reestimate=TRUE, parallel="no", ncpus=1, cluster = meta_tib$effect) %>% data.frame() %>% rownames_to_column(var = "effect_id") %>% rename(., cooks.d = .) %>% arrange(desc(cooks.d))
+ml_meta_model.3l_mod_MA_measure_cooks.d_lev2
+#RESULTS
+#There are 6 outliers (levine_et_al.2010a, ramani_et_al.2015g, gibson_et_al.2020b, gibson_et_al.2020a, mutaf_yildiz_et_al.2018b, mutaf_yildiz_et_al.2018a)
+#levine_et_al.2010a	4.6481488546			
+
+
+#Level 3
+ml_meta_model.3l_mod_MA_measure_cooks.d_lev3 <- cooks.distance(ml_meta_model.3l_mod_MA_measure, progbar=FALSE, reestimate=TRUE, parallel="no", ncpus=1, cluster = meta_tib$study_id) %>% data.frame() %>% rownames_to_column(var = "study_id") %>% rename(., cooks.d = .) %>% arrange(desc(cooks.d))
+ml_meta_model.3l_mod_MA_measure_cooks.d_lev3
+#RESULTS
+#There is 1 outlier (mutaf_yildiz_et_al.2018)
+#There are 4 outliers (ramani_et_al.2015, levine_et_al.2010, zippert_et_al.2019, boonen_et_al.2011)
+
+
+
+#DFBETA
+#Level 2
+dfbetas(ml_meta_model.3l_mod_MA_measure, progbar=FALSE,reestimate=TRUE, parallel="no", ncpus=1, cluster = meta_tib$effect) %>% rownames_to_column(var = "effect_id") %>% filter(abs(MA_measurecalculationMA_vs_mean)>1)
+#DFBETAS RESULTS
+#-- Intercept: All DFBETAS are below 1
+#-- MA_measurecalculationMA_vs_mean
+
+intrcpt
+<dbl>
+MA_measurecalculationMA_vs_mean
+<dbl>
+MA_measurecardinalityMA_vs_mean
+<dbl>
+MA_measurecountingMA_vs_mean
+<dbl>
+  MA_measurenumber_identificationMA_vs_mean
+<dbl>
+MA_measurenumber_knowledgeMA_vs_mean
+<dbl>
+MA_measurenumber_line_estimation_MA_vs_mean
+<dbl>
+<dbl>
+MA_measurenumber_line_estimation_MA_vs_mean
+<dbl>
+MA_measurequantity_comparisonMA_vs_mean
+<dbl>
+
+#Level 3
+dfbetas(ml_meta_model.3l_mod_NT_context, progbar=FALSE,reestimate=TRUE, parallel="no", ncpus=1, cluster = meta_tib$study_id) %>% rownames_to_column(var = "study_id") %>% filter(abs(NT_contextNTschool_vs_mean)>1)
+#DFBETAS RESULTS
+#-- Intercept: All DFBETAS are below 1
+#-- NT_contextNThome_vs_mean: There is 1 outlier (mutaf_yildiz_et_al.2018)
+#-- NT_contextNTlab_vs_mean: All DFBETAS are below 1
+#-- NT_contextNTschool_vs_mean: All DFBETAS are below 1
+
+
+#----------------------------------------------------------------------------------------------------
 #2-level model
 ml_meta_model.2l_mod_MA_measure <- rma.mv(yi = yi, V = vi, data = meta_tib, struct = "CS", method = "REML", test = "t",
                                       mods = ~ MA_measure, 
@@ -1655,27 +1649,14 @@ ml_meta_model.2l_mod_MA_measure
 #-- Calculation (-0.5150, p = 0.0346)
 #-- Number Identification (-0.2509, p = 0.0466)
 
-#----------------------------------------------------------------------------------------------------
-#3-level model
-ml_meta_model.3l_mod_MA_measure <- rma.mv(yi = yi, V = vi, data = meta_tib, struct = "CS", method = "REML", test = "t",
-                                      mods = ~ MA_measure, 
-                                      random = ~ 1 | study_id/effect)
-ml_meta_model.3l_mod_MA_measure
-#RESULTS 
-#No significant results 
-#But note that calculation NT show a positive trend (b = -0.4919, 0.0745)
 
-
-cooks.distance(ml_meta_model.3l_mod_MA_measure) %>% tibble() %>% arrange(desc(.))
-#RESULTS 
-#There are 6 outliers 
 
 #----------------------------------------------------------------------------------------------------
 #2-level model b
-ml_meta_model.2lb_mod_MA_measure <- rma.mv(yi = yi, V = vi, data = meta_tib, struct = "CS", method = "REML", test = "t",
+ml_meta_model.2lre_mod_MA_measure <- rma.mv(yi = yi, V = vi, data = meta_tib, struct = "CS", method = "REML", test = "t",
                                       mods = ~ MA_measure, 
                                       random = ~ 1 | effect)
-ml_meta_model.2lb_mod_MA_measure
+ml_meta_model.2lre_mod_MA_measure
 #RESULTS 
 #No significant results 
 #But note that calculation NT show a positive trend (b = -0.4887, 0.0728)
@@ -1690,7 +1671,6 @@ funnel(ml_meta_model.3l)
 meta_tib2 <- meta_tib %>% mutate(se = sqrt(vi), snd = yi/se, inv.se = 1/se)
 
 lm(snd ~ inv.se, data = meta_tib2) %>% summary()
-plot(lm(snd ~ inv.se, data = meta_tib2))
 
 ggplot(meta_tib2, aes(x = inv.se, y = snd)) + 
   geom_point() +
@@ -1699,6 +1679,33 @@ ggplot(meta_tib2, aes(x = inv.se, y = snd)) +
 #Egger's test indicated that there is no publication bias 
 ```
 
+
+```{r}
+(0.529 - 0.491)/0.0645
+
+cohens.d.se <- function(d, n1, n2){
+  cohens.d.se <- sqrt(
+    ((n1+n2)/(n1*n2))+((d^2)/(2*(n1+n2)))
+  )
+  print(cohens.d.se)
+}
+
+0.5588235
+cohens.d.se(d = 0.5891473, n1 = 60, n2 = 60)
+
+0.5588235/0.1864928
+
+pt(q = 2.996488, lower.tail = F, df = 118)
+
+7*1
+time_converter(d = 294)
+time_converter(d = 276.5)
+42*7
+37*7
+
+((42*7) + (37*7))/2
+9.659138
+```
 
 
 
