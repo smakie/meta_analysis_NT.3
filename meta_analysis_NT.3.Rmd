@@ -171,11 +171,11 @@ time_converter <- function(min, d, m, y){
 
 ######################################################################
 #Leave 1 out analysis for rma.mv objects (require metafor)
-rma.mv.leave1out <- function(data, struct = "CS", method = "REML", random, mods = NULL){
+rma.mv.leave1out_old <- function(data, struct = "CS", method = "REML", random, mods = NULL){
   data1 <- rowid_to_column(data, var = "effect_no1")
   leave1out <- c()
   se <- c()
-  zval <- c()
+  tval <- c()
   pval <-c()
   ci.lb <- c()
   ci.ub <- c()
@@ -184,37 +184,109 @@ rma.mv.leave1out <- function(data, struct = "CS", method = "REML", random, mods 
                                       random = random, mods = mods)
     leave1out <- c(leave1out , modresult$b)
     se <- c(se, modresult$se)
-    zval <- c(zval, modresult$zval)
+    tval <- c(tval, modresult$tval)
     pval <- c(pval, modresult$pval)
     ci.lb <- c(ci.lb, modresult$ci.lb)
     ci.ub <- c(ci.ub, modresult$ci.ub)
   }
-  return(mutate(add_column(as.data.frame(cbind(leave1out, se, zval, pval, ci.lb, ci.ub)), select(meta_tib, effect), .before = T), 
+  return(mutate(add_column(as.data.frame(cbind(leave1out, se, tval, pval, ci.lb, ci.ub)), select(meta_tib, effect), .before = T), 
                 sig = ifelse(pval <= 0.05, ifelse(pval <= 0.01, ifelse(pval <= 0.001, "***", "**"), "*"), "ns")))
 }
 ######################################################################
 #Leave 1 out analysis for rma.mv objects for categorical/dummy variables  (require metafor)
-rma.mv.leave1out.fct <- function(data, struct = "CS", method = "REML", random, mods = NULL, dummy_var){
-  data1 <- rowid_to_column(data, var = "effect_no1")
+rma.mv.leave1out_old2 <- function(data, struct = "CS", method = "REML", random, mods = NULL, b = 0){
+  data1 <- rowid_to_column(data, var = "effect_no")
+  data3 <- mutate(data1, effect_no = as.factor(effect_no))
+  model0 <- rma.mv(yi = yi, V = vi, data = data1, struct = struct, method = method, test = "t", 
+                                      random = random, mods = mods)
   leave1out <- c()
   se <- c()
-  zval <- c()
+  tval <- c()
   pval <-c()
   ci.lb <- c()
   ci.ub <- c()
-  for(counter in 1:max(data1$effect_no1)){
-    modresult <- rma.mv(yi = yi, V = vi, data = filter(data1, effect_no1 != counter), struct = struct, method = method, test = "t", 
+  for(counter in 1:max(data1$effect_no)){
+    data2 <- filter(data1, effect_no != counter)
+    model <- rma.mv(yi = yi, V = vi, data = data2, struct = struct, method = method, test = "t", 
                                       random = random, mods = mods)
-    leave1out <- c(leave1out , modresult$b[dummy_var+1])
-    se <- c(se, modresult$se[dummy_var+1])
-    zval <- c(zval, modresult$zval[dummy_var+1])
-    pval <- c(pval, modresult$pval[dummy_var+1])
-    ci.lb <- c(ci.lb, modresult$ci.lb[dummy_var+1])
-    ci.ub <- c(ci.ub, modresult$ci.ub[dummy_var+1])
+    leave1out <- c(leave1out , model$b[b+1])
+    se <- c(se, model$se[b+1])
+    tval <- c(tval, model$zval[b+1])
+    pval <- c(pval, model$pval[b+1])
+    ci.lb <- c(ci.lb, model$ci.lb[b+1])
+    ci.ub <- c(ci.ub, model$ci.ub[b+1])
   }
-  return(mutate(add_column(as.data.frame(cbind(leave1out, se, zval, pval, ci.lb, ci.ub)), select(meta_tib, effect), .before = T), 
-                sig = ifelse(pval <= 0.05, ifelse(pval <= 0.01, ifelse(pval <= 0.001, "***", "**"), "*"), "ns")))
+  cd1 <- cooks.distance(model0, progbar=FALSE, reestimate=TRUE, parallel="no", ncpus=1, cluster = data3$effect_no)
+  cd2 <- rename(mutate(rownames_to_column(as.data.frame(cd), var = "effect_no"), effect_no = as.factor(effect_no)), cooks.d = cd)
+  return(full_join(mutate(add_column(add_column(as.data.frame(cbind(leave1out, se, tval, pval, ci.lb, ci.ub)), select(meta_tib, effect), .before = T), mutate(select(data1, effect_no), effect_no = as.factor(effect_no)), .before = T), 
+                sig = ifelse(pval <= 0.05, ifelse(pval <= 0.01, ifelse(pval <= 0.001, "***", "**"), "*"), "ns")), cd2, by = "effect_no"))
 }
+
+
+
+rma.mv.outlier <- function(data, struct = "CS", method = "REML", random, mods = NULL, b = 0, cluster){
+  c <- cluster
+  data1 <- rowid_to_column(data, var = "effect_no")
+  model0 <- rma.mv(yi = yi, V = vi, data = data1, struct = struct, method = method, test = "t", 
+                                      random = random, mods = mods)
+  leave1out <- c()
+  se <- c()
+  tval <- c()
+  pval <-c()
+  ci.lb <- c()
+  ci.ub <- c()
+  for(counter in 1:max(data1$effect_no)){
+    data2 <- filter(data1, effect_no != counter)
+    model <- rma.mv(yi = yi, V = vi, data = data2, struct = struct, method = method, test = "t", 
+                                      random = random, mods = mods)
+    leave1out <- c(leave1out , model$b[b+1])
+    se <- c(se, model$se[b+1])
+    tval <- c(tval, model$zval[b+1])
+    pval <- c(pval, model$pval[b+1])
+    ci.lb <- c(ci.lb, model$ci.lb[b+1])
+    ci.ub <- c(ci.ub, model$ci.ub[b+1])
+  }
+  cd.1 <- cooks.distance(model0, progbar=FALSE, reestimate=TRUE, parallel="no", ncpus=1, cluster = as.factor(c))
+  cd.2 <- rename(mutate(rownames_to_column(as.data.frame(cd.1), var = "effect"), effect = as.factor(effect)), cooks.d = cd.1)
+  dfbetas1 <- dfbetas(model0, progbar=FALSE, reestimate=TRUE, parallel="no", ncpus=1, cluster = as.factor(c))
+  dfbetas2 <- mutate(rownames_to_column(as.data.frame(t(as.data.frame(t(dfbetas1))[(b + 1),])), var = "effect"), effect = as.factor(effect))
+  names(dfbetas2)[2]<-paste("DFBETAS") 
+  return(select(full_join(full_join(mutate(add_column(as.data.frame(cbind(leave1out, se, tval, pval, ci.lb, ci.ub)), rename(as.tibble(as.factor(c)), effect = value), .before = T),
+                sig = ifelse(pval <= 0.05, ifelse(pval <= 0.01, ifelse(pval <= 0.001, "***", "**"), "*"), "ns")), cd.2, by = "effect"), dfbetas2, by = "effect"), effect, cooks.d, DFBETAS, leave1out, se, tval, pval, ci.lb, ci.ub, sig))
+}
+
+
+```
+
+
+```{r functions}
+#Testing my function
+#----------------------------------------------------------------------------------------------------
+#rma.mv.leave1out.new(meta_tib, struct = "CS", method = "REML", random = ~ 1 | study_id/effect, cluster = meta_tib$effect, b = 0)
+#c <- meta_tib$effect
+#rename(as.tibble(as.factor(c)), effect = value)
+  #cod1 <- cooks.distance(ml_meta_model.3l, progbar=FALSE, reestimate=TRUE, parallel="no", ncpus=1, cluster = as.factor(c))
+  #cod2 <- rename(mutate(rownames_to_column(as.data.frame(cod1), var = "effect"), effect = as.factor(effect)), cooks.d = cod1)
+
+#cooks.distance(ml_meta_model.3l_mod_NT_type.1, progbar=FALSE, reestimate=TRUE, parallel="no", ncpus=1, cluster = as.factor(c)) %>% as.data.frame()
+#dfbetas(ml_meta_model.3l_mod_NT_type.1, progbar=FALSE, reestimate=TRUE, parallel="no", ncpus=1, cluster = as.factor(c))
+
+#c <- meta_tib$effect
+#rename(as.tibble(as.factor(c)), effect = value)
+  #dfbetas1 <- dfbetas(ml_meta_model.3l_mod_NT_type.1, progbar=FALSE, reestimate=TRUE, parallel="no", ncpus=1, cluster = as.factor(c))
+  #dfbetas2 <- mutate(rownames_to_column(as.data.frame(t(head((as.data.frame(t(dfbetas1))),(b + 1)))), var = "effect"), effect = as.factor(effect))
+  #names(dfbetas2)[2]<-paste("DFBETAS") 
+#dfbetas(ml_meta_model.3l_mod_NT_type.1, progbar=FALSE, reestimate=TRUE, parallel="no", ncpus=1, cluster = as.factor(c)) %>%  as.data.frame() %>% rownames() %>% transpose() %>% as.tibble()
+
+#b <- 2
+#as.data.frame(t(tibble(head(rownames_to_column(as.data.frame(t(dfbetas1)), var = "b"), (b + 1)))))
+#filter(rownames_to_column(as.data.frame(t(head(rownames_to_column(as.data.frame(t(dfbetas1)), var = "b"), (b + 1)))), var = "effect"), effect != "b")
+
+#mutate(rownames_to_column(as.data.frame(t(head((as.data.frame(t(dfbetas1))),(b + 1)))), var = "effect"), effect = as.factor(effect))
+
+
+#mutate(rownames_to_column(as.data.frame(t(head((as.data.frame(t(dfbetas1))),(b + 1)))), var = "effect"), effect = as.factor(effect))
+
 
 
 ```
@@ -973,26 +1045,50 @@ ml_meta_model.3l_cooks.d_lev2 <- cooks.distance(ml_meta_model.2lre, progbar=FALS
 ml_meta_model.3l_cooks.d_lev2
 plot(cooks.distance(ml_meta_model.2lre, progbar=FALSE, reestimate=TRUE, parallel="no", ncpus=1, cluster = meta_tib$effect), type="o", pch=19, xlab="Observed Outcome", ylab="Cook's Distance")
 #RESULTS 
-#-- All Cook's distances are well below 1
+#-- No outliers
 
 #Cook's d at level 3 (The Study level)
 ml_meta_model.3l_cooks.d_lev3 <- cooks.distance(ml_meta_model.2lre, progbar=FALSE, reestimate=TRUE, parallel="no", ncpus=1, cluster = meta_tib$study_id) %>% tibble() %>% rename(., cooks.d = .) %>% arrange(desc(cooks.d))
 ml_meta_model.3l_cooks.d_lev3 
 plot(cooks.distance(ml_meta_model.2lre, progbar=FALSE, reestimate=TRUE, parallel="no", ncpus=1, cluster = meta_tib$study_id), type="o", pch=19, xlab="Observed Outcome", ylab="Cook's Distance")
 #RESULTS 
-#-- All Cook's distances are well below 1
+#-- No outliers 
 
-dfbetas(ml_meta_model.3l, cluster = meta_tib$effect, reestimate = F)
+#DFBETAS
+#Effect level 
+dfbetas(ml_meta_model.3l, cluster = meta_tib$effect, reestimate = T) %>% rownames_to_column(var = "effect") %>% mutate(absDFBETAS = abs(intrcpt)) %>% arrange(desc(absDFBETAS))
+#No outliers
+
+#Study level 
+dfbetas(ml_meta_model.3l, cluster = meta_tib$study_id, reestimate = T) %>% rownames_to_column(var = "effect") %>% mutate(absDFBETAS = abs(intrcpt)) %>% arrange(desc(absDFBETAS))
+#No outliers
+
 
 #Leave-1-out 
-rma.mv.leave1out(meta_tib, struct = "CS", method = "REML", random = ~1 | study_id/effect) %>% mutate(estimate_change = leave1out - ml_meta_model.3l$b)
+ml_meta_model.3l_leave1out <- rma.mv.leave1out(meta_tib, struct = "CS",method = "REML", random = ~1 | study_id/effect)
+ml_meta_model.3l_leave1out 
+
+ml_meta_model.3l_leave1out <- rma.mv.leave1out(meta_tib, struct = "CS",method = "REML", random = ~1 | study_id/effect, cluster = meta_tib$effect)
+
+
+#Validation for the leave1out function
+#cooks.distance(ml_meta_model.3l, progbar=FALSE, reestimate=TRUE, parallel="no", ncpus=1, cluster = meta_tib$effect) %>% as.data.frame() %>% rename(., cooks.d = .) %>%  rownames_to_column(var = "effect") 
+
+#dfbetas(ml_meta_model.3l, cluster = meta_tib$effect, reestimate = T) %>% rownames_to_column(var = "effect") %>% mutate(absDFBETAS = abs(intrcpt)) 
+
+#ml_meta_model.3l_leave1out 
+#ALL CORRECT
 
 
 #Forest plots
 forest(ml_meta_model.3l, addpred = T, header = T)
 forest(ml_meta_model.2lre, addpred = T, header = T)
 
+
+
 ```
+
+
 
 ```{r robust_ml_meta_analysis}
 #Clustered Robust SE
@@ -1102,51 +1198,21 @@ dfbetas(ml_meta_model.3l_mod_main_language, progbar=FALSE,reestimate=TRUE, paral
 #DFBETAS RESULTS
 #-- All DFBETAS are well below 1
 
-#Effect level 
-dfbetas_mod_main_language.p1 <- dfbetas(ml_meta_model.3l_mod_main_language, progbar=FALSE,reestimate=TRUE, parallel="no", ncpus=1, cluster= meta_tib$study_id) %>% 
-  select(effect, intrcpt, main_language1) %>% 
+#Study level 
+dfbetas(ml_meta_model.3l_mod_main_language, progbar=FALSE,reestimate=TRUE, parallel="no", ncpus=1, cluster= meta_tib$study_id) %>% 
   mutate(absDFBETAS = abs(main_language1)) %>% 
   arrange(desc(absDFBETAS))
 #DFBETAS RESULTS
 #-- All DFBETAS are well below 1
-dfbetas_mod_main_language.p2 <- as.data.frame(dfbetas_mod_main_language.p1)
-dfbetas_mod_main_language.p2$study_id <- rownames(dfbetas_mod_main_language.p1)
 
-dfbetas_mod_main_language <- dfbetas_mod_main_language.p2 %>% select(study_id, intrcpt, main_language1) %>% mutate(absDFBETAS = abs(main_language1)) %>% arrange(desc(absDFBETAS))
-dfbetas_mod_main_language 
-#RESULTS 
-#1 influential study
-#Boonen
 
 
 #Leave-1-out 
-#Create function 
-rma.mv.leave1out.2 <- function(data, struct = "CS", method = "REML", random, mods = NULL){
-  data1 <- rowid_to_column(data, var = "effect_no1")
-  leave1out <- c()
-  se <- c()
-  zval <- c()
-  pval <-c()
-  ci.lb <- c()
-  ci.ub <- c()
-  for(counter in 1:max(data1$effect_no1)){
-    modresult <- rma.mv(yi = yi, V = vi, data = filter(data1, effect_no1 != counter), struct = struct, method = method, test = "t", 
-                                      random = random, mods = mods)
-    leave1out <- c(leave1out , modresult$b[2])
-    se <- c(se, modresult$se[2])
-    zval <- c(zval, modresult$zval[2])
-    pval <- c(pval, modresult$pval[2])
-    ci.lb <- c(ci.lb, modresult$ci.lb[2])
-    ci.ub <- c(ci.ub, modresult$ci.ub[2])
-  }
-  return(mutate(add_column(as.data.frame(cbind(leave1out, se, zval, pval, ci.lb, ci.ub)), select(meta_tib, effect), .before = T), 
-                sig = ifelse(pval <= 0.05, ifelse(pval <= 0.01, ifelse(pval <= 0.001, "***", "**"), "*"), "ns")))
-}
 
-rma.mv.leave1out.2(meta_tib, struct = "CS", method = "REML", mods = ~ main_language,random = ~1 | study_id/effect) %>% mutate(estimate_change = leave1out - ml_meta_model.3l_mod_main_language$b[2])
+ml_meta_model.3l_mod_main_language.outlier.b1 <- rma.mv.outlier(meta_tib, struct = "CS", method = "REML", mods = ~ main_language, random = ~1 | study_id/effect, cluster = meta_tib$effect, b = 1)
 
 
-
+ml_meta_model.3l_mod_main_language.outlier.b1
 
 #CRAP 
 #----------------------------------------------------------------------------------------------------
@@ -1254,11 +1320,34 @@ dfbetas(ml_meta_model.3l_mod_NT_type.1, progbar=FALSE,reestimate=TRUE, parallel=
 #-- NT_type.1quantity_comparisonNT_vs_mean: All DFBETAS are below 1
 
 
-
 #Leave 1 out
-rma.mv.leave1out.fct(data = meta_tib, struct = "CS", method = "REML",
-                                      mods = ~ NT_type.1, 
-                                      random = ~ 1 | study_id/effect, dummy_var = 2)
+ml_meta_model.3l_mod_NT_type.1.outlier.b1 <- rma.mv.outlier(meta_tib, struct = "CS", method = "REML", mods = ~ NT_type.1, random = ~1 | study_id/effect, cluster = meta_tib$effect, b = 1)
+
+ml_meta_model.3l_mod_NT_type.1.outlier.b2 <- rma.mv.outlier(meta_tib, struct = "CS", method = "REML", mods = ~ NT_type.1, random = ~1 | study_id/effect, cluster = meta_tib$effect, b = 2)
+
+ml_meta_model.3l_mod_NT_type.1.outlier.b3 <- rma.mv.outlier(meta_tib, struct = "CS", method = "REML", mods = ~ NT_type.1, random = ~1 | study_id/effect, cluster = meta_tib$effect, b = 3)
+
+ml_meta_model.3l_mod_NT_type.1.outlier.b4 <- rma.mv.outlier(meta_tib, struct = "CS", method = "REML", mods = ~ NT_type.1, random = ~1 | study_id/effect, cluster = meta_tib$effect, b = 4)
+
+ml_meta_model.3l_mod_NT_type.1.outlier.b5 <- rma.mv.outlier(meta_tib, struct = "CS", method = "REML", mods = ~ NT_type.1, random = ~1 | study_id/effect, cluster = meta_tib$effect, b = 5)
+
+ml_meta_model.3l_mod_NT_type.1.outlier.b6 <- rma.mv.outlier(meta_tib, struct = "CS", method = "REML", mods = ~ NT_type.1, random = ~1 | study_id/effect, cluster = meta_tib$effect, b = 6)
+
+ml_meta_model.3l_mod_NT_type.1.outlier.b7 <- rma.mv.outlier(meta_tib, struct = "CS", method = "REML", mods = ~ NT_type.1, random = ~1 | study_id/effect, cluster = meta_tib$effect, b = 7)
+
+ml_meta_model.3l_mod_NT_type.1.outlier.b8 <- rma.mv.outlier(meta_tib, struct = "CS", method = "REML", mods = ~ NT_type.1, random = ~1 | study_id/effect, cluster = meta_tib$effect, b = 8)
+
+
+
+ml_meta_model.3l_mod_NT_type.1.outlier.b1
+ml_meta_model.3l_mod_NT_type.1.outlier.b2
+ml_meta_model.3l_mod_NT_type.1.outlier.b3
+ml_meta_model.3l_mod_NT_type.1.outlier.b4
+ml_meta_model.3l_mod_NT_type.1.outlier.b5
+ml_meta_model.3l_mod_NT_type.1.outlier.b6
+ml_meta_model.3l_mod_NT_type.1.outlier.b7
+
+
 
 
 #Subgroup analysis 
@@ -1890,10 +1979,9 @@ dfbetas(ml_meta_model.3l_mod_MA_measure, progbar=FALSE,reestimate=TRUE, parallel
 #RELEVEL 
 #----------------------------------------------------------------------------------------------------
 #Checking the levels for MA_measure
-levels(meta_tib_MA_measure$MA_measure)
 meta_tib_MA_measure <- meta_tib %>% select(effect, study_id, MA_measure,  yi, vi, n) %>% mutate(MA_measure = forcats::fct_relevel(MA_measure, "Calculation", "Cardinality", "Counting", "Number_Identification", "Overall", "Number_Line_Estimation", "Quantity_Comparison", "Number_Knowledge"))
 meta_tib_MA_measure 
-
+levels(meta_tib_MA_measure$MA_measure)
 
 meta_tib %>% group_by(MA_measure) %>% summarise(n = n())
 
@@ -2048,17 +2136,11 @@ ml_meta_model.3l$version
 
 
 
-
-
-
-
-
-ml_meta_model.3l$formula.mods
-
-ml_meta_model.3l$vi
 rowid_to_column(rename(as.data.frame(cbind(ml_meta_model.3l$yi, ml_meta_model.3l$vi)), yi = V1, vi = V2), var = "effect_no1")
 
-sam_leave1out(meta_tib)
+
+
+
 
 rma.mv(yi = yi, V = vi, data = meta_tib, struct = "CS", method = "REML", test = "t", 
                                       random = ~1 | study_id/effect, mods = )
@@ -2072,6 +2154,8 @@ rma.mv(yi = yi, V = vi, data = meta_tib_MA_measure, struct = "CS", method = "REM
                                       random = ~ 1 | study_id/effect)
 
 ```
+
+
 
 
 
