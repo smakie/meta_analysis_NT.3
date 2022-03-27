@@ -168,6 +168,55 @@ time_converter <- function(min, d, m, y){
   return(tibble(mins,days, months, years))
 }
 
+
+######################################################################
+#Leave 1 out analysis for rma.mv objects (require metafor)
+rma.mv.leave1out <- function(data, struct = "CS", method = "REML", random, mods = NULL){
+  data1 <- rowid_to_column(data, var = "effect_no1")
+  leave1out <- c()
+  se <- c()
+  zval <- c()
+  pval <-c()
+  ci.lb <- c()
+  ci.ub <- c()
+  for(counter in 1:max(data1$effect_no1)){
+    modresult <- rma.mv(yi = yi, V = vi, data = filter(data1, effect_no1 != counter), struct = struct, method = method, test = "t", 
+                                      random = random, mods = mods)
+    leave1out <- c(leave1out , modresult$b)
+    se <- c(se, modresult$se)
+    zval <- c(zval, modresult$zval)
+    pval <- c(pval, modresult$pval)
+    ci.lb <- c(ci.lb, modresult$ci.lb)
+    ci.ub <- c(ci.ub, modresult$ci.ub)
+  }
+  return(mutate(add_column(as.data.frame(cbind(leave1out, se, zval, pval, ci.lb, ci.ub)), select(meta_tib, effect), .before = T), 
+                sig = ifelse(pval <= 0.05, ifelse(pval <= 0.01, ifelse(pval <= 0.001, "***", "**"), "*"), "ns")))
+}
+######################################################################
+#Leave 1 out analysis for rma.mv objects for categorical/dummy variables  (require metafor)
+rma.mv.leave1out.fct <- function(data, struct = "CS", method = "REML", random, mods = NULL, dummy_var){
+  data1 <- rowid_to_column(data, var = "effect_no1")
+  leave1out <- c()
+  se <- c()
+  zval <- c()
+  pval <-c()
+  ci.lb <- c()
+  ci.ub <- c()
+  for(counter in 1:max(data1$effect_no1)){
+    modresult <- rma.mv(yi = yi, V = vi, data = filter(data1, effect_no1 != counter), struct = struct, method = method, test = "t", 
+                                      random = random, mods = mods)
+    leave1out <- c(leave1out , modresult$b[dummy_var+1])
+    se <- c(se, modresult$se[dummy_var+1])
+    zval <- c(zval, modresult$zval[dummy_var+1])
+    pval <- c(pval, modresult$pval[dummy_var+1])
+    ci.lb <- c(ci.lb, modresult$ci.lb[dummy_var+1])
+    ci.ub <- c(ci.ub, modresult$ci.ub[dummy_var+1])
+  }
+  return(mutate(add_column(as.data.frame(cbind(leave1out, se, zval, pval, ci.lb, ci.ub)), select(meta_tib, effect), .before = T), 
+                sig = ifelse(pval <= 0.05, ifelse(pval <= 0.01, ifelse(pval <= 0.001, "***", "**"), "*"), "ns")))
+}
+
+
 ```
 
 
@@ -891,7 +940,7 @@ plot(gosh(re_meta_model, subset = 30000), out = 10)
 
 ```{r ml_meta_analysis}
 #2-level model (This is basically an RE model)
-ml_meta_model.2lre <- rma.mv(yi = yi, V = vi, data = meta_tib, struct = "CS", method = "ML", test = "t",
+ml_meta_model.2lre <- rma.mv(yi = yi, V = vi, data = meta_tib, struct = "CS", method = "REML", test = "t",
                         random = ~ 1 | effect)
 ml_meta_model.2lre %>% summary()
 ml_meta_model.2lre
@@ -902,7 +951,7 @@ ml_meta_model.2l <- rma.mv(yi = yi, V = vi, data = meta_tib, struct = "CS", meth
 ml_meta_model.2l
 
 #3-level meta-analysis
-ml_meta_model.3l <- rma.mv(yi = yi, V = vi, data = meta_tib, struct = "CS", method = "ML", test = "t",
+ml_meta_model.3l <- rma.mv(yi = yi, V = vi, data = meta_tib, struct = "CS", method = "REML", test = "t",
                         random = ~ 1 | study_id/effect)
 ml_meta_model.3l %>% summary()
 ml_meta_model.3l
@@ -933,12 +982,15 @@ plot(cooks.distance(ml_meta_model.2lre, progbar=FALSE, reestimate=TRUE, parallel
 #RESULTS 
 #-- All Cook's distances are well below 1
 
+dfbetas(ml_meta_model.3l, cluster = meta_tib$effect, reestimate = F)
+
+#Leave-1-out 
+rma.mv.leave1out(meta_tib, struct = "CS", method = "REML", random = ~1 | study_id/effect) %>% mutate(estimate_change = leave1out - ml_meta_model.3l$b)
 
 
 #Forest plots
 forest(ml_meta_model.3l, addpred = T, header = T)
 forest(ml_meta_model.2lre, addpred = T, header = T)
-
 
 ```
 
@@ -993,19 +1045,19 @@ contrasts(meta_tib$main_language) <- english_vs_dutch
 #Moderator analysis
 #----------------------------------------------------------------------------------------------------
 #3-level model
-ml_meta_model.3l_mod_main_language <- rma.mv(yi = yi, V = vi, data = meta_tib, struct = "CS", method = "ML", test = "t",
+ml_meta_model.3l_mod_main_language <- rma.mv(yi = yi, V = vi, data = meta_tib, struct = "CS", method = "REML", test = "t",
                                           mods = ~ main_language,
                                           random = ~ 1 | study_id/effect)
 ml_meta_model.3l_mod_main_language
 
 #2-level re
-ml_meta_model.2lre_mod_main_language <- rma.mv(yi = yi, V = vi, data = meta_tib, struct = "CS", method = "ML", test = "t",
+ml_meta_model.2lre_mod_main_language <- rma.mv(yi = yi, V = vi, data = meta_tib, struct = "CS", method = "REML", test = "t",
                                           mods = ~ main_language,
                                           random = ~ 1 | effect)
 ml_meta_model.2lre_mod_main_language
 
 #2-level model 
-ml_meta_model.2l_mod_main_language <- rma.mv(yi = yi, V = vi, data = meta_tib, struct = "CS", method = "ML", test = "t",
+ml_meta_model.2l_mod_main_language <- rma.mv(yi = yi, V = vi, data = meta_tib, struct = "CS", method = "REML", test = "t",
                                           mods = ~ main_language,
                                           random = ~ 1 | study_id)
 ml_meta_model.2l_mod_main_language
@@ -1067,6 +1119,34 @@ dfbetas_mod_main_language
 #Boonen
 
 
+#Leave-1-out 
+#Create function 
+rma.mv.leave1out.2 <- function(data, struct = "CS", method = "REML", random, mods = NULL){
+  data1 <- rowid_to_column(data, var = "effect_no1")
+  leave1out <- c()
+  se <- c()
+  zval <- c()
+  pval <-c()
+  ci.lb <- c()
+  ci.ub <- c()
+  for(counter in 1:max(data1$effect_no1)){
+    modresult <- rma.mv(yi = yi, V = vi, data = filter(data1, effect_no1 != counter), struct = struct, method = method, test = "t", 
+                                      random = random, mods = mods)
+    leave1out <- c(leave1out , modresult$b[2])
+    se <- c(se, modresult$se[2])
+    zval <- c(zval, modresult$zval[2])
+    pval <- c(pval, modresult$pval[2])
+    ci.lb <- c(ci.lb, modresult$ci.lb[2])
+    ci.ub <- c(ci.ub, modresult$ci.ub[2])
+  }
+  return(mutate(add_column(as.data.frame(cbind(leave1out, se, zval, pval, ci.lb, ci.ub)), select(meta_tib, effect), .before = T), 
+                sig = ifelse(pval <= 0.05, ifelse(pval <= 0.01, ifelse(pval <= 0.001, "***", "**"), "*"), "ns")))
+}
+
+rma.mv.leave1out.2(meta_tib, struct = "CS", method = "REML", mods = ~ main_language,random = ~1 | study_id/effect) %>% mutate(estimate_change = leave1out - ml_meta_model.3l_mod_main_language$b[2])
+
+
+
 
 #CRAP 
 #----------------------------------------------------------------------------------------------------
@@ -1086,7 +1166,7 @@ dfbetas_mod_main_language
 #hatvalues(ml_meta_model_mod_main_language, type = "diagonal")
 
 1#Re-run the analysis with the effects filtered out
-#rma.mv(yi = yi, V = vi, data = filter(meta_tib, effect != c("boonen_et_al.2011b", "boonen_et_al.2011d")), struct = "CS", method = "ML", test = "t",mods = ~ main_language,random = ~ 1 | study_id)
+#rma.mv(yi = yi, V = vi, data = filter(meta_tib, effect != c("boonen_et_al.2011b", "boonen_et_al.2011d")), struct = "CS", method = "REML", test = "t",mods = ~ main_language,random = ~ 1 | study_id)
 
 ```
 
@@ -1173,6 +1253,12 @@ dfbetas(ml_meta_model.3l_mod_NT_type.1, progbar=FALSE,reestimate=TRUE, parallel=
 #-- NT_type.1orderingNT_vs_mean: All DFBETAS are below 1
 #-- NT_type.1quantity_comparisonNT_vs_mean: All DFBETAS are below 1
 
+
+
+#Leave 1 out
+rma.mv.leave1out.fct(data = meta_tib, struct = "CS", method = "REML",
+                                      mods = ~ NT_type.1, 
+                                      random = ~ 1 | study_id/effect, dummy_var = 2)
 
 
 #Subgroup analysis 
@@ -1914,47 +2000,77 @@ time_converter(d = 276.5)
 
 ((42*7) + (37*7))/2
 9.659138
+
+ml_meta_model.3l
 ```
 
 
 ```{r vardist}
 n <- length(meta_tib$vi)
 
-#Level 1 weights 
-list.inverse.variances <- 1/(meta_tib$vi)
+vardist.3l <- function(model, digits){
+  level1 <- ((length(model$vi)-1)*(sum(1/model$vi)))/
+    ((sum(1/model$vi)^2)-(sum(1/((model$vi)^2))))
+  level2 <- model$sigma2[2]
+  level3 <- model$sigma2[1]
+  p_level1 <- level1/(level1 + model$sigma2[2] + model$sigma2[1])
+  p_level2 <- model$sigma2[2]/(level1 + model$sigma2[2] + model$sigma2[1])
+  p_level3 <- model$sigma2[1]/(level1 + model$sigma2[2] + model$sigma2[1])
+  tib1 <- rename(as.tibble(c(level1, level2, level3)), variances = value)
+  tib2 <- rename(as.tibble(c(p_level1, p_level2, p_level3)), proportions_I2 = value)
+  tib3 <- select(add_column(round(cbind(tib1, tib2), digits = digits), Level = c(1, 2, 3)), Level, variances, proportions_I2)
+  return(tib3)
+}
 
-#Sum of those level 1 weights
-sum.inverse.variances <- sum(list.inverse.variances)
-
-#Square the sum of weights 
-squared.sum.inverse.variances <- (sum.inverse.variances)^2
-
-
-list.inverse.variances.square <- 1/(meta_tib$vi^2)
-
-sum.inverse.variances.square <- sum(list.inverse.variances.square)
-
-numerator <- (n-1)*sum.inverse.variances
-
-denominator <- squared.sum.inverse.variances - sum.inverse.variances.square
-
-estimated.sampling.variance <- numerator/denominator
-
-ml_meta_model.3l
-
-I2_1 <- (estimated.sampling.variance)/(ml_meta_model.3l$sigma2[1] + ml_meta_model.3l$sigma2[2] + estimated.sampling.variance)
-
-I2_2 <- (ml_meta_model.3l$sigma2[2]) / (ml_meta_model.3l$sigma2[1] + ml_meta_model.3l$sigma2[2] + estimated.sampling.variance)
-
-I2_3 <- (ml_meta_model.3l$sigma2[1]) / (ml_meta_model.3l$sigma2[1] + ml_meta_model.3l$sigma2[2] + estimated.sampling.variance)
+vardist.3l(model = ml_meta_model.3l, digits =  10)$variances %>% sum() 
+ 
 
 
-I2_1 
-I2_2 
-I2_3
 
-I2_1 + I2_2 + I2_3 
-1681 + 61504
+#Just checking (Internet knowledge is wrong)
+meta_test.3l <- function(model){
+  level_1_vars <- rename(as.tibble(model$vi), level_1_vars = value)
+  level_2_var <- rename(as.tibble(model$sigma2[2]), level_2_var = value)
+  level_3_var <- rename(as.tibble(model$sigma2[1]), level_3_var = value)
+  varstib <- mutate(cbind(level_1_vars, level_2_var, level_3_var), Vi = (level_1_vars + level_2_var + level_3_var), inverse_Vi = 1/Vi)
+  model_var <- 1/sum(varstib$inverse_Vi)
+  model_se <- sqrt(model_var)
+  return(as.data.frame(cbind(model_var, model_se)))
+}
+
+
+leave1out(re_meta_model)
+
+nrow(meta_tib)
+meta_test.3l(model = ml_meta_model.3l)
+
+ml_meta_model.3l$version
+
+
+
+
+
+
+
+
+ml_meta_model.3l$formula.mods
+
+ml_meta_model.3l$vi
+rowid_to_column(rename(as.data.frame(cbind(ml_meta_model.3l$yi, ml_meta_model.3l$vi)), yi = V1, vi = V2), var = "effect_no1")
+
+sam_leave1out(meta_tib)
+
+rma.mv(yi = yi, V = vi, data = meta_tib, struct = "CS", method = "REML", test = "t", 
+                                      random = ~1 | study_id/effect, mods = )
+
+ml_meta_model.3l$
+meta_tib %>% rowid_to_column(var = "effect_no1")
+
+
+
+rma.mv(yi = yi, V = vi, data = meta_tib_MA_measure, struct = "CS", method = "REML", test = "t", 
+                                      random = ~ 1 | study_id/effect)
+
 ```
 
 
