@@ -170,7 +170,7 @@ time_converter <- function(min, d, m, y){
 
 
 ######################################################################
-#Leave 1 out analysis for rma.mv objects (require metafor)
+#old function - replaced by rma.mv.outlier
 rma.mv.leave1out_old <- function(data, struct = "CS", method = "REML", random, mods = NULL){
   data1 <- rowid_to_column(data, var = "effect_no1")
   leave1out <- c()
@@ -193,7 +193,7 @@ rma.mv.leave1out_old <- function(data, struct = "CS", method = "REML", random, m
                 sig = ifelse(pval <= 0.05, ifelse(pval <= 0.01, ifelse(pval <= 0.001, "***", "**"), "*"), "ns")))
 }
 ######################################################################
-#Leave 1 out analysis for rma.mv objects for categorical/dummy variables  (require metafor)
+#old function - replaced by rma.mv.outlier
 rma.mv.leave1out_old2 <- function(data, struct = "CS", method = "REML", random, mods = NULL, b = 0){
   data1 <- rowid_to_column(data, var = "effect_no")
   data3 <- mutate(data1, effect_no = as.factor(effect_no))
@@ -223,7 +223,7 @@ rma.mv.leave1out_old2 <- function(data, struct = "CS", method = "REML", random, 
 }
 
 
-
+######################################################################
 rma.mv.outlier <- function(data, struct = "CS", method = "REML", random, mods = NULL, b = 0, cluster){
   c <- cluster
   data1 <- rowid_to_column(data, var = "effect_no")
@@ -235,6 +235,9 @@ rma.mv.outlier <- function(data, struct = "CS", method = "REML", random, mods = 
   pval <-c()
   ci.lb <- c()
   ci.ub <- c()
+  model.aic <- c()
+  model.bic <- c()
+  model.aicc <- c()
   for(counter in 1:max(data1$effect_no)){
     data2 <- filter(data1, effect_no != counter)
     model <- rma.mv(yi = yi, V = vi, data = data2, struct = struct, method = method, test = "t", 
@@ -245,17 +248,25 @@ rma.mv.outlier <- function(data, struct = "CS", method = "REML", random, mods = 
     pval <- c(pval, model$pval[b+1])
     ci.lb <- c(ci.lb, model$ci.lb[b+1])
     ci.ub <- c(ci.ub, model$ci.ub[b+1])
+    model.aic <- c(model.aic ,model$fit.stats[ifelse(model$method == "ML", 1, 2)][3,])
+    model.bic <- c(model.bic, model$fit.stats[ifelse(model$method == "ML", 1, 2)][4,])
+    model.aicc <- c(model.aicc, model$fit.stats[ifelse(model$method == "ML", 1, 2)][5,])
   }
   cd.1 <- cooks.distance(model0, progbar=FALSE, reestimate=TRUE, parallel="no", ncpus=1, cluster = as.factor(c))
   cd.2 <- rename(mutate(rownames_to_column(as.data.frame(cd.1), var = "effect"), effect = as.factor(effect)), cooks.d = cd.1)
   dfbetas1 <- dfbetas(model0, progbar=FALSE, reestimate=TRUE, parallel="no", ncpus=1, cluster = as.factor(c))
   dfbetas2 <- mutate(rownames_to_column(as.data.frame(t(as.data.frame(t(dfbetas1))[(b + 1),])), var = "effect"), effect = as.factor(effect))
   names(dfbetas2)[2]<-paste("DFBETAS") 
-  return(select(full_join(full_join(mutate(add_column(as.data.frame(cbind(leave1out, se, tval, pval, ci.lb, ci.ub)), rename(as.tibble(as.factor(c)), effect = value), .before = T),
-                sig = ifelse(pval <= 0.05, ifelse(pval <= 0.01, ifelse(pval <= 0.001, "***", "**"), "*"), "ns")), cd.2, by = "effect"), dfbetas2, by = "effect"), effect, cooks.d, DFBETAS, leave1out, se, tval, pval, ci.lb, ci.ub, sig))
+  return(select(full_join(full_join(mutate(add_column(as.data.frame(cbind(leave1out, se, tval, pval, ci.lb, ci.ub, model.aic, model.bic, model.aicc)), rename(as.tibble(as.factor(c)), effect = value), .before = T),
+                sig = ifelse(pval <= 0.05, ifelse(pval <= 0.01, ifelse(pval <= 0.001, "***", "**"), "*"), "ns")), cd.2, by = "effect"), dfbetas2, by = "effect"), effect, cooks.d, DFBETAS, leave1out, se, tval, pval, ci.lb, ci.ub, sig, model.aic, model.bic, model.aicc))
 }
 
 
+#Rules for the rma.mv.outlier function 
+#Effect size and variance variables in the Meta-analysis data must be yi and vi respectively 
+#b - if intercept, then b = 0, if the first predictor (b1), then b = 1, and so on 
+
+rma.mv.outlier(data = meta_tib, struct = "CS", method = "REML", mods = ~ MA_context, random = ~ 1 | study_id/effect, cluster = meta_tib$effect, b = 1)
 ```
 
 
@@ -1350,6 +1361,7 @@ ml_meta_model.3l_mod_NT_type.1.outlier.b7
 
 
 
+
 #Subgroup analysis 
 #----------------------------------------------------------------------------------------------------
 meta_tib %>% group_by(NT_type.1) %>% summarise(n = n())
@@ -1485,7 +1497,7 @@ contrasts(meta_tib$MA_context) <- cbind(
 ml_meta_model.3l_mod_MA_context <- rma.mv(yi = yi, V = vi, data = meta_tib, struct = "CS", method = "REML", test = "t",
                                        mods = ~ MA_context, 
                                        random = ~ 1 | study_id/effect)
-ml_meta_model.3l_mod_MA_context 
+ml_meta_model.3l_mod_MA_context
 #RESULTS 
 #Measuring in the lab has a greater effect (b = 0.2829, p = 0.0422)
 
@@ -1504,8 +1516,33 @@ ml_meta_model.3l_mod_MA_context_cooks.d_lev3
 #RESULTS 
 #--- 1 outlier (casey and boonen_et_al.2011)
 
+#Outlier
+ml_meta_model.3l_mod_MA_context.outlier.b1 <- rma.mv.outlier(data = meta_tib, struct = "CS", method = "REML", mods = ~ MA_context, random = ~ 1 | study_id/effect, cluster = meta_tib$effect, b = 1)
+ml_meta_model.3l_mod_MA_context.outlier.b2 <- rma.mv.outlier(data = meta_tib, struct = "CS", method = "REML", mods = ~ MA_context, random = ~ 1 | study_id/effect, cluster = meta_tib$effect, b = 2)
+ml_meta_model.3l_mod_MA_context.outlier.b3 <- rma.mv.outlier(data = meta_tib, struct = "CS", method = "REML", mods = ~ MA_context, random = ~ 1 | study_id/effect, cluster = meta_tib$effect, b = 3)
+ml_meta_model.3l_mod_MA_context.outlier.b4 <- rma.mv.outlier(data = meta_tib, struct = "CS", method = "REML", mods = ~ MA_context, random = ~ 1 | study_id/effect, cluster = meta_tib$effect, b = 4)
+
+#beta 1 outliers
+ml_meta_model.3l_mod_MA_context.outlier.b1 %>% filter(cooks.d >= 1 | DFBETAS >= 1)
+#Filtering studies that have cooks.d or DFBETAS >= 1
+filter(ml_meta_model.3l_mod_MA_context.outlier.b1, cooks.d >= 1 | DFBETAS >= 1)
+
+ml_meta_model.3l_mod_MA_context.outlier.b2
+filter(ml_meta_model.3l_mod_MA_context.outlier.b2, cooks.d >= 1 | DFBETAS >= 1)
+
+ml_meta_model.3l_mod_MA_context.outlier.b3
+filter(ml_meta_model.3l_mod_MA_context.outlier.b3, cooks.d >= 1 | DFBETAS >= 1)
 
 
+ml_meta_model.3l_mod_MA_context.outlier.b4
+filter(ml_meta_model.3l_mod_MA_context.outlier.b4, cooks.d >= 1 | DFBETAS >= 1)
+
+cooks.d
+
+DFBETAS
+
+rma.mv.outlier(data = meta_tib, struct = "CS", method = "REML", mods = ~ MA_context, random = ~ 1 | study_id/effect, cluster = meta_tib$effect, b = 1)
+  
 #Subgroup analysis 
 #----------------------------------------------------------------------------------------------------
 meta_tib %>% group_by(MA_context) %>% summarise(n = n())
@@ -1976,6 +2013,39 @@ dfbetas(ml_meta_model.3l_mod_MA_measure, progbar=FALSE,reestimate=TRUE, parallel
 #-- MA_measurequantity_comparisonMA_vs_mean: All DFBETAS are below 1
 
 
+#Outlier 
+#Beta 1
+ml_meta_model.3l_mod_MA_measure.outlier.b1 <- rma.mv.outlier(data = meta_tib, struct = "CS", method = "REML",
+                                      mods = ~ MA_measure, 
+                                      random = ~ 1 | study_id/effect, cluster = meta_tib$effect, b = 1)
+
+filter(ml_meta_model.3l_mod_MA_measure.outlier.b1, cooks.d >= 1 | abs(DFBETAS) >= 1)
+
+#Beta 1
+ml_meta_model.3l_mod_MA_measure.outlier.b2 <- rma.mv.outlier(data = meta_tib, struct = "CS", method = "REML",
+                                      mods = ~ MA_measure, 
+                                      random = ~ 1 | study_id/effect, cluster = meta_tib$effect, b = 2)
+
+filter(ml_meta_model.3l_mod_MA_measure.outlier.b2, cooks.d >= 1 | abs(DFBETAS) >= 1)
+
+#Beta 3
+ml_meta_model.3l_mod_MA_measure.outlier.b3 <- rma.mv.outlier(data = meta_tib, struct = "CS", method = "REML",
+                                      mods = ~ MA_measure, 
+                                      random = ~ 1 | study_id/effect, cluster = meta_tib$effect, b = 3)
+
+filter(ml_meta_model.3l_mod_MA_measure.outlier.b3, cooks.d >= 1 | abs(DFBETAS) >= 1)
+
+#Beta 4
+ml_meta_model.3l_mod_MA_measure.outlier.b4 <- rma.mv.outlier(data = meta_tib, struct = "CS", method = "REML",
+                                      mods = ~ MA_measure, 
+                                      random = ~ 1 | study_id/effect, cluster = meta_tib$effect, b = 4)
+
+filter(ml_meta_model.3l_mod_MA_measure.outlier.b4, cooks.d >= 1 | abs(DFBETAS) >= 1)
+
+```
+
+
+```{r MA_measure}
 #RELEVEL 
 #----------------------------------------------------------------------------------------------------
 #Checking the levels for MA_measure
@@ -2154,7 +2224,6 @@ rma.mv(yi = yi, V = vi, data = meta_tib_MA_measure, struct = "CS", method = "REM
                                       random = ~ 1 | study_id/effect)
 
 ```
-
 
 
 
