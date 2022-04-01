@@ -340,20 +340,16 @@ rma.mv.outlier.old4 <- function(data, struct = "CS", method = "REML", random = N
 #This is the current one, it handles robust methods as well
 rma.mv.influence <- function(data, struct = "CS", method = "REML", random = NULL, mods = NULL, b = 0, cluster, robust = FALSE, robust.cluster, adjust = FALSE){
   data.gojira <- data
-  c1 <- cluster
-  c <- unlist(as.list(array(data[c(c1)])))
-  data.gojira.2 <- mutate(data.gojira, cluster.gojira = as.factor(c))
+  c1 <- cluster #input should be something like "effect"
+  c <- unlist(as.list(array(data[c(c1)]))) #This turns c1 into data$effect
+  data.gojira.2 <- mutate(rowid_to_column(mutate(data.gojira, cluster.gojira = as.factor(c)), var = "rowid.gojira"), rowid.gojira = as.character(rowid.gojira))
   data.gojira.2$cluster.gojira2 <- group_indices(group_by(data.gojira.2, cluster.gojira), cluster.gojira)
-  if(isFALSE(robust)){
+  
      model0 <- rma.mv(yi = yi, V = vi, data = data.gojira, struct = struct, method = method, test = "t", 
                                       random = random, mods = mods)
-       leveldetermine1 <- select(mutate(rowid_to_column(rename(as.tibble(rev(unlist(strsplit(str_trim(unlist(strsplit(as.character(model0$random), "[|]"))[2], side = c("both", "left", "right")), "[/]")))), cluster = value), var = "id"), level = id + 1), level, cluster)
-       leveldetermine2 <- unlist(as.list(array(select(filter(leveldetermine1 , cluster == c1), level))))}
-    
-  else if(isTRUE(robust)){
-    model0.p1 <- rma.mv(yi = yi, V = vi, data = data.gojira, struct = struct, method = method, test = "t", 
-                                      random = random, mods = mods) 
-    model0 <- metafor::robust(model0.p1,  cluster = pull(data.gojira, robust.cluster), adjust = T)}
+     leveldetermine1 <- select(mutate(rowid_to_column(rename(as.tibble(rev(str_trim(unlist(strsplit(str_trim(unlist(strsplit(as.character(model0$random), "[|]"))[2], side = c("both", "left", "right")), "[/]")), side = c("both", "left", "right")))), cluster = value), var = "id"), level = id + 1), level, cluster)
+     leveldetermine2 <- unlist(as.list(array(select(filter(leveldetermine1 , cluster == c1), level))))
+       
   cluster_unit <- c()
   leave1out <- c()
   se <- c()
@@ -386,42 +382,53 @@ rma.mv.influence <- function(data, struct = "CS", method = "REML", random = NULL
     model.bic <- c(model.bic, model$fit.stats[ifelse(model$method == "ML", 1, 2)][4,])
     model.aicc <- c(model.aicc, model$fit.stats[ifelse(model$method == "ML", 1, 2)][5,])
   }
-  resid <- rename(as.tibble(select(as.data.frame(rstudent(model0)), z)), rstudent = z)
+  resid <- rename(select(full_join(data.gojira.2, rename(select(rownames_to_column(as.data.frame(rstudent(model0)), var = "rowid.gojira"), rowid.gojira, z), rstudent = z), by = "rowid.gojira"), cluster.gojira, rstudent), cluster_unit = cluster.gojira)
   cd.1 <- cooks.distance(model0, progbar=FALSE, reestimate=TRUE, parallel="no", ncpus=1, cluster = as.factor(c))
   cd.2 <- rename(mutate(rownames_to_column(as.data.frame(cd.1), var = "cluster_unit"), cluster_unit = as.factor(cluster_unit)), cooks.d = cd.1)
   if(isFALSE(robust)){
     dfbetas1 <- dfbetas(model0, progbar=FALSE, reestimate=TRUE, parallel="no", ncpus=1, cluster = as.factor(c))
-    dfbetas2 <- mutate(rownames_to_column(as.data.frame(t(as.data.frame(t(dfbetas1))[(b + 1),])), var = "cluster_unit"), cluster_unit = as.factor(cluster_unit))}
-  cluster_unit_col <- rename(as.tibble(c), cluster_unit = value)
-  cluster_unit_col2 <- cluster_unit_col[!duplicated(cluster_unit_col$cluster_unit), ]
-  names(dfbetas2)[2]<-paste("DFBETAS") 
-  #OUTPUT
-  
+    dfbetas2 <- mutate(rownames_to_column(as.data.frame(t(as.data.frame(t(dfbetas1))[(b + 1),])), var = "cluster_unit"), cluster_unit = as.factor(cluster_unit))
+    names(dfbetas2)[2]<-paste("DFBETAS") }
+    cluster_unit_col <- rename(as.tibble(c), cluster_unit = value)
+    cluster_unit_col2 <- cluster_unit_col[!duplicated(cluster_unit_col$cluster_unit), ]
+
+   #OUTPUT
   if(isFALSE(robust)){
     if(is.null(mods)){
         if(leveldetermine2 == 2){
-          return(select(mutate(add_column(full_join(cluster_unit_col2, full_join(full_join(mutate(mutate(as.data.frame(cbind(cluster_unit, leave1out, se, tval, pval, ci.lb, ci.ub, model.aic, model.bic, model.aicc)), sig = ifelse(pval <= 0.05, ifelse(pval <= 0.01, ifelse(pval <= 0.001, "***", "**"), "*"), "ns")), cluster_unit = as.factor(cluster_unit),leave1out = as.numeric(leave1out), se = as.numeric(se), tval = as.numeric(tval), pval = as.numeric(pval), ci.lb = as.numeric(ci.lb),ci.ub = as.numeric(ci.ub), model.aic = as.numeric(model.aic), model.bic = as.numeric(model.bic),  model.aicc = as.numeric(model.aicc)), cd.2, by = "cluster_unit"), dfbetas2, by = "cluster_unit"), by = "cluster_unit"), resid), cooks.d = as.numeric(cooks.d), DFBETAS = as.numeric(DFBETAS)), cluster_unit, rstudent, cooks.d, DFBETAS, leave1out, se, tval, pval, ci.lb, ci.ub, sig, model.aic, model.bic, model.aicc))}
+          return(select(mutate(full_join(full_join(cluster_unit_col2, full_join(full_join(mutate(mutate(as.data.frame(cbind(cluster_unit, leave1out, se, tval, pval, ci.lb, ci.ub, model.aic, model.bic, model.aicc)), sig = ifelse(pval <= 0.05, ifelse(pval <= 0.01, ifelse(pval <= 0.001, "***", "**"), "*"), "ns")), cluster_unit = as.factor(cluster_unit),leave1out = as.numeric(leave1out), se = as.numeric(se), tval = as.numeric(tval), pval = as.numeric(pval), ci.lb = as.numeric(ci.lb),ci.ub = as.numeric(ci.ub), model.aic = as.numeric(model.aic), model.bic = as.numeric(model.bic),  model.aicc = as.numeric(model.aicc)), cd.2, by = "cluster_unit"), dfbetas2, by = "cluster_unit"), by = "cluster_unit"), resid, by = "cluster_unit"), cooks.d = as.numeric(cooks.d), DFBETAS = as.numeric(DFBETAS)), cluster_unit, rstudent, cooks.d, DFBETAS, leave1out, se, tval, pval, ci.lb, ci.ub, sig, model.aic, model.bic, model.aicc))}
         else if(leveldetermine2 != 2){
-          return(select(mutate(full_join(cluster_unit_col2, full_join(full_join(mutate(mutate(as.data.frame(cbind(cluster_unit, leave1out, se, tval, pval, ci.lb, ci.ub, model.aic, model.bic, model.aicc)), sig = ifelse(pval <= 0.05, ifelse(pval <= 0.01, ifelse(pval <= 0.001, "***", "**"), "*"), "ns")), cluster_unit = as.factor(cluster_unit),leave1out = as.numeric(leave1out), se = as.numeric(se), tval = as.numeric(tval), pval = as.numeric(pval), ci.lb = as.numeric(ci.lb),ci.ub = as.numeric(ci.ub), model.aic = as.numeric(model.aic), model.bic = as.numeric(model.bic),  model.aicc = as.numeric(model.aicc)), cd.2, by = "cluster_unit"), dfbetas2, by = "cluster_unit"), by = "cluster_unit"), cooks.d = as.numeric(cooks.d), DFBETAS = as.numeric(DFBETAS)), cluster_unit, cooks.d, DFBETAS, leave1out, se, tval, pval, ci.lb, ci.ub, sig, model.aic, model.bic, model.aicc))}
+          return(select(mutate(full_join(cluster_unit_col2, full_join(full_join(mutate(mutate(as.data.frame(cbind(cluster_unit, leave1out, se, tval, pval, ci.lb, ci.ub, model.aic, model.bic, model.aicc)), sig = ifelse(pval <= 0.05, ifelse(pval <= 0.01, ifelse(pval <= 0.001, "***", "**"), "*"), "ns")), cluster_unit = as.factor(cluster_unit),leave1out = as.numeric(leave1out), se = as.numeric(se), tval = as.numeric(tval), pval = as.numeric(pval), ci.lb = as.numeric(ci.lb),ci.ub = as.numeric(ci.ub), model.aic = as.numeric(model.aic), model.bic = as.numeric(model.bic),  model.aicc = as.numeric(model.aicc)), cd.2, by = "cluster_unit"), dfbetas2, by = "cluster_unit"), by = "cluster_unit"), cooks.d = as.numeric(cooks.d), DFBETAS = as.numeric(DFBETAS)), cluster_unit, cooks.d, DFBETAS, leave1out, se, tval, pval, ci.lb, ci.ub, sig, model.aic, model.bic, model.aicc))}}
     if (!is.null(mods)) {
       if(leveldetermine2 == 2){
-        return(select(mutate(add_column(full_join(cluster_unit_col2, full_join(full_join(mutate(mutate(as.data.frame(cbind(cluster_unit, leave1out, se, tval, pval, ci.lb, ci.ub, model.F, model.F.p, model.aic, model.bic, model.aicc)), sig = ifelse(pval <= 0.05, ifelse(pval <= 0.01, ifelse(pval <= 0.001, "***", "**"), "*"), "ns")), cluster_unit = as.factor(cluster_unit),leave1out = as.numeric(leave1out), se = as.numeric(se), tval = as.numeric(tval), pval = as.numeric(pval), ci.lb = as.numeric(ci.lb),ci.ub = as.numeric(ci.ub), model.F = as.numeric(model.F), model.F.p = as.numeric(model.F.p), model.aic = as.numeric(model.aic), model.bic = as.numeric(model.bic),  model.aicc = as.numeric(model.aicc)), cd.2, by = "cluster_unit"), dfbetas2, by = "cluster_unit"), by = "cluster_unit"), resid), cooks.d = as.numeric(cooks.d), DFBETAS = as.numeric(DFBETAS)), cluster_unit, rstudent, cooks.d, DFBETAS, leave1out, se, tval, pval, ci.lb, ci.ub, sig, model.F, model.F.p, model.aic, model.bic, model.aicc))}
+        return(select(mutate(full_join(full_join(cluster_unit_col2, full_join(full_join(mutate(mutate(as.data.frame(cbind(cluster_unit, leave1out, se, tval, pval, ci.lb, ci.ub, model.F, model.F.p, model.aic, model.bic, model.aicc)), sig = ifelse(pval <= 0.05, ifelse(pval <= 0.01, ifelse(pval <= 0.001, "***", "**"), "*"), "ns")), cluster_unit = as.factor(cluster_unit),leave1out = as.numeric(leave1out), se = as.numeric(se), tval = as.numeric(tval), pval = as.numeric(pval), ci.lb = as.numeric(ci.lb),ci.ub = as.numeric(ci.ub), model.F = as.numeric(model.F), model.F.p = as.numeric(model.F.p), model.aic = as.numeric(model.aic), model.bic = as.numeric(model.bic),  model.aicc = as.numeric(model.aicc)), cd.2, by = "cluster_unit"), dfbetas2, by = "cluster_unit"), by = "cluster_unit"), resid, by = "cluster_unit"), cooks.d = as.numeric(cooks.d), DFBETAS = as.numeric(DFBETAS)), cluster_unit, rstudent, cooks.d, DFBETAS, leave1out, se, tval, pval, ci.lb, ci.ub, sig, model.F, model.F.p, model.aic, model.bic, model.aicc))}
       else if(leveldetermine2 != 2){
-        return(select(mutate(full_join(cluster_unit_col2, full_join(full_join(mutate(mutate(as.data.frame(cbind(cluster_unit, leave1out, se, tval, pval, ci.lb, ci.ub, model.F, model.F.p, model.aic, model.bic, model.aicc)), sig = ifelse(pval <= 0.05, ifelse(pval <= 0.01, ifelse(pval <= 0.001, "***", "**"), "*"), "ns")), cluster_unit = as.factor(cluster_unit),leave1out = as.numeric(leave1out), se = as.numeric(se), tval = as.numeric(tval), pval = as.numeric(pval), ci.lb = as.numeric(ci.lb),ci.ub = as.numeric(ci.ub), model.F = as.numeric(model.F), model.F.p = as.numeric(model.F.p), model.aic = as.numeric(model.aic), model.bic = as.numeric(model.bic),  model.aicc = as.numeric(model.aicc)), cd.2, by = "cluster_unit"), dfbetas2, by = "cluster_unit"), by = "cluster_unit"), cooks.d = as.numeric(cooks.d), DFBETAS = as.numeric(DFBETAS)), cluster_unit, cooks.d, DFBETAS, leave1out, se, tval, pval, ci.lb, ci.ub, sig, model.F, model.F.p, model.aic, model.bic, model.aicc))}}}}
-    
+        return(select(mutate(full_join(cluster_unit_col2, full_join(full_join(mutate(mutate(as.data.frame(cbind(cluster_unit, leave1out, se, tval, pval, ci.lb, ci.ub, model.F, model.F.p, model.aic, model.bic, model.aicc)), sig = ifelse(pval <= 0.05, ifelse(pval <= 0.01, ifelse(pval <= 0.001, "***", "**"), "*"), "ns")), cluster_unit = as.factor(cluster_unit),leave1out = as.numeric(leave1out), se = as.numeric(se), tval = as.numeric(tval), pval = as.numeric(pval), ci.lb = as.numeric(ci.lb),ci.ub = as.numeric(ci.ub), model.F = as.numeric(model.F), model.F.p = as.numeric(model.F.p), model.aic = as.numeric(model.aic), model.bic = as.numeric(model.bic),  model.aicc = as.numeric(model.aicc)), cd.2, by = "cluster_unit"), dfbetas2, by = "cluster_unit"), by = "cluster_unit"), cooks.d = as.numeric(cooks.d), DFBETAS = as.numeric(DFBETAS)), cluster_unit, cooks.d, DFBETAS, leave1out, se, tval, pval, ci.lb, ci.ub, sig, model.F, model.F.p, model.aic, model.bic, model.aicc))}}}
     
   if(isTRUE(robust)){
         if(is.null(mods)){
           if(leveldetermine2 == 2){
-            return(select(mutate(add_column(full_join(cluster_unit_col2, full_join(mutate(mutate(as.data.frame(cbind(cluster_unit, leave1out, se, tval, pval, ci.lb, ci.ub, model.aic, model.bic, model.aicc)), sig = ifelse(pval <= 0.05, ifelse(pval <= 0.01, ifelse(pval <= 0.001, "***", "**"), "*"), "ns")), cluster_unit = as.factor(cluster_unit),leave1out = as.numeric(leave1out), se = as.numeric(se), tval = as.numeric(tval), pval = as.numeric(pval), ci.lb = as.numeric(ci.lb),ci.ub = as.numeric(ci.ub), model.aic = as.numeric(model.aic), model.bic = as.numeric(model.bic),  model.aicc = as.numeric(model.aicc)), cd.2, by = "cluster_unit"), by = "cluster_unit"), resid), cooks.d = as.numeric(cooks.d)), cluster_unit, rstudent, cooks.d, leave1out, se, tval, pval, ci.lb, ci.ub, sig, model.aic, model.bic, model.aicc))}
+            return(select(mutate(full_join(full_join(cluster_unit_col2, full_join(mutate(mutate(as.data.frame(cbind(cluster_unit, leave1out, se, tval, pval, ci.lb, ci.ub, model.aic, model.bic, model.aicc)), sig = ifelse(pval <= 0.05, ifelse(pval <= 0.01, ifelse(pval <= 0.001, "***", "**"), "*"), "ns")), cluster_unit = as.factor(cluster_unit),leave1out = as.numeric(leave1out), se = as.numeric(se), tval = as.numeric(tval), pval = as.numeric(pval), ci.lb = as.numeric(ci.lb),ci.ub = as.numeric(ci.ub), model.aic = as.numeric(model.aic), model.bic = as.numeric(model.bic),  model.aicc = as.numeric(model.aicc)), cd.2, by = "cluster_unit"), by = "cluster_unit"), resid, by = "cluster_unit"), cooks.d = as.numeric(cooks.d)), cluster_unit, rstudent, cooks.d, leave1out, se, tval, pval, ci.lb, ci.ub, sig, model.aic, model.bic, model.aicc))}
             else if(leveldetermine2 != 2){
               return(select(mutate(full_join(cluster_unit_col2, full_join(mutate(mutate(as.data.frame(cbind(cluster_unit, leave1out, se, tval, pval, ci.lb, ci.ub, model.aic, model.bic, model.aicc)), sig = ifelse(pval <= 0.05, ifelse(pval <= 0.01, ifelse(pval <= 0.001, "***", "**"), "*"), "ns")), cluster_unit = as.factor(cluster_unit),leave1out = as.numeric(leave1out), se = as.numeric(se), tval = as.numeric(tval), pval = as.numeric(pval), ci.lb = as.numeric(ci.lb),ci.ub = as.numeric(ci.ub), model.aic = as.numeric(model.aic), model.bic = as.numeric(model.bic),  model.aicc = as.numeric(model.aicc)), cd.2, by = "cluster_unit"), by = "cluster_unit"), cooks.d = as.numeric(cooks.d)), cluster_unit, cooks.d, leave1out, se, tval, pval, ci.lb, ci.ub, sig, model.aic, model.bic, model.aicc))}}
     if (!is.null(mods)) {
       if(leveldetermine2 == 2){
-        return(select(mutate(add_column(full_join(cluster_unit_col2, full_join(mutate(mutate(as.data.frame(cbind(cluster_unit, leave1out, se, tval, pval, ci.lb, ci.ub, model.F, model.F.p, model.aic, model.bic, model.aicc)), sig = ifelse(pval <= 0.05, ifelse(pval <= 0.01, ifelse(pval <= 0.001, "***", "**"), "*"), "ns")), cluster_unit = as.factor(cluster_unit),leave1out = as.numeric(leave1out), se = as.numeric(se), tval = as.numeric(tval), pval = as.numeric(pval), ci.lb = as.numeric(ci.lb),ci.ub = as.numeric(ci.ub), model.F = as.numeric(model.F), model.F.p = as.numeric(model.F.p), model.aic = as.numeric(model.aic), model.bic = as.numeric(model.bic),  model.aicc = as.numeric(model.aicc)), cd.2, by = "cluster_unit"), by = "cluster_unit"), resid), cooks.d = as.numeric(cooks.d)), cluster_unit, rstudent, cooks.d, leave1out, se, tval, pval, ci.lb, ci.ub, sig, model.F, model.F.p, model.aic, model.bic, model.aicc))}
+        return(select(mutate(full_join(full_join(cluster_unit_col2, full_join(mutate(mutate(as.data.frame(cbind(cluster_unit, leave1out, se, tval, pval, ci.lb, ci.ub, model.F, model.F.p, model.aic, model.bic, model.aicc)), sig = ifelse(pval <= 0.05, ifelse(pval <= 0.01, ifelse(pval <= 0.001, "***", "**"), "*"), "ns")), cluster_unit = as.factor(cluster_unit),leave1out = as.numeric(leave1out), se = as.numeric(se), tval = as.numeric(tval), pval = as.numeric(pval), ci.lb = as.numeric(ci.lb),ci.ub = as.numeric(ci.ub), model.F = as.numeric(model.F), model.F.p = as.numeric(model.F.p), model.aic = as.numeric(model.aic), model.bic = as.numeric(model.bic),  model.aicc = as.numeric(model.aicc)), cd.2, by = "cluster_unit"), by = "cluster_unit"), resid, by = "cluster_unit"), cooks.d = as.numeric(cooks.d)), cluster_unit, rstudent, cooks.d, leave1out, se, tval, pval, ci.lb, ci.ub, sig, model.F, model.F.p, model.aic, model.bic, model.aicc))}
       else if(leveldetermine2 != 2){
-        return(select(mutate(full_join(cluster_unit_col2, full_join(mutate(mutate(as.data.frame(cbind(cluster_unit, leave1out, se, tval, pval, ci.lb, ci.ub, model.F, model.F.p, model.aic, model.bic, model.aicc)), sig = ifelse(pval <= 0.05, ifelse(pval <= 0.01, ifelse(pval <= 0.001, "***", "**"), "*"), "ns")), cluster_unit = as.factor(cluster_unit),leave1out = as.numeric(leave1out), se = as.numeric(se), tval = as.numeric(tval), pval = as.numeric(pval), ci.lb = as.numeric(ci.lb),ci.ub = as.numeric(ci.ub), model.F = as.numeric(model.F), model.F.p = as.numeric(model.F.p), model.aic = as.numeric(model.aic), model.bic = as.numeric(model.bic),  model.aicc = as.numeric(model.aicc)), cd.2, by = "cluster_unit"), by = "cluster_unit"), cooks.d = as.numeric(cooks.d)), cluster_unit, cooks.d, leave1out, se, tval, pval, ci.lb, ci.ub, sig, model.F, model.F.p, model.aic, model.bic, model.aicc))}}}
-}
+        return(select(mutate(full_join(cluster_unit_col2, full_join(mutate(mutate(as.data.frame(cbind(cluster_unit, leave1out, se, tval, pval, ci.lb, ci.ub, model.F, model.F.p, model.aic, model.bic, model.aicc)), sig = ifelse(pval <= 0.05, ifelse(pval <= 0.01, ifelse(pval <= 0.001, "***", "**"), "*"), "ns")), cluster_unit = as.factor(cluster_unit),leave1out = as.numeric(leave1out), se = as.numeric(se), tval = as.numeric(tval), pval = as.numeric(pval), ci.lb = as.numeric(ci.lb),ci.ub = as.numeric(ci.ub), model.F = as.numeric(model.F), model.F.p = as.numeric(model.F.p), model.aic = as.numeric(model.aic), model.bic = as.numeric(model.bic),  model.aicc = as.numeric(model.aicc)), cd.2, by = "cluster_unit"), by = "cluster_unit"), cooks.d = as.numeric(cooks.d)), cluster_unit, cooks.d, leave1out, se, tval, pval, ci.lb, ci.ub, sig, model.F, model.F.p, model.aic, model.bic, model.aicc))}}}}
+
+
+
+
+
+#if(is.null(mods)){  
+    #cluster_unit_col <- rename(as.tibble(c), cluster_unit = value)
+    #cluster_unit_col2 <- cluster_unit_col[!duplicated(cluster_unit_col$cluster_unit), ]} 
+  #else if(!is.null(mods)){
+   # moderators <- c(str_trim(unlist(strsplit(as.character(model0$formula.mods), "[+]")), side = c("both", "left", "right"))[-1])
+   # cluster_unit_col <- rename(as.tibble(pull(drop_na(data, all_of(moderators)), c1)), cluster_unit = value)
+    #cluster_unit_col2 <- cluster_unit_col[!duplicated(cluster_unit_col$cluster_unit), ]}
+
 
 
 
@@ -1255,8 +1262,8 @@ forest(re_meta_model, addpred = T, header = T)
 rma(yi = yi, vi = vi, data = meta_tib, method  = "FE")
 
 
-#Funnel plot
-funnel(re_meta_model)
+
+
 
 
 #Prediction
@@ -1301,20 +1308,22 @@ ml_meta_model.3l
 #----------------------------------------------------------------------------------------------------
 #Effect level
 #Beta 1
-ml_meta_model.3l.influence.b1.lev2 <- rma.mv.influence(data = meta_tib, struct = "CS", method = "REML", random = ~1 | study_id/effect, cluster = meta_tib$effect, b = 1, robust = F, robust.cluster = "effect", adjust = T)
+ml_meta_model.3l.influence.b1.lev2 <- rma.mv.influence(data = meta_tib, struct = "CS", method = "REML", random = ~1 | study_id/effect, cluster = "effect", b = 0, robust = F, robust.cluster = "effect", adjust = T)
+ml_meta_model.3l.influence.b1.lev2 
 ml_meta_model.3l.influence.b1.lev2 %>% filter(cooks.d >= 1)
 #Based on Cook's d, there are no influential cases
 
 #STUDY LEVEL
 #Beta 1
-ml_meta_model.3l.influence.b1.lev3 <- rma.mv.influence(data = meta_tib, struct = "CS", method = "REML", random = ~1 | study_id/effect, cluster = meta_tib$study_id, b = 1, robust = F, robust.cluster = "effect", adjust = T)
-ml_meta_model.3l.influence.b1.lev3 %>% filter(cooks.d >= 1)
+ml_meta_model.3l.influence.b1.lev3 <- rma.mv.influence(data = meta_tib, struct = "CS", method = "REML", random = ~1 | study_id/effect, cluster = "study_id", b = 0, robust = F, robust.cluster = "effect", adjust = T)
+ml_meta_model.3l.influence.b1.lev3 
 #Based on Cook's d, there are no influential studies
 
 
 
 #Forest plots
 forest(ml_meta_model.3l, addpred = T, header = T, slab = meta_tib$effect)
+
 
 ```
 
@@ -1431,13 +1440,13 @@ ml_meta_model.3l_mod_main_language.rbst
 #----------------------------------------------------------------------------------------------------
 #Effect level
 #Beta 1
-ml_meta_model.3l_mod_main_language.b1.lev2 <- rma.mv.influence(data = meta_tib, struct = "CS", method = "REML", mods = ~ NT_type.1, random = ~1 | study_id/effect, cluster = meta_tib$effect, b = 1, robust = T, robust.cluster = "effect", adjust = T)
+ml_meta_model.3l_mod_main_language.b1.lev2 <- rma.mv.influence(data = meta_tib, struct = "CS", method = "REML", mods = ~ NT_type.1, random = ~1 | study_id/effect, cluster = "effect", b = 1, robust = T, robust.cluster = "effect", adjust = T)
 ml_meta_model.3l_mod_main_language.b1.lev2 %>% filter(cooks.d >= 1)
 #Based on Cook's d, there is 1 influential case (mutaf_yildiz_et_al.2018b)
 
 #STUDY LEVEL
 #Beta 1
-ml_meta_model.3l_mod_main_language.b1.lev3 <- rma.mv.influence(data = meta_tib, struct = "CS", method = "REML", mods = ~ NT_type.1, random = ~1 | study_id/effect, cluster = meta_tib$study_id, b = 1, robust = T, robust.cluster = "effect", adjust = T)
+ml_meta_model.3l_mod_main_language.b1.lev3 <- rma.mv.influence(data = meta_tib, struct = "CS", method = "REML", mods = ~ NT_type.1, random = ~1 | study_id/effect, cluster = "study_id", b = 1, robust = T, robust.cluster = "effect", adjust = T)
 ml_meta_model.3l_mod_main_language.b1.lev3 %>% filter(cooks.d >= 1)
 #Based on Cook's d, there are 2 influential studies (mutaf_yildiz_et_al.2018 and casey_et_al.2018)
 
@@ -1522,7 +1531,9 @@ assumption(model = ml_meta_model.3l_mod_NT_type.1)
 #NORMALITY OF THE SAMPLING DISTRIBUTION 
 #Sensitivity test with robust methods
 
-#Conclusion: Robust it 
+#Conclusion: Robust it
+
+
 
 
 #ROBUST
@@ -1533,6 +1544,9 @@ ml_meta_model.3l_mod_NT_type.1
 #ROBUST SE
 ml_meta_model.3l_mod_NT_type.1.rbst <- metafor::robust(ml_meta_model.3l_mod_NT_type.1, cluster=meta_tib$effect, adjust = T)
 ml_meta_model.3l_mod_NT_type.1.rbst
+
+
+
 #RESULTS 
 #Cardinality has a significantly greater positive effect (b = 0.3365, p = 0.0117)
 #Conventional Nominatives has a significantly greater positive effect (b = 0.5149, p = 0.0002)
@@ -1545,6 +1559,9 @@ bonferroni <- function(model){
 }
 
 bonferroni(ml_meta_model.3l_mod_NT_type.1.rbst)
+
+
+
 #RESULTS 
 #Conventional Nominatives has a significantly greater positive effect (b = 0.5149, p = 0.001369987)
 
@@ -1554,43 +1571,43 @@ bonferroni(ml_meta_model.3l_mod_NT_type.1.rbst)
 #----------------------------------------------------------------------------------------------------
 #Effect level
 #Beta 1
-ml_meta_model.3l_mod_NT_type.1_outlier.lev2.b1 <- rma.mv.influence(data = meta_tib, struct = "CS", method = "REML", mods = ~ NT_type.1, random = ~1 | study_id/effect, cluster = meta_tib$effect, b = 1, robust = T, robust.cluster = "effect",adjust = T)
+ml_meta_model.3l_mod_NT_type.1_outlier.lev2.b1 <- rma.mv.influence(data = meta_tib, struct = "CS", method = "REML", mods = ~ NT_type.1, random = ~1 | study_id/effect, cluster = "effect", b = 1, robust = T, robust.cluster = "effect",adjust = T)
 ml_meta_model.3l_mod_NT_type.1_outlier.lev2.b1 %>% filter(cooks.d >= 1)
 ml_meta_model.3l_mod_NT_type.1_outlier.lev2.b1 
 #Based on Cook's d and DFBETAS, There are no outliers and influential cases 
 
 #Beta 2
-ml_meta_model.3l_mod_NT_type.1_outlier.lev2.b2 <- rma.mv.influence(data = meta_tib, struct = "CS", method = "REML", mods = ~ NT_type.1, random = ~1 | study_id/effect, cluster = meta_tib$effect, b = 2, robust = T, robust.cluster = "effect",adjust = T)
+ml_meta_model.3l_mod_NT_type.1_outlier.lev2.b2 <- rma.mv.influence(data = meta_tib, struct = "CS", method = "REML", mods = ~ NT_type.1, random = ~1 | study_id/effect, cluster = "effect", b = 2, robust = T, robust.cluster = "effect",adjust = T)
 ml_meta_model.3l_mod_NT_type.1_outlier.lev2.b2 
 ml_meta_model.3l_mod_NT_type.1_outlier.lev2.b2  %>% filter(cooks.d >= 1)
 #Based on Cook's d and DFBETAS, There are no outliers and influential cases 
 
 #Beta 3
-ml_meta_model.3l_mod_NT_type.1_outlier.lev2.b3 <- rma.mv.influence(data = meta_tib, struct = "CS", method = "REML", mods = ~ NT_type.1, random = ~1 | study_id/effect, cluster = meta_tib$effect, b = 3, robust = T, robust.cluster = "effect",adjust = T)
+ml_meta_model.3l_mod_NT_type.1_outlier.lev2.b3 <- rma.mv.influence(data = meta_tib, struct = "CS", method = "REML", mods = ~ NT_type.1, random = ~1 | study_id/effect, cluster = "effect", b = 3, robust = T, robust.cluster = "effect",adjust = T)
 ml_meta_model.3l_mod_NT_type.1_outlier.lev2.b3 %>% filter(cooks.d >= 1)
 ml_meta_model.3l_mod_NT_type.1_outlier.lev2.b3
 #Based on Cook's d and DFBETAS, There are no outliers and influential cases 
 
 #Beta 4
-ml_meta_model.3l_mod_NT_type.1_outlier.lev2.b4 <- rma.mv.influence(data = meta_tib, struct = "CS", method = "REML", mods = ~ NT_type.1, random = ~1 | study_id/effect, cluster = meta_tib$effect, b = 4, robust = T, robust.cluster = "effect",adjust = T)
+ml_meta_model.3l_mod_NT_type.1_outlier.lev2.b4 <- rma.mv.influence(data = meta_tib, struct = "CS", method = "REML", mods = ~ NT_type.1, random = ~1 | study_id/effect, cluster = "effect", b = 4, robust = T, robust.cluster = "effect",adjust = T)
 ml_meta_model.3l_mod_NT_type.1_outlier.lev2.b4 %>% filter(cooks.d >= 1)
 ml_meta_model.3l_mod_NT_type.1_outlier.lev2.b4
 #Based on Cook's d and DFBETAS, There are no outliers and influential cases 
 
 #Beta 5
-ml_meta_model.3l_mod_NT_type.1_outlier.lev2.b5 <- rma.mv.influence(data = meta_tib, struct = "CS", method = "REML", mods = ~ NT_type.1, random = ~1 | study_id/effect, cluster = meta_tib$effect, b = 5, robust = T, robust.cluster = "effect",adjust = T)
+ml_meta_model.3l_mod_NT_type.1_outlier.lev2.b5 <- rma.mv.influence(data = meta_tib, struct = "CS", method = "REML", mods = ~ NT_type.1, random = ~1 | study_id/effect, cluster = "effect", b = 5, robust = T, robust.cluster = "effect",adjust = T)
 ml_meta_model.3l_mod_NT_type.1_outlier.lev2.b5 %>% filter(cooks.d >= 1 )
 ml_meta_model.3l_mod_NT_type.1_outlier.lev2.b5
 #Based on Cook's d and DFBETAS, There are no outliers and influential cases 
 
 #Beta 6
-ml_meta_model.3l_mod_NT_type.1_outlier.lev2.b6 <-rma.mv.influence(data = meta_tib, struct = "CS", method = "REML", mods = ~ NT_type.1, random = ~1 | study_id/effect, cluster = meta_tib$effect, b = 6, robust = T, robust.cluster = "effect",adjust = T)
+ml_meta_model.3l_mod_NT_type.1_outlier.lev2.b6 <-rma.mv.influence(data = meta_tib, struct = "CS", method = "REML", mods = ~ NT_type.1, random = ~1 | study_id/effect, cluster = "effect", b = 6, robust = T, robust.cluster = "effect",adjust = T)
 ml_meta_model.3l_mod_NT_type.1_outlier.lev2.b6 %>% filter(cooks.d >= 1)
 ml_meta_model.3l_mod_NT_type.1_outlier.lev2.b6
 #Based on Cook's d and DFBETAS, There are no outliers and influential cases 
 
 #Beta 7
-ml_meta_model.3l_mod_NT_type.1_outlier.lev2.b7 <- rma.mv.influence(data = meta_tib, struct = "CS", method = "REML", mods = ~ NT_type.1, random = ~1 | study_id/effect, cluster = meta_tib$effect, b = 7, robust = T, robust.cluster = "effect",adjust = T)
+ml_meta_model.3l_mod_NT_type.1_outlier.lev2.b7 <- rma.mv.influence(data = meta_tib, struct = "CS", method = "REML", mods = ~ NT_type.1, random = ~1 | study_id/effect, cluster = "effect", b = 7, robust = T, robust.cluster = "effect",adjust = T)
 ml_meta_model.3l_mod_NT_type.1_outlier.lev2.b7 %>% filter(cooks.d >= 1)
 ml_meta_model.3l_mod_NT_type.1_outlier.lev2.b7
 #Based on Cook's d and DFBETAS, There are no outliers and influential cases 
@@ -1599,42 +1616,42 @@ ml_meta_model.3l_mod_NT_type.1_outlier.lev2.b7
 
 #STUDY LEVEL
 #Beta 1
-ml_meta_model.3l_mod_NT_type.1_outlier.lev3.b1 <- rma.mv.influence(data = meta_tib, struct = "CS", method = "REML", mods = ~ NT_type.1, random = ~1 | study_id/effect, cluster = meta_tib$study_id, b = 1, robust = T, robust.cluster = "effect",adjust = T)
+ml_meta_model.3l_mod_NT_type.1_outlier.lev3.b1 <- rma.mv.influence(data = meta_tib, struct = "CS", method = "REML", mods = ~ NT_type.1, random = ~1 | study_id/effect, cluster = "study_id", b = 1, robust = T, robust.cluster = "effect",adjust = T)
 ml_meta_model.3l_mod_NT_type.1_outlier.lev3.b1 %>% filter(cooks.d >= 1)
 ml_meta_model.3l_mod_NT_type.1_outlier.lev3.b1 
 
 
 #Beta 2
-ml_meta_model.3l_mod_NT_type.1_outlier.lev3.b2 <- rma.mv.influence(data = meta_tib, struct = "CS", method = "REML", mods = ~ NT_type.1, random = ~1 | study_id/effect, cluster = meta_tib$study_id, b = 2, robust = T, robust.cluster = "effect",adjust = T)
+ml_meta_model.3l_mod_NT_type.1_outlier.lev3.b2 <- rma.mv.influence(data = meta_tib, struct = "CS", method = "REML", mods = ~ NT_type.1, random = ~1 | study_id/effect, cluster = "study_id", b = 2, robust = T, robust.cluster = "effect",adjust = T)
 ml_meta_model.3l_mod_NT_type.1_outlier.lev3.b2  %>% filter(cooks.d >= 1)
 ##Based on DFBETAS, there is 1 influential study (casey_et_al.2018)
 
 #Beta 3
-ml_meta_model.3l_mod_NT_type.1_outlier.lev3.b3 <- rma.mv.influence(data = meta_tib, struct = "CS", method = "REML", mods = ~ NT_type.1, random = ~1 | study_id/effect, cluster = meta_tib$study_id, b = 3, robust = T, robust.cluster = "effect",adjust = T)
+ml_meta_model.3l_mod_NT_type.1_outlier.lev3.b3 <- rma.mv.influence(data = meta_tib, struct = "CS", method = "REML", mods = ~ NT_type.1, random = ~1 | study_id/effect, cluster = "study_id", b = 3, robust = T, robust.cluster = "effect",adjust = T)
 ml_meta_model.3l_mod_NT_type.1_outlier.lev3.b3 %>% filter(cooks.d >= 1)
 
 
 
 #Beta 4
-ml_meta_model.3l_mod_NT_type.1_outlier.lev3.b4 <- rma.mv.influence(data = meta_tib, struct = "CS", method = "REML", mods = ~ NT_type.1, random = ~1 | study_id/effect, cluster = meta_tib$study_id, b = 4, robust = T, robust.cluster = "effect",adjust = T)
+ml_meta_model.3l_mod_NT_type.1_outlier.lev3.b4 <- rma.mv.influence(data = meta_tib, struct = "CS", method = "REML", mods = ~ NT_type.1, random = ~1 | study_id/effect, cluster = "study_id", b = 4, robust = T, robust.cluster = "effect",adjust = T)
 ml_meta_model.3l_mod_NT_type.1_outlier.lev3.b4 %>% filter(cooks.d >= 1 )
 
 
 
 #Beta 5
-ml_meta_model.3l_mod_NT_type.1_outlier.lev3.b5 <- rma.mv.influence(data = meta_tib, struct = "CS", method = "REML", mods = ~ NT_type.1, random = ~1 | study_id/effect, cluster = meta_tib$study_id, b = 5, robust = T, robust.cluster = "effect",adjust = T)
+ml_meta_model.3l_mod_NT_type.1_outlier.lev3.b5 <- rma.mv.influence(data = meta_tib, struct = "CS", method = "REML", mods = ~ NT_type.1, random = ~1 | study_id/effect, cluster = "study_id", b = 5, robust = T, robust.cluster = "effect",adjust = T)
 ml_meta_model.3l_mod_NT_type.1_outlier.lev3.b5 %>% filter(cooks.d >= 1)
 
  
 
 #Beta 6
-ml_meta_model.3l_mod_NT_type.1_outlier.lev3.b6 <- rma.mv.influence(data = meta_tib, struct = "CS", method = "REML", mods = ~ NT_type.1, random = ~1 | study_id/effect, cluster = meta_tib$study_id, b = 6, robust = T, robust.cluster = "effect",adjust = T)
+ml_meta_model.3l_mod_NT_type.1_outlier.lev3.b6 <- rma.mv.influence(data = meta_tib, struct = "CS", method = "REML", mods = ~ NT_type.1, random = ~1 | study_id/effect, cluster = "study_id", b = 6, robust = T, robust.cluster = "effect",adjust = T)
 ml_meta_model.3l_mod_NT_type.1_outlier.lev3.b6 %>% filter(cooks.d >= 1)
 
 
 
 #Beta 7
-ml_meta_model.3l_mod_NT_type.1_outlier.lev3.b7 <- rma.mv.influence(data = meta_tib, struct = "CS", method = "REML", mods = ~ NT_type.1, random = ~1 | study_id/effect, cluster = meta_tib$study_id, b = 7, robust = T, robust.cluster = "effect",adjust = T)
+ml_meta_model.3l_mod_NT_type.1_outlier.lev3.b7 <- rma.mv.influence(data = meta_tib, struct = "CS", method = "REML", mods = ~ NT_type.1, random = ~1 | study_id/effect, cluster = "study_id", b = 7, robust = T, robust.cluster = "effect",adjust = T)
 ml_meta_model.3l_mod_NT_type.1_outlier.lev3.b7 %>% filter(cooks.d >= 1)
 
 
@@ -1772,48 +1789,48 @@ bonferroni(ml_meta_model.3l_mod_MA_context.rbst)
 #----------------------------------------------------------------------------------------------------
 #EFFECT LEVEL 
 #Beta 1
-ml_meta_model.3l_mod_MA_context.outlier.b1 <- rma.mv.influence(data = meta_tib, struct = "CS", method = "REML", mods = ~ MA_context, random = ~ 1 | study_id/effect, cluster = meta_tib$effect, b = 1, robust = T, robust.cluster = "effect", adjust = T)
+ml_meta_model.3l_mod_MA_context.outlier.b1 <- rma.mv.influence(data = meta_tib, struct = "CS", method = "REML", mods = ~ MA_context, random = ~ 1 | study_id/effect, cluster = "effect", b = 1, robust = T, robust.cluster = "effect", adjust = T)
 ml_meta_model.3l_mod_MA_context.outlier.b1 
 ml_meta_model.3l_mod_MA_context.outlier.b1 %>% filter(cooks.d >= 1)
 #Based on Cook's d, there are 2 influential cases (mutaf a and mutaf b)
 
 #Beta 2
-ml_meta_model.3l_mod_MA_context.outlier.b2 <- rma.mv.influence(data = meta_tib, struct = "CS", method = "REML", mods = ~ MA_context, random = ~ 1 | study_id/effect, cluster = meta_tib$effect, b = 2, robust = T, robust.cluster = "effect", adjust = T)
+ml_meta_model.3l_mod_MA_context.outlier.b2 <- rma.mv.influence(data = meta_tib, struct = "CS", method = "REML", mods = ~ MA_context, random = ~ 1 | study_id/effect, cluster = "effect", b = 2, robust = T, robust.cluster = "effect", adjust = T)
 ml_meta_model.3l_mod_MA_context.outlier.b2 
 ml_meta_model.3l_mod_MA_context.outlier.b2 %>% filter(cooks.d >= 1)
 #Based on Cook's d, there are 2 influential cases (mutaf a and mutaf b)
 
 #Beta 3
-ml_meta_model.3l_mod_MA_context.outlier.b3 <- rma.mv.influence(data = meta_tib, struct = "CS", method = "REML", mods = ~ MA_context, random = ~ 1 | study_id/effect, cluster = meta_tib$effect, b = 3, robust = T, robust.cluster = "effect", adjust = T)
+ml_meta_model.3l_mod_MA_context.outlier.b3 <- rma.mv.influence(data = meta_tib, struct = "CS", method = "REML", mods = ~ MA_context, random = ~ 1 | study_id/effect, cluster = "effect", b = 3, robust = T, robust.cluster = "effect", adjust = T)
 ml_meta_model.3l_mod_MA_context.outlier.b3 %>% filter(cooks.d >= 1)
 #Based on Cook's d, there are 2 influential cases (mutaf a and mutaf b)
 
 #Beta 4
-ml_meta_model.3l_mod_MA_context.outlier.b4 <- rma.mv.influence(data = meta_tib, struct = "CS", method = "REML", mods = ~ MA_context, random = ~ 1 | study_id/effect, cluster = meta_tib$effect, b = 4, robust = T, robust.cluster = "effect", adjust = T)
+ml_meta_model.3l_mod_MA_context.outlier.b4 <- rma.mv.influence(data = meta_tib, struct = "CS", method = "REML", mods = ~ MA_context, random = ~ 1 | study_id/effect, cluster = "effect", b = 4, robust = T, robust.cluster = "effect", adjust = T)
 ml_meta_model.3l_mod_MA_context.outlier.b4 %>% filter(cooks.d >= 1)
 #Based on Cook's d, there are 2 influential cases (mutaf a and mutaf b)
 
 
 #STUDY LEVEL 
 #Beta 1
-ml_meta_model.3l_mod_MA_context.outlier.b1.lev3 <- rma.mv.influence(data = meta_tib, struct = "CS", method = "REML", mods = ~ MA_context, random = ~ 1 | study_id/effect, cluster = meta_tib$study_id, b = 1, robust = T, robust.cluster = "effect", adjust = T)
+ml_meta_model.3l_mod_MA_context.outlier.b1.lev3 <- rma.mv.influence(data = meta_tib, struct = "CS", method = "REML", mods = ~ MA_context, random = ~ 1 | study_id/effect, cluster = "study_id", b = 1, robust = T, robust.cluster = "effect", adjust = T)
 ml_meta_model.3l_mod_MA_context.outlier.b1.lev3
 ml_meta_model.3l_mod_MA_context.outlier.b1.lev3 %>% filter(cooks.d >= 1)
 #Based on Cook's d, there is 1 influential study (casey_et_al.2018)
 
 #Beta 2
-ml_meta_model.3l_mod_MA_context.outlier.b2.lev3 <- rma.mv.influence(data = meta_tib, struct = "CS", method = "REML", mods = ~ MA_context, random = ~ 1 | study_id/effect, cluster = meta_tib$study_id, b = 2, robust = T, robust.cluster = "effect", adjust = T)
+ml_meta_model.3l_mod_MA_context.outlier.b2.lev3 <- rma.mv.influence(data = meta_tib, struct = "CS", method = "REML", mods = ~ MA_context, random = ~ 1 | study_id/effect, cluster = "study_id", b = 2, robust = T, robust.cluster = "effect", adjust = T)
 ml_meta_model.3l_mod_MA_context.outlier.b2.lev3 
 ml_meta_model.3l_mod_MA_context.outlier.b2.lev3 %>% filter(cooks.d >= 1)
 #Based on Cook's d, there is 1 influential study (casey_et_al.2018)
 
 #Beta 3
-ml_meta_model.3l_mod_MA_context.outlier.b3.lev3 <- rma.mv.influence(data = meta_tib, struct = "CS", method = "REML", mods = ~ MA_context, random = ~ 1 | study_id/effect, cluster = meta_tib$study_id, b = 3, robust = T, robust.cluster = "effect", adjust = T)
+ml_meta_model.3l_mod_MA_context.outlier.b3.lev3 <- rma.mv.influence(data = meta_tib, struct = "CS", method = "REML", mods = ~ MA_context, random = ~ 1 | study_id/effect, cluster = "study_id", b = 3, robust = T, robust.cluster = "effect", adjust = T)
 ml_meta_model.3l_mod_MA_context.outlier.b3.lev3 %>% filter(cooks.d >= 1)
 #Based on Cook's d, there is 1 influential study (casey_et_al.2018)
 
 #Beta 4
-ml_meta_model.3l_mod_MA_context.outlier.b4.lev3 <- rma.mv.influence(data = meta_tib, struct = "CS", method = "REML", mods = ~ MA_context, random = ~ 1 | study_id/effect, cluster = meta_tib$study_id, b = 4, robust = T, robust.cluster = "effect", adjust = T)
+ml_meta_model.3l_mod_MA_context.outlier.b4.lev3 <- rma.mv.influence(data = meta_tib, struct = "CS", method = "REML", mods = ~ MA_context, random = ~ 1 | study_id/effect, cluster = "study_id", b = 4, robust = T, robust.cluster = "effect", adjust = T)
 ml_meta_model.3l_mod_MA_context.outlier.b4.lev3 %>% filter(cooks.d >= 1)
 #Based on Cook's d, there is 1 influential study (casey_et_al.2018)
 
@@ -1955,14 +1972,14 @@ ml_meta_model.3l_mod_mothers_cat.rbst
 #----------------------------------------------------------------------------------------------------
 #EFFECT LEVEL 
 #Beta 1
-ml_meta_model.3l_mod_mothers_cat.rbst.influence.b1.lev2 <- rma.mv.influence( data = meta_tib_mod_mothers, struct = "CS", method = "REML",mods = ~ mothers_cat, random = ~ 1 | study_id/effect, cluster = meta_tib_mod_mothers$effect, b = 1, robust = T, robust.cluster = "effect", adjust = T)
+ml_meta_model.3l_mod_mothers_cat.rbst.influence.b1.lev2 <- rma.mv.influence( data = meta_tib_mod_mothers, struct = "CS", method = "REML",mods = ~ mothers_cat, random = ~ 1 | study_id/effect, cluster = "effect", b = 1, robust = T, robust.cluster = "effect", adjust = T)
 ml_meta_model.3l_mod_mothers_cat.rbst.influence.b1.lev2
 ml_meta_model.3l_mod_mothers_cat.rbst.influence.b1 %>% filter(cooks.d >= 1)
 #Based on Cook's d, there are no influential cases 
 
 #STUDY LEVEL 
 #Beta 1
-ml_meta_model.3l_mod_mothers_cat.rbst.influence.b1.lev3 <- rma.mv.influence( data = meta_tib_mod_mothers, struct = "CS", method = "REML",mods = ~ mothers_cat, random = ~ 1 | study_id/effect, cluster = meta_tib_mod_mothers$study_id, b = 1, robust = T, robust.cluster = "effect", adjust = T)
+ml_meta_model.3l_mod_mothers_cat.rbst.influence.b1.lev3 <- rma.mv.influence(data = meta_tib_mod_mothers, struct = "CS", method = "REML",mods = ~ mothers_cat, random = ~ 1 | study_id/effect, cluster = "effect", b = 1, robust = T, robust.cluster = "effect", adjust = T)
 ml_meta_model.3l_mod_mothers_cat.rbst.influence.b1.lev3
 ml_meta_model.3l_mod_mothers_cat.rbst.influence.b1.lev3 %>% filter(cooks.d >= 1)
 #Based on Cook's d, there is 1 influential study (ramani_et_al.2015)
@@ -2081,14 +2098,14 @@ ml_meta_model.3l_mod_child_age_NT_mid.rbst
 #----------------------------------------------------------------------------------------------------
 #EFFECT LEVEL 
 #Beta 1
-ml_meta_model.3l_mod_child_age_NT_mid.rbst.influence.b1.lev2 <- rma.mv.influence(data = meta_tib, struct = "CS", method = "REML", mods = ~ child_age_NT_mid, random = ~ 1 | study_id/effect, cluster = meta_tib$effect, b = 1, robust = T, robust.cluster = "effect", adjust = T)
+ml_meta_model.3l_mod_child_age_NT_mid.rbst.influence.b1.lev2 <- rma.mv.influence(data = meta_tib, struct = "CS", method = "REML", mods = ~ child_age_NT_mid, random = ~ 1 | study_id/effect, cluster = "effect", b = 1, robust = T, robust.cluster = "effect", adjust = T)
 ml_meta_model.3l_mod_child_age_NT_mid.rbst.influence.b1.lev2
 ml_meta_model.3l_mod_child_age_NT_mid.rbst.influence.b1.lev2 %>% filter(cooks.d >= 1)
 #Based on Cook's d, there are no influential cases 
 
 #STUDY LEVEL 
 #Beta 1
-ml_meta_model.3l_mod_child_age_NT_mid.rbst.influence.b1.lev3 <- rma.mv.influence(data = meta_tib, struct = "CS", method = "REML", mods = ~ child_age_NT_mid, random = ~ 1 | study_id/effect, cluster = meta_tib$study_id, b = 1, robust = T, robust.cluster = "effect", adjust = T)
+ml_meta_model.3l_mod_child_age_NT_mid.rbst.influence.b1.lev3 <- rma.mv.influence(data = meta_tib, struct = "CS", method = "REML", mods = ~ child_age_NT_mid, random = ~ 1 | study_id/effect, cluster = "study_id", b = 1, robust = T, robust.cluster = "effect", adjust = T)
 ml_meta_model.3l_mod_child_age_NT_mid.rbst.influence.b1.lev3
 ml_meta_model.3l_mod_child_age_NT_mid.rbst.influence.b1.lev3 %>% filter(cooks.d >= 1)
 #Based on Cook's d, there is 1 influential study (casey_et_al.2018)
@@ -2286,46 +2303,46 @@ bonferroni(ml_meta_model.3l_mod_MA_measure.rbst)
 #----------------------------------------------------------------------------------------------------
 #EFFECT LEVEL (They are all the same; they are all based on Cook's d)
 #Beta 1
-ml_meta_model.3l_mod_MA_measure.rbst.influence.b1.lev2 <- rma.mv.influence(data = meta_tib, mods = ~MA_measure, random = ~1 | study_id/effect, struct = "CS", method = "REML", cluster = meta_tib$effect, b = 1, robust = T, robust.cluster = "effect", adjust = T)
+ml_meta_model.3l_mod_MA_measure.rbst.influence.b1.lev2 <- rma.mv.influence(data = meta_tib, mods = ~MA_measure, random = ~1 | study_id/effect, struct = "CS", method = "REML", cluster = "effect", b = 1, robust = T, robust.cluster = "effect", adjust = T)
 ml_meta_model.3l_mod_MA_measure.rbst.influence.b1.lev2
 ml_meta_model.3l_mod_MA_measure.rbst.influence.b1.lev2 %>% filter(cooks.d >= 1)
 #Based on Cook's d, there are 7 influential cases
 
 
 #Beta 2
-ml_meta_model.3l_mod_MA_measure.rbst.influence.b2.lev2 <- rma.mv.influence(data = meta_tib, mods = ~MA_measure, random = ~1 | study_id/effect, struct = "CS", method = "REML", cluster = meta_tib$effect, b = 2, robust = T, robust.cluster = "effect", adjust = T)
+ml_meta_model.3l_mod_MA_measure.rbst.influence.b2.lev2 <- rma.mv.influence(data = meta_tib, mods = ~MA_measure, random = ~1 | study_id/effect, struct = "CS", method = "REML", cluster = "effect", b = 2, robust = T, robust.cluster = "effect", adjust = T)
 ml_meta_model.3l_mod_MA_measure.rbst.influence.b2.lev2
 ml_meta_model.3l_mod_MA_measure.rbst.influence.b2.lev2 %>% filter(cooks.d >= 1)
 #Based on Cook's d, there are 7 influential cases
 
 
 #Beta 3
-ml_meta_model.3l_mod_MA_measure.rbst.influence.b3.lev2 <- rma.mv.influence(data = meta_tib, mods = ~MA_measure, random = ~1 | study_id/effect, struct = "CS", method = "REML", cluster = meta_tib$effect, b = 3, robust = T, robust.cluster = "effect", adjust = T)
+ml_meta_model.3l_mod_MA_measure.rbst.influence.b3.lev2 <- rma.mv.influence(data = meta_tib, mods = ~MA_measure, random = ~1 | study_id/effect, struct = "CS", method = "REML", cluster = "effect", b = 3, robust = T, robust.cluster = "effect", adjust = T)
 ml_meta_model.3l_mod_MA_measure.rbst.influence.b3.lev2
 ml_meta_model.3l_mod_MA_measure.rbst.influence.b3.lev2 %>% filter(cooks.d >= 1)
 #Based on Cook's d, there are 7 influential cases
 
 
 #Beta 4
-ml_meta_model.3l_mod_MA_measure.rbst.influence.b4.lev2 <- rma.mv.influence(data = meta_tib, mods = ~MA_measure, random = ~1 | study_id/effect, struct = "CS", method = "REML", cluster = meta_tib$effect, b = 4, robust = T, robust.cluster = "effect", adjust = T)
+ml_meta_model.3l_mod_MA_measure.rbst.influence.b4.lev2 <- rma.mv.influence(data = meta_tib, mods = ~MA_measure, random = ~1 | study_id/effect, struct = "CS", method = "REML", cluster = "effect", b = 4, robust = T, robust.cluster = "effect", adjust = T)
 ml_meta_model.3l_mod_MA_measure.rbst.influence.b4.lev2
 ml_meta_model.3l_mod_MA_measure.rbst.influence.b4.lev2 %>% filter(cooks.d >= 1)
 #Based on Cook's d, there are 7 influential cases
 
 #Beta 5
-ml_meta_model.3l_mod_MA_measure.rbst.influence.b5.lev2 <- rma.mv.influence(data = meta_tib, mods = ~MA_measure, random = ~1 | study_id/effect, struct = "CS", method = "REML", cluster = meta_tib$effect, b = 5, robust = T, robust.cluster = "effect", adjust = T)
+ml_meta_model.3l_mod_MA_measure.rbst.influence.b5.lev2 <- rma.mv.influence(data = meta_tib, mods = ~MA_measure, random = ~1 | study_id/effect, struct = "CS", method = "REML", cluster = "effect", b = 5, robust = T, robust.cluster = "effect", adjust = T)
 ml_meta_model.3l_mod_MA_measure.rbst.influence.b5.lev2
 ml_meta_model.3l_mod_MA_measure.rbst.influence.b5.lev2 %>% filter(cooks.d >= 1)
 #Based on Cook's d, there are 7 influential cases
 
 #Beta 6
-ml_meta_model.3l_mod_MA_measure.rbst.influence.b6.lev2 <- rma.mv.influence(data = meta_tib, mods = ~MA_measure, random = ~1 | study_id/effect, struct = "CS", method = "REML", cluster = meta_tib$effect, b = 6, robust = T, robust.cluster = "effect", adjust = T)
+ml_meta_model.3l_mod_MA_measure.rbst.influence.b6.lev2 <- rma.mv.influence(data = meta_tib, mods = ~MA_measure, random = ~1 | study_id/effect, struct = "CS", method = "REML", cluster = "effect", b = 6, robust = T, robust.cluster = "effect", adjust = T)
 ml_meta_model.3l_mod_MA_measure.rbst.influence.b6.lev2
 ml_meta_model.3l_mod_MA_measure.rbst.influence.b6.lev2 %>% filter(cooks.d >= 1)
 #Based on Cook's d, there are 7 influential cases
 
 #Beta 7
-ml_meta_model.3l_mod_MA_measure.rbst.influence.b7.lev2 <- rma.mv.influence(data = meta_tib, mods = ~MA_measure, random = ~1 | study_id/effect, struct = "CS", method = "REML", cluster = meta_tib$effect, b = 7, robust = T, robust.cluster = "effect", adjust = T)
+ml_meta_model.3l_mod_MA_measure.rbst.influence.b7.lev2 <- rma.mv.influence(data = meta_tib, mods = ~MA_measure, random = ~1 | study_id/effect, struct = "CS", method = "REML", cluster = "effect", b = 7, robust = T, robust.cluster = "effect", adjust = T)
 ml_meta_model.3l_mod_MA_measure.rbst.influence.b7.lev2
 ml_meta_model.3l_mod_MA_measure.rbst.influence.b7.lev2 %>% filter(cooks.d >= 1)
 #Based on Cook's d, there are 7 influential cases
@@ -2335,7 +2352,7 @@ ml_meta_model.3l_mod_MA_measure.rbst.influence.b7.lev2 %>% filter(cooks.d >= 1)
 
 #STUDY LEVEL 
 #Beta 1
-ml_meta_model.3l_mod_MA_measure.rbst.influence.b1.lev3 <- rma.mv.influence(data = meta_tib, mods = ~MA_measure, random = ~1 | study_id/effect, struct = "CS", method = "REML", cluster = meta_tib$study_id, b = 1, robust = T, robust.cluster = "effect", adjust = T)
+ml_meta_model.3l_mod_MA_measure.rbst.influence.b1.lev3 <- rma.mv.influence(data = meta_tib, mods = ~MA_measure, random = ~1 | study_id/effect, struct = "CS", method = "REML", cluster = "study_id", b = 1, robust = T, robust.cluster = "effect", adjust = T)
 ml_meta_model.3l_mod_MA_measure.rbst.influence.b1.lev3
 ml_meta_model.3l_mod_MA_measure.rbst.influence.b1.lev3 %>% filter(cooks.d >= 1)
 #Based on Cook's d, there are 4 influential studies 
@@ -2388,18 +2405,6 @@ ml_meta_model.2l_mod_MA_measure
 #-- Calculation (-0.5150, p = 0.0346)
 #-- Number Identification (-0.2509, p = 0.0466)
 
-as.character(ml_meta_model.3l$random)
-
-unlist(strsplit(as.character(ml_meta_model.3l$random), "[|]"))[2]
-
-
-str_trim(string, side = c("both", "left", "right"))
-
-strsplit(str1, "[|]")[[1]][1]
-
-
-
-
 #----------------------------------------------------------------------------------------------------
 #2-level model re
 ml_meta_model.2lre_mod_MA_measure <- rma.mv(yi = yi, V = vi, data = meta_tib, struct = "CS", method = "REML", test = "t",
@@ -2414,7 +2419,7 @@ ml_meta_model.2lre_mod_MA_measure
 
 ```{r publication_bias}
 #Funnel plot
-funnel(ml_meta_model.3l)
+metafor::funnel(ml_meta_model.3l)
 
 #Egger's test
 meta_tib_egger <- meta_tib %>% mutate(se = sqrt(vi), snd = yi/se, inv.se = 1/se)
@@ -2430,19 +2435,15 @@ ggplot(meta_tib2, aes(x = inv.se, y = snd)) +
 #RESULTS
 #Egger's test indicated that there is no publication bias 
 
+
+
+
 #Vevea and Wood (2005?)
-
-
-weightr::weightfunct(effect = meta_tib$yi, v = meta_tib$vi)
-
 weightfunct(effect = meta_tib$yi, v = meta_tib$vi, steps=c(0.05, 0.50, 1))
 
 ```
 
-```{r}
 
-levels(meta_tib$country)
-```
 
 ```{r vardist}
 n <- length(meta_tib$vi)
@@ -2462,6 +2463,8 @@ meta_test.3l <- function(model){
 }
 
 ```
+
+
 
 
 
