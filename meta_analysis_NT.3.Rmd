@@ -1,4 +1,4 @@
-New version (Not checked for bugs, please see the simplfied version, that definitely does not have bugs)
+working file; full of bugs, check the simplified version, that definitely does not give a bug
 ---
 title: "meta_analysis_NT"
 output: html_document
@@ -74,13 +74,10 @@ time_converter <- function(min, d, m, y){
   return(tibble(mins,days, months, years))
 }
 
-```
 
-
-```{r function_chunk}
 ######################################################################
 #Variances at the 3 levels - Used to examine the variances at each level in the 3-level meta-analysis model 
-vardist.3l <- function(model, digits){
+vardist.3l <- function(model, digits = 3){
   level1 <- ((length(model$vi)-1)*(sum(1/model$vi)))/
     ((sum(1/model$vi)^2)-(sum(1/((model$vi)^2))))
   level2 <- model$sigma2[2]
@@ -94,10 +91,28 @@ vardist.3l <- function(model, digits){
   return(tib3)
 }
 
+vardist <- vardist.3l(ml_meta_model.3lCHE, digits = 10)
+vardist$proportions_I2[2]/(vardist$proportions_I2[2] + vardist$proportions_I2[3])
+
+vardist$variances[1]/(vardist$variances[1] + vardist$variances[2] + vardist$variances[3])
+
+library(dmetar)
+var.comp(ml_meta_model.3lCHE) %>% plot()
+
+ICC_1 <- vardist$variances[1]/(vardist$variances[1] + vardist$variances[2] + vardist$variances[3])
+ICC_2 <- vardist$variances[2]/(vardist$variances[1] + vardist$variances[2] + vardist$variances[3])
+ICC_3 <- vardist$variances[3]/(vardist$variances[1] + vardist$variances[2] + vardist$variances[3])
+ICC_1
+ICC_2
+ICC_3
+
+ vardist$variances[1]/(vardist$variances[1] + vardist$variances[2] + vardist$variances[3])
+vardist$variances[2]/(vardist$variances[1] + vardist$variances[2] + vardist$variances[3])
+vardist$variances[3]/(vardist$variances[1] + vardist$variances[2] + vardist$variances[3])
+```
 
 
-
-
+```{r function_chunk}
 ######################################################################
 #FUNCTION FOR INFLUENCE CHECKS (SCROLL TO THE BOTTOM OF THIS FUNCTION FOR A BRIEF TUTORIAL)
 rma.mv.influence <- function(data, struct = "CS", method = "REML", random = NULL, mods = NULL, b = 0, cluster, robust = FALSE, robust.cluster, adjust = FALSE){
@@ -255,8 +270,6 @@ son_and_hur.2020_tib <- c(
     intervention_dosage = c(NA, NA),
     NT_context = c("Home", "Home"),
     MA_context = c("School", "School"),
-    NT_size = c(NA, NA),
-    NT_size.1 = c("Overall", "Overall"),
     NT_type = c("Overall", "Overall"),
     NT_type.1 = c("Overall", "Overall"),
     NT_type.10 = c("Overall", "Overall"),
@@ -306,8 +319,6 @@ ramani_et_al.2015_tib <- c(
     intervention_dosage = c(NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA),
     NT_context = c("School", "School", "School", "School", "School", "School", "School", "School", "School", "School", "School", "School"),
     MA_context = c("School", "School", "School", "School", "School", "School", "School", "School", "School", "School", "School", "School"),
-    NT_size = c(NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA),
-    NT_size.1 = c("Overall", "Overall", "Overall", "Overall", "Overall", "Overall", "Overall", "Overall", "Overall", "Overall", "Overall", "Overall"),
     NT_type = c("Counting_and_Number_Identificaton", "Cardinality_and_Ordering", "Counting_and_Number_Identification", "Cardinality_and_Ordering", "Counting_and_Number_Identification", "Cardinality_and_Ordering", "Counting_and_Number_Identification", "Cardinality_and_Ordering", "Counting_and_Number_Identification", "Cardinality_and_Ordering", "Counting_and_Number_Identification", "Cardinality_and_Ordering"),
     NT_type.1 = c("Overall", "Overall", "Overall", "Overall", "Overall", "Overall", "Overall", "Overall", "Overall", "Overall", "Overall", "Overall"),
     NT_type.10 = c(NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA),
@@ -352,8 +363,6 @@ mutaf_yildiz_et_al.2018_tib <- c(
       intervention_dosage = c(NA, NA),
       NT_context = c("Home", "Home"),
       MA_context = c("Home", "Home"),
-      NT_size = c(NA, NA),
-      NT_size.1 = c("Overall", "Overall"),
       NT_type = c("Overall", "Overall"),
       NT_type.1 = c("Overall", "Overall"),
       NT_type.10 = c("Overall", "Overall"),
@@ -394,8 +403,6 @@ elliott_et_al.2017_tib <- c(
       intervention_dosage = c(NA),
       NT_context = c("Lab"),
       MA_context = c("Lab"),
-      NT_size = c("Overall"),
-      NT_size.1 = c("Overall"),
       NT_type = c("Overall"),
       NT_type.1 = c("Overall"),
       NT_type.10 = c("Overall"),
@@ -409,6 +416,7 @@ elliott_et_al.2017_tib <- c(
 ```
 
 ```{r boonen_et_al.2011}
+#This study is excluded!
 boonen_et_al.2011_tib <- c(
   "boonen_et_al.2011a", 
   "boonen_et_al.2011b", 
@@ -444,8 +452,6 @@ boonen_et_al.2011_tib <- c(
       intervention_dosage = c(NA, NA, NA, NA, NA, NA, NA, NA, NA),
       NT_context = c("School", "School", "School", "School", "School", "School", "School", "School", "School"),
       MA_context = c("School", "School", "School", "School", "School", "School", "School", "School", "School"),
-      NT_size = c("Overall", "Overall","Overall","Overall", "Overall", "Overall", "Overall", "Overall", "Overall"),
-      NT_size.1 = c("Overall", "Overall","Overall","Overall", "Overall", "Overall", "Overall", "Overall", "Overall"),
       NT_type = c("Calculation", "Conventional_Nominatives", "Conventional_Nominatives","Conventional_Nominatives", "Counting", "Ordering", "Number_Identification", "Cardinality", "Calculation"),
       NT_type.1 = c("Calculation", "Conventional_Nominatives", "Conventional_Nominatives","Conventional_Nominatives", "Counting", "Ordering", "Number_Identification", "Cardinality", "Calculation"),
       NT_type.10 = c("Calculation", "Conventional_Nominatives", "Conventional_Nominatives","Conventional_Nominatives", "Counting", "Ordering", "Number_Identification", "Cardinality", "Calculation"),
@@ -487,8 +493,6 @@ levine_et_al.2010_tib <- c(
       intervention_dosage = c(NA),
       NT_context = c("Home"),
       MA_context = c("Unknown"),
-      NT_size = c("Overall"),
-      NT_size.1 = c("Overall"),
       NT_type = c("Overall"),
       NT_type.1 = c("Overall"),
       NT_type.10 = c("Overall"),
@@ -501,7 +505,7 @@ levine_et_al.2010_tib <- c(
 
 ```
 
-```{r mix}
+```{r mix_et_al.2012}
 d.rm <- function(m1, m2, s1, s2, r){
   ((m1-m2)*(sqrt(2*(1-r))))/sqrt(((s1^2)+(s2^2))-(2*r*s1*s2))
 }
@@ -548,35 +552,15 @@ mix_et_al.2012_tib <- c(
       intervention_dosage = c(21, 21, 42, 42, 21, 21, 21, 42, 42, 42, 21, 21, 42, 42, 21, 21, 21, 42, 42, 42),
       NT_context = c("School", "School", "School", "School", "School", "School", "School", "School", "School", "School", "School", "School", "School", "School", "School", "School", "School", "School", "School", "School"),
       MA_context = c("School", "School", "School", "School", "School", "School", "School", "School", "School", "School", "School", "School", "School", "School", "School", "School", "School", "School", "School", "School"),
-      NT_size = c(NA, NA, NA, NA, NA, NA, NA, NA, NA, NA ,NA, NA, NA, NA, NA, NA, NA, NA, NA, NA),
-      NT_size.1 = c(NA, NA, NA, NA, NA, NA, NA, NA, NA, NA ,NA, NA, NA, NA, NA, NA, NA, NA, NA, NA),
       NT_type = c(NA, NA, NA, NA, NA, NA, NA, NA, NA, NA ,NA, NA, NA, NA, NA, NA, NA, NA, NA, NA),
       NT_type.1 = c("Counting","Counting","Counting","Counting","Counting","Counting","Counting","Counting","Counting","Counting","Cardinality", "Cardinality", "Cardinality", "Cardinality", "Cardinality", "Cardinality", "Cardinality", "Cardinality", "Cardinality", "Cardinality"),
       NT_type.10 = c(NA, NA, NA, NA, NA, NA, NA, NA, NA, NA ,NA, NA, NA, NA, NA, NA, NA, NA, NA, NA),
       MA_test = c(NA, NA, NA, NA, NA, NA, NA, NA, NA, NA ,NA, NA, NA, NA, NA, NA, NA, NA, NA, NA),
       MA_measure = c("Counting", "Counting", "Counting", "Counting", "Cardinality", "Cardinality", "Cardinality", "Cardinality", "Cardinality", "Cardinality", "Counting", "Counting", "Counting", "Counting", "Cardinality", "Cardinality", "Cardinality", "Cardinality", "Cardinality", "Cardinality"),
       analysis = c(NA, NA, NA, NA, NA, NA, NA, NA, NA, NA ,NA, NA, NA, NA, NA, NA, NA, NA, NA, NA),
-      controlled_variables = c(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
-    ) %>% mutate(r = d.rm/(sqrt((d.rm^2)+4))) %>%  select(effect, effect_description, effect_id, year, country, study_id, design, design.2, SES, main_language, deliverer_type, mothers, white, female, child_age_study_start, child_age_NT_start, child_age_NT_mid, child_age_NT_end, child_age_MA, NT_measure_time, time_between_NT_mid_MA, intervention_dosage, NT_context, MA_context, NT_size, NT_size.1, NT_type, NT_type.1, NT_type.10, MA_test, MA_measure, analysis, controlled_variables, r, n)
-
-mix_et_al.2012_tib %>% view()
+      controlled_variables = c(1, 1, 1, 1, 1, 1, 1, 1, 1, 1,1, 1, 1, 1, 1, 1, 1, 1, 1, 1)) %>% mutate(r = d.ppc/(sqrt((d.rm^2)+4))) %>%  select(effect, effect_description, effect_id, year, country, study_id, design, design.2, SES, main_language, deliverer_type, mothers, white, female, child_age_study_start, child_age_NT_start, child_age_NT_mid, child_age_NT_end, child_age_MA, NT_measure_time, time_between_NT_mid_MA, intervention_dosage, NT_context, MA_context, NT_type, NT_type.1, NT_type.10, MA_test, MA_measure, analysis, controlled_variables, r, n)
 
 
-mix_et_al.2012_tib %>% pull("effect", "effect_id", 'time_between_NT_mid_MA')
-cbind(mix_et_al.2012_tib$d.ppc, mix_et_al.2012_tib$time_between_NT_mid_MA, mix_et_al.2012_tib$d.rm) %>% as.tibble() %>% rename(., d.ppc = V1, time_between_NT_mid_MA = V2, d.rm = V3) %>% mutate(d.ppc = as.numeric(d.ppc), time_between_NT_mid_MA = as.factor(time_between_NT_mid_MA)) %>% aggregate(d.ppc ~ time_between_NT_mid_MA, FUN = mean)
-r = d.ppc/sqrt((d.ppc^2) + 4)
-#write.xlsx(mix_et_al.2012_tib, "mix_et_al.2012_tib.xlsx", overwrite = )
-
-mixtib.p1 <- cbind(tm1.mix, ts1.mix, tm2.mix, ts2.mix, cm1.mix, cs1.mix, cm2.mix, cs2.mix, r.mix, n.mix) %>% as.tibble() %>% rename(tm1 = tm1.mix, ts1 = ts1.mix, tm2 = tm2.mix, ts2 = ts2.mix, cm1 = cm1.mix, cs1 = cs1.mix, cm2 = cm2.mix, cs2 = cs2.mix, r = r.mix, n = n.mix)
-
-
-mixtib.p1 
-  
-
-  
-susperreguy_and_davis_kean.2016_tib
-
-time_converter(m = 43.2)
 ```
 
 
@@ -608,8 +592,6 @@ susperreguy_and_davis_kean.2016_tib <- c(
       intervention_dosage = c(NA),
       NT_context = c("Home"),
       MA_context = c("Unknown"),
-      NT_size = c("Overall"),
-      NT_size.1 = c("Overall"),
       NT_type = c("Overall"),
       NT_type.1 = c("Overall"),
       NT_type.10 = c("Overall"),
@@ -657,8 +639,6 @@ casey_et_al.2018_tib <- c(
       intervention_dosage = c(NA, NA, NA, NA, NA, NA, NA, NA),
       NT_context = c("Lab", "Lab", "Lab", "Lab", "Lab", "Lab", "Lab", "Lab"),
       MA_context = c("Unknown", "Unknown", "Unknown", "Unknown", "Unknown", "Unknown", "Unknown", "Unknown"),
-      NT_size = c("Overall", "Overall", "Overall", "Overall", "Overall", "Overall", "Overall", "Overall"),
-      NT_size.1 = c("Overall", "Overall", "Overall", "Overall", "Overall", "Overall", "Overall", "Overall"),
       NT_type = c("Number_Identification", "Number_Identification", "Counting", "Counting", "Cardinality", "Cardinality", "Overall", "Overall"),
       NT_type.1 = c("Number_Identification", "Number_Identification", "Counting", "Counting", "Cardinality", "Cardinality", "Overall", "Overall"),
       NT_type.10 = c("Number_Identification", "Number_Identification", "Counting", "Counting", "Cardinality", "Cardinality", "Overall", "Overall"),
@@ -672,6 +652,7 @@ casey_et_al.2018_tib <- c(
 ```
 
 ```{r zippert_et_al.2019}
+#This study has been excluded
 zippert_et_al.2019_tib <- c(
   "zippert_et_al.2019a", 
   "zippert_et_al.2019b", 
@@ -748,8 +729,6 @@ thippana_et_al.2020_tib <- c(
       intervention_dosage = c(NA, NA),
       NT_context = c("Home", "Lab"),
       MA_context = c("Lab", "Lab"),
-      NT_size = c(NA, NA),
-      NT_size.1 = c("Overall", "Overall"),
       NT_type = c("Overall", "Overall"),
       NT_type.1 = c("Overall", "Overall"),
       NT_type.10 = c("Overall", "Overall"),
@@ -791,8 +770,6 @@ gibson_et_al.2020_tib <- c(
       intervention_dosage = c(32.99, 32.99),
       NT_context = c("Home", "Home"),
       MA_context = c("Lab", "Lab"),
-      NT_size = c("Small", "Large"),
-      NT_size.1 = c("Small", "Large"),
       NT_type = c("Counting_and_Labelling", "Counting_and_Labelling"),
       NT_type.1 = c("Overall", "Overall"),
       NT_type.10 = c(NA, NA),
@@ -833,8 +810,6 @@ silver_et_al.2021_tib <- c(
       intervention_dosage = c(NA),
       NT_context = c("Lab"),
       MA_context = c("Lab"),
-      NT_size = c("Overall"),
-      NT_size.1 = c("Overall"),
       NT_type = c("Overall"),
       NT_type.1 = c("Overall"),
       NT_type.10 = c("Overall"),
@@ -849,20 +824,21 @@ silver_et_al.2021_tib <- c(
 
 ```{r constructing_meta_tib}
 meta_tib.p1 <- rbind(
-  levine_et_al.2010_tib, 
-  boonen_et_al.2011_tib,
+  levine_et_al.2010_tib,
   mix_et_al.2012_tib,
   ramani_et_al.2015_tib,
   susperreguy_and_davis_kean.2016_tib,
   elliott_et_al.2017_tib, 
   casey_et_al.2018_tib,
   mutaf_yildiz_et_al.2018_tib, 
-  zippert_et_al.2019_tib,
   son_and_hur.2020_tib,
   thippana_et_al.2020_tib, 
   gibson_et_al.2020_tib, 
   silver_et_al.2021_tib) 
 
+  zippert_et_al.2019_tib
+  boonen_et_al.2011_tib
+  
 meta_tib <- escalc(measure = "ZCOR", ri = r, ni = n, data = meta_tib.p1) %>% data.frame() %>% 
     mutate(
     effect = as.factor(effect),
@@ -889,8 +865,6 @@ meta_tib <- escalc(measure = "ZCOR", ri = r, ni = n, data = meta_tib.p1) %>% dat
     intervention_dosage = as.numeric(intervention_dosage),
     NT_context = as.factor(NT_context),
     MA_context = as.factor(MA_context),
-    NT_size = as.factor(NT_size),
-    NT_size.1 = as.factor(NT_size.1),
     NT_type = as.factor(NT_type),
     NT_type.1 = as.factor(NT_type.1),
     NT_type.10 = as.factor(NT_type.10),
@@ -902,17 +876,16 @@ meta_tib <- escalc(measure = "ZCOR", ri = r, ni = n, data = meta_tib.p1) %>% dat
     n = as.numeric(n)) %>% 
   dplyr::mutate(
     main_language = forcats::fct_relevel(main_language, "Dutch", "English"),
-    NT_type.1 = forcats::fct_relevel(NT_type.1, "Calculation", "Cardinality", "Conventional_Nominatives", "Counting", "Number_Identification", "Ordering",  "Quantity_Comparison", "Overall"),
-    NT_type.10 = forcats::fct_relevel(NT_type.10,"Calculation", "Cardinality", "Conventional_Nominatives", "Counting", "Number_Identification", "Ordering",  "Quantity_Comparison", "Overall"),
-    MA_context = forcats::fct_relevel(MA_context, "Home", "Lab", "School", "Museum", "Unknown"),
+    NT_type.1 = forcats::fct_relevel(NT_type.1, "Cardinality", "Counting", "Number_Identification", "Overall"),
+    NT_type.10 = forcats::fct_relevel(NT_type.10,"Cardinality", "Counting", "Number_Identification", "Overall"),
+    MA_context = forcats::fct_relevel(MA_context, "Home", "Lab", "School", "Unknown"),
     MA_measure = forcats::fct_relevel(MA_measure, "Calculation", "Cardinality", "Counting", "Number_Identification", "Number_Knowledge", "Number_Line_Estimation", "Quantity_Comparison", "Overall"),
-    NT_context = forcats::fct_relevel(NT_context, "Home", "Lab", "School", "Museum")) %>% 
-  select(-NT_size.1) 
+    NT_context = forcats::fct_relevel(NT_context, "Home", "Lab", "School"))
 
 
 #REPORT TABLEZ
 #The number of effects in each study
-num_eff_tib <- meta_tib %>% select(study_id, year) %>% group_by(study_id) %>% summarise(effects = n()) %>% add_column(as.tibble(str_sub(.$study_id, - 4, - 1))) %>% rename(year = value) %>% arrange(year) %>% select(study_id, effects)
+num_eff_tib <- meta_tib %>% select(study_id, year) %>% group_by(study_id) %>% summarise(effects = n()) %>% add_column(as.tibble(str_sub(.$study_id, - 4, - 1))) %>% rename(year = value) %>%  mutate(year = as.numeric(year)) %>% arrange(year) %>% select(study_id, effects)
 num_eff_tib 
 
 #Stem and leaf diagram
@@ -934,7 +907,7 @@ re_meta_model
 forest(re_meta_model, addpred = T, header = T)
 
 #Gosh Plot 
-plot(gosh(re_meta_model, subset = 100), out = 10)
+plot(gosh(re_meta_model, subset = 20000), out = 10)
 
 #RESULTS
 # Fisher's z = 0.0596
@@ -957,23 +930,72 @@ ml_meta_model.3l <- rma.mv(yi = yi, V = vi, data = meta_tib, struct = "CS", meth
                         random = ~ 1 | study_id/effect)
 ml_meta_model.3l
 
+vardist.3l()
 
 #Correlated 3-level meta-analysis (CHE)
 
 #Estimate dependency 
 #Based on the correlations between measures in one study
 #Because the correlations are skewed, the median will be used as the estimate for the dependency 
-correlations <- c(0.50, 0.50, 0.67, 0.67, 0.95, 0.11, -0.26, 0.57, -0.13, -0.20, 0.61, 0.61, 0.70, 0.70, 0.81, -0.32, 0.67, 0.94, 0.46, 0.52) %>% as.tibble() %>% rename(r = value) %>% mutate(abs.r = abs(r))
-correlations$r %>% median()
+correlations <- c(0.5, 0.95, 0.11, 0.26, 0.61, 0.81, 0.32, 0.67) %>% as.tibble() %>% rename(r = value) %>% mutate(abs.r = abs(r))
+dr <- correlations$r %>% mean() %>% sqrt()
 #The median r is 0.59
 #Other assumptions
 #Because effect sizes tend not to be measured across time, a compound symmetry variance matrix is assumed
 
-v_CHE <- impute_covariance_matrix(meta_tib$vi, cluster = meta_tib$study_id, r = c(0.59))
+v_CHE <- impute_covariance_matrix(meta_tib$vi, cluster = meta_tib$study_id, r = c(dr))
 
 ml_meta_model.3lCHE <- rma.mv(yi = yi, V = v_CHE, data = meta_tib, struct = "CS", method = "REML", test = "t",
                         random = ~ 1 | study_id/effect)
 ml_meta_model.3lCHE 
+
+ml_meta_model.3lCHE$se
+vardist.3l(ml_meta_model.3lCHE)
+
+v_CHE <- impute_covariance_matrix(meta_tib$vi, cluster = meta_tib$study_id, r = c(0.727152))
+
+v_CHE %>% view()
+
+subgroup <- meta_tib %>% filter(study_id != "mix_et_al.2012") %>% pull(effect)
+meta_tib$effect
+
+dependency.sen <- function(data, random = NULL, mods = NULL, b = 0, r, robust = NULL, cluster = cluster){
+  c <- cluster
+  r.1 <- r
+  rlevelz <- rename(rowid_to_column(as.tibble(r.1), var = "r_id"), r_level = value)
+  estimate <- c()
+  se <- c()
+  tval <- c()
+  pval <- c()
+  if(is.null(robust)){
+    for(counter in 1:max(rlevelz$r_id)){
+      rlevelz.1 <- unlist(array(c(rlevelz[counter,][2])))
+      v_r <- impute_covariance_matrix(data$vi, cluster = c, r = rlevelz.1)
+      model.r <- rma.mv(yi = yi, V = v_r, data = data, struct = "CS", method = "REML", test = "t", random = random, mods =  mods)
+      estimate <- c(estimate, model.r$b[b+1])
+      se <- c(se, model.r$se[b+1]) 
+      tval <- c(tval, model.r$zval[b+1])
+      pval <- c(pval, model.r$pval[b+1])}}
+  else if(robust == "clubSandwich"){
+    for(counter in 1:max(rlevelz$r_id)){
+      rlevelz.1 <- unlist(array(c(rlevelz[counter,][2])))
+      v_r <- impute_covariance_matrix(data$vi, cluster = c, r = rlevelz.1)
+      model.r.p1 <- rma.mv(yi = yi, V = v_r, data = data, struct = "CS", method = "REML", test = "t", random = random, mods =  mods)
+      model.r <- as.tibble(coef_test(model.r.p1, vcov = "CR2", cluster = c))
+      estimate <- c(estimate, unlist(array(c((model.r[(b+1),][2])))))
+      se <- c(se, unlist(array(c((model.r[(b+1),][3])))))
+      tval <- c(tval, unlist(array(c((model.r[(b+1),][4])))))
+      pval <- c(pval, unlist(array(c((model.r[(b+1),][6])))))}}
+
+return(cbind(rlevelz, as.data.frame(cbind(estimate, se, tval, pval))))
+}
+
+
+ml_meta_model.3lCHE_dependency <- dependency.sen(data = meta_tib, r = c(seq(0, 0.99, by = 0.01)), b = 1, robust = "clubSandwich", mods = ~NT_type.1,random = ~1 | study_id/effect, cluster = meta_tib$study_id)
+
+ggplot(data = ml_meta_model.3lCHE_dependency) + geom_line(mapping = aes(x = r_level, y = estimate), color = "#50989D", alpha = 0.7, size = 1) + theme_minimal()
+
+dependency.p <- ggplot(data = ml_meta_model.3lCHE_dependency) + geom_line(mapping = aes(x = r_level, y = pval), color = "#50989D", alpha = 0.7, size = 1) + scale_y_continuous(breaks = seq(0.03, 0.10, by = 0.005)) + scale_x_continuous(breaks = seq(0, 1, by = 0.1)) + theme_minimal()
 
 
 #Sensitivity analysis 
@@ -983,7 +1005,7 @@ ml_meta_model.3lCHE
 #Cluster robust with small sample adjustment 
 ml_meta_model.3lCHE.rbst <- robust(ml_meta_model.3lCHE , cluster = meta_tib$study_id, adjust = T, clubSandwich = T)
 conf_int(ml_meta_model.3lCHE, vcov = "CR2") 
-coef_test(ml_meta_model.3lCHE, vcov="CR2", cluster=meta_tib$study_id)
+coef_test(ml_meta_model.3lCHE, vcov="CR2", cluster=meta_tib$study_id, test = "z") 
 
 
 
@@ -1124,22 +1146,15 @@ ml_meta_model.3l_mod_main_language.b1.lev3 %>% filter(cooks.d >= 1)
 levels(meta_tib$NT_type.1)
 
 #Setting contrast weights (deviation coding)
-calculationNT_vs_mean <-                c(0.5, 0, 0, 0, 0, 0, 0, -0.5)
-cardinalityNT_vs_mean <-                c(0, 0.5, 0, 0, 0, 0, 0, -0.5)
-conventional_nominativesNT.1_vs_mean <- c(0, 0, 0.5, 0, 0, 0, 0, -0.5)
-countingNT_vs_mean <-                   c(0, 0, 0, 0.5, 0, 0, 0, -0.5)
-number_identificationNT_vs_mean <-      c(0, 0, 0, 0, 0.5, 0, 0, -0.5)
-orderingNT_vs_mean <-                   c(0, 0, 0, 0, 0, 0.5, 0, -0.5)
-quantity_comparisonNT_vs_mean <-        c(0, 0, 0, 0, 0, 0, 0.5, -0.5)
+cardinalityNT_vs_mean <-      c(0.5, 0, 0, -0.5)          
+countingNT_vs_mean <-           c(0, 0.5, 0, -0.5)      
+number_identificationNT_vs_mean <- c(0, 0, 0.5, -0.5) 
+
 
 contrasts(meta_tib$NT_type.1) <- cbind(
-  calculationNT_vs_mean, 
   cardinalityNT_vs_mean,
-  conventional_nominativesNT.1_vs_mean,
   countingNT_vs_mean,
-  number_identificationNT_vs_mean,
-  orderingNT_vs_mean,
-  quantity_comparisonNT_vs_mean)
+  number_identificationNT_vs_mean)
 
 
 
@@ -1177,7 +1192,7 @@ assumption(model = ml_meta_model.3lCHE_mod_NT_type.1)
 
 #Conclusion: Robust it
 
-
+meta_tib %>% view()
 #ROBUST
 #----------------------------------------------------------------------------------------------------
 #Sensitivity test with robust SE
@@ -1786,26 +1801,53 @@ metafor::funnel(ml_meta_model.3l)
 #Create the data for Egger's regression 
 meta_tib_egger <- meta_tib %>% mutate(se = sqrt(vi), snd = yi/se, inv.se = 1/se)
 
-#Using lm
-lm(snd ~ inv.se, data = meta_tib_egger) %>% summary()
 
 #Using rma.mv
-rma.mv(yi = snd, V = vi, data = meta_tib_egger, struct = "CS", method = "REML", test = "t", mods = ~ inv.se, random = ~ 1 | study_id/effect)
+rma.mv(yi = snd, V = v_CHE, data = meta_tib_egger, struct = "CS", method = "REML", test = "t", mods = ~ inv.se, random = ~ 1 | study_id/effect) %>% clubSandwich::coef_test(., vcov = "CR2")
+
+
 
 #Regression plot
 ggplot(meta_tib_egger, aes(x = inv.se, y = snd)) + 
   geom_point() +
-  stat_smooth(method = "lm", col = "blue")
+  stat_smooth(method = "lm", col = "blue") + theme_minimal()
 #RESULTS
 #Egger's test indicated that there is no publication bias 
 
 #Vevea and Wood (2005?)
 #----------------------------------------------------------------------------------------------------
 weightfunct(effect = meta_tib$yi, v = meta_tib$vi, steps=c(0.05, 0.50, 1))
+
+
+weightfunct(effect = meta_tib$yi, v = meta_tib$vi, steps=c( 0.05, 0.50, 1.00), weights=c(.9, .7, .5))
+
+metafor::funnel(ml_meta_model.3l)
+
+metafor::funnel(ml_meta_model.3lCHE)
+
+
 ```
 
 
 
+
+Search and seek and analyse!
+Studies were searched through several databases, specifically, PsycInfo, PsycArticles, Scopus, ScienceDirect, and Web of Science, using the same command line AB("number* talk*"). The reference list of identified studies are checked for studies not identified through the databases. All corresponding authors of the identified studies are enquired for unpublished data and ongoing studies through email. Ongoing studies are also searched through OSF. 
+
+
+Selecting effect sizes 
+The majority of the studies are correlational (k = 9) and the rest are experimental (k = 2), thus, Pearson's correlation is used as the ES for the meta-analysis. Effects that represent the effect of NT on MA are considered relevant and are included. Most studies have multiple relevant effects. There are 2 sources of multiplicity: differences in specification (e.g. outcome measures) and type of statistical analyses (e.g. Pearson's correlation or regression). With regards to dealing with the first source of multiplicity, there are generally two approaches. The first is to combine all relevant effect sizes as an average, so that each study contributes only one effect size. The second is to include all relevant effect sizes from each study. The latter approach is chosen as it allows moderator analyses. The second source of multiplicity is mainly from correlational studies in which studies tend to report estimates without covariates (mostly zero-order correlations) followed by linear regression with different covariates within and across studies. Hence, only estimates with no covariates are included to maintain comparability. A total of 48 ESs from 11 studies are included (summarised in Table 1). Lastly, all ESs are converted to Fisher's z for statistical analyses and converted back to Pearson's r for the write up. 
+
+Meta-analysis 
+Since some studies included multiple ESs, a multilevel modelling approach is used to examine heterogeneity more accurately. A 3-level hierarchical structure (Cheung, 2014, 2019; Assink & Wibbelink, 2016), in which sampling variances (level 1) are nested within ESs (level 2), and ESs are nested within studies (level 3). This 3-level model assumes that ESs within studies are independent to each other. However, ESs within each study are based on the same participants, hence, the model is extended to a correlated hierarchical effects approach (Pustejovsky & Tipton, 2018, 2021), in which sampling variances of ESs within each study are assumed to correlate with each other. The degree of correlation is derived from an average of a series of correlations between outcome measures provided by a corresponding author of one of the included studies (r = .73). Most of the ESs within studies are cross-sectional, hence, compound symmetry is assumed. This adjustment to the sampling covariance structure was done by the clubSandwich package (Pustejovsky, 2022). The 3-level model is then fitted by the `metafor` package (Viechtbauer, 2010) with the rma.mv() function and model parameters are estimated using Restricted Maximum Likelihood. 
+
+Publication bias: The ESs that should not be
+Publication bias is first visually examined through the funnel plot. The funnel plot is shows the precision of estimation (SE) against its associated ES. If the ESs are symmetrical around the weighted-average given SE, it suggests no publication bias. However, if ESs are asymmetrical, then it suggests publication bias. Small study bias is then examined. Small study bias is a type of bias in which small studies report larger ESs than expected relative to its precision. This can be tested by Egger's test (Egger et al., 1997), which is a linear regression in which the standard normal deviate (SND) of the ESs is regressed against its precision. The SND is the standardised score of an ES in the normal distribution under the null hypothesis (SND = zi = ESi/sei) and its precision is its inverse SE. When there is no publication bias, studies with a lower precision (inverse SE) are expected to have a smaller SND, and that is a precision of 0 will have an SND of 0. Egger's test tests this hypothesis by testing whether the intercept is 0, in other words, it tests whether the SND is 0 when the inverse SE is 0. A non-significant intercept shows that there are no or very little number of small studies with low precision that report large SND, which suggests no small study bias. On the other hand, a significant intercept shows that there are studies with low precision that report large SND, which suggests small study bias. Selection bias is then tested by Vevea and Wood's (2005) weight function. 
+
+
+
+Moderator analysis 
+Potential moderators are tested through series of simple Generalised Least Squares mixed effect linear regression models, in which only the intercept is random and the slopes are fixed. Violation of assumptions of general linear models are examined and robust SEs with small sample adjustment are estimated by the clubSandwich package if assumptions are violated.  
 
 
 
