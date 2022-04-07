@@ -115,17 +115,25 @@ vardist$variances[3]/(vardist$variances[1] + vardist$variances[2] + vardist$vari
 ```{r function_chunk}
 ######################################################################
 #FUNCTION FOR INFLUENCE CHECKS (SCROLL TO THE BOTTOM OF THIS FUNCTION FOR A BRIEF TUTORIAL)
-rma.mv.influence <- function(data, struct = "CS", method = "REML", random = NULL, mods = NULL, b = 0, cluster, robust = FALSE, robust.cluster, adjust = FALSE){
+rma.mv.influence <- function(data, struct = "CS", method = "REML", random = NULL, mods = NULL, b = 0, cluster, robust = FALSE, robust.cluster, adjust = FALSE, CHE = FALSE, r){
   data.gojira <- data
   c1 <- cluster #input should be something like "effect"
   c <- unlist(as.list(array(data[c(c1)]))) #This turns c1 into data$effect
   data.gojira.2 <- mutate(rowid_to_column(mutate(data.gojira, cluster.gojira = as.factor(c)), var = "rowid.gojira"), rowid.gojira = as.character(rowid.gojira))
   data.gojira.2$cluster.gojira2 <- group_indices(group_by(data.gojira.2, cluster.gojira), cluster.gojira)
-  
-     model0 <- rma.mv(yi = yi, V = vi, data = data.gojira, struct = struct, method = method, test = "t", 
+  if(isTRUE(CHE)){
+    vi_CHE <- impute_covariance_matrix(data.gojira$vi, cluster = c, r = r)}
+  if(isFALSE(CHE)){
+    model0 <- rma.mv(yi = yi, V = vi, data = data.gojira, struct = struct, method = method, test = "t", 
+                                      random = random, mods = mods)}
+  else if(isTRUE(CHE)){
+    model0 <- rma.mv(yi = yi, V = vi_CHE, data = data.gojira, struct = struct, method = method, test = "t", 
                                       random = random, mods = mods)
+  }
+     
      leveldetermine1 <- select(mutate(rowid_to_column(rename(as.tibble(rev(str_trim(unlist(strsplit(str_trim(unlist(strsplit(as.character(model0$random), "[|]"))[2], side = c("both", "left", "right")), "[/]")), side = c("both", "left", "right")))), cluster = value), var = "id"), level = id + 1), level, cluster)
      leveldetermine2 <- unlist(as.list(array(select(filter(leveldetermine1 , cluster == c1), level))))
+    
        
   cluster_unit <- c()
   leave1out <- c()
@@ -141,11 +149,23 @@ rma.mv.influence <- function(data, struct = "CS", method = "REML", random = NULL
   model.aicc <- c()
   for(counter in 1:max(data.gojira.2$cluster.gojira2)){
     data.gojira.3 <- filter(data.gojira.2, cluster.gojira2 != counter)
+    c2 <- unlist(as.list(array(data.gojira.3[c(robust.cluster)])))
+    if(isTRUE(CHE)){
+    vi_adjusted <- impute_covariance_matrix(data.gojira.3$vi, r = r, cluster = c2)}
+    
     if (isFALSE(robust)){
-      model <- rma.mv(yi = yi, V = vi, data = data.gojira.3, struct = struct, method = method, test = "t", random = random, mods = mods)} 
+      if(isFALSE(CHE)){
+        model <- rma.mv(yi = yi, V = vi, data = data.gojira.3, struct = struct, method = method, test = "t", random = random, mods = mods)}
+      else if(isTRUE(CHE)){
+        model <- rma.mv(yi = yi, V = vi_adjusted, data = data.gojira.3, struct = struct, method = method, test = "t", random = random, mods = mods)}}
     else if(isTRUE(robust)){
-      model.p1 <- rma.mv(yi = yi, V = vi, data = data.gojira.3, struct = struct, method = method, test = "t", random = random, mods = mods)
-      model <- metafor::robust(model.p1, cluster = pull(data.gojira.3, robust.cluster), adjust = adjust)}
+      if(isFALSE(CHE)){
+        model.p1 <- rma.mv(yi = yi, V = vi, data = data.gojira.3, struct = struct, method = method, test = "t", random = random, mods = mods)
+        model <- metafor::robust(model.p1, cluster = pull(data.gojira.3, robust.cluster), adjust = adjust)}
+      else if(isTRUE(CHE)){
+        model.p1 <- rma.mv(yi = yi, V = vi_adjusted, data = data.gojira.3, struct = struct, method = method, test = "t", random = random, mods = mods)
+        model <- metafor::robust(model.p1, cluster = pull(data.gojira.3, robust.cluster), adjust = adjust)}
+      }
     cluster_unit <- c(cluster_unit, as.vector(select(filter(data.gojira.2, cluster.gojira2 == counter) , cluster.gojira)[1,]))
     leave1out <- c(leave1out, model$b[b+1])
     se <- c(se, model$se[b+1])
@@ -194,6 +214,12 @@ rma.mv.influence <- function(data, struct = "CS", method = "REML", random = NULL
       else if(leveldetermine2 != 2){
         return(select(mutate(full_join(cluster_unit_col2, full_join(mutate(mutate(as.data.frame(cbind(cluster_unit, leave1out, se, tval, pval, ci.lb, ci.ub, model.F, model.F.p, model.aic, model.bic, model.aicc)), sig = ifelse(pval <= 0.05, ifelse(pval <= 0.01, ifelse(pval <= 0.001, "***", "**"), "*"), "ns")), cluster_unit = as.factor(cluster_unit),leave1out = as.numeric(leave1out), se = as.numeric(se), tval = as.numeric(tval), pval = as.numeric(pval), ci.lb = as.numeric(ci.lb),ci.ub = as.numeric(ci.ub), model.F = as.numeric(model.F), model.F.p = as.numeric(model.F.p), model.aic = as.numeric(model.aic), model.bic = as.numeric(model.bic),  model.aicc = as.numeric(model.aicc)), cd.2, by = "cluster_unit"), by = "cluster_unit"), cooks.d = as.numeric(cooks.d)), cluster_unit, cooks.d, leave1out, se, tval, pval, ci.lb, ci.ub, sig, model.F, model.F.p, model.aic, model.bic, model.aicc))}}}}
 
+ma.mv.influence(random = ~1 | study_id/effect, struct = "CS", data = meta_tib, method = "REML", cluster = "study_id", CHE = TRUE, r = dr)v_CHE <- impute_covariance_matrix(filter(meta_tib, )$vi, cluster = meta_tib$study_id, r = dr)
+
+```
+
+
+```{r function_chunk}
 #TUTORIAL FOR rma.mv.influence 
 #WHAT IS rma.mv.influence
 #-- This function returns statistics for outlier/influence diagnosis (studentized residuals, Cook's distance, DFBETAS, and leave1out statistics)
@@ -515,50 +541,50 @@ d.rm(m1 = c(8.67, 8.67, 7.67, 7.67), m2 = c(7.92, 9.92, 8.25, 10.33), s1 = c(6.1
 
 mix_et_al.2012_tib <- c(
   "mix_et_al.2012a", "mix_et_al.2012b", "mix_et_al.2012c",  "mix_et_al.2012d", "mix_et_al.2012e", "mix_et_al.2012f", "mix_et_al.2012g", "mix_et_al.2012h", "mix_et_al.2012i", "mix_et_al.2012j",
-  "mix_et_al.2012k", "mix_et_al.2012l", "mix_et_al.2012m", "mix_et_al.2012n", "mix_et_al.2012o", "mix_et_al.2012p", "mix_et_al.2012q", "mix_et_al.2012r", "mix_et_al.2012s", "mix_et_al.2012t") %>% 
+  "mix_et_al.2012k", "mix_et_al.2012l", "mix_et_al.2012m", "mix_et_al.2012n", "mix_et_al.2012o", "mix_et_al.2012p") %>% 
   data.frame() %>% rename(., effect = .) %>% add_column(
-    n = c(12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12),
-    tm1 =   c(8.67, 7.67, 8.67, 7.67, 5.08, 0.25, 0.17, 5.08, 0.25, 0.17, 6.33, 9.25, 6.33, 9.25, 3.91, 0.33, 0.08, 3.91, 0.33, 0.08),  
-    ts1 =   c(6.13, 6.13, 6.13, 6.13, 0.90, 0.45, 0.38, 0.90, 0.45, 0.38, 3.67, 5.02, 3.67, 5.02, 2.36, 0.14, 0.28, 2.36, 0.14, 0.28), 
-    tm2 =   c(7.92, 8.25, 9.92, 10.33, 5.00, 0.25, 0.25, 4.92, 0.50, 0.17, 6.67, 8.08, 6.92, 8.00, 3.58, 0.17, 0.17, 3.75, 0.50, 0.25),
-    ts2 =   c(4.78, 5.33, 4.47, 4.33, 0.87, 0.45, 0.45, 1.07, 0.23, 0.11, 3.71, 3.74, 5.02, 4.92, 1.97, 0.11, 0.38, 2.15, 0.80, 0.45),
-    cm1 =   c(5.25, 7.42, 5.25, 7.42, 4.17, 0.08, NA, 4.17, 0.08, NA, 5.25, 7.42, 5.25, 7.42, 4.17, 0.08, NA, 4.17, 0.08, NA),
-    cs1 =   c(3.64, 3.95, 3.64, 3.95, 1.59, 0.28, NA, 1.59, 0.28, NA, 3.64, 3.95, 3.64, 3.95, 1.59, 0.28, NA, 1.59, 0.28, NA),
-    cm2 =   c(6.17, 6.58, 8.08, 7.50, 3.83, 0.25, NA, 3.75, 0.33, NA, 6.17, 6.58, 8.08, 7.50, 3.83, 0.25, NA, 3.75, 0.33, NA),
-    cs2 =   c(4.05, 3.33, 4.33, 4.78, 1.70, 0.45, NA, 2.46, 0.48, NA, 4.05, 3.33, 4.33, 4.78, 1.70, 0.45, NA, 2.46, 0.48, NA),
-    r.pp =  c(0.50, 0.50, 0.67, 0.67, 0.95, 0.11, -0.26, 0.57, -0.13, -0.20, 0.61, 0.61, 0.70, 0.70, 0.81, -0.32, 0.67, 0.94, 0.46, 0.52)) %>% mutate(
+    n = c(12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12),
+    tm1 =   c(8.67, 7.67, 8.67, 7.67, 5.08, 0.25, 5.08, 0.25, 6.33, 9.25, 6.33, 9.25, 3.91, 0.33, 3.91, 0.33),  
+    ts1 =   c(6.13, 6.13, 6.13, 6.13, 0.90, 0.45, 0.90, 0.45, 3.67, 5.02, 3.67, 5.02, 2.36, 0.14, 2.36, 0.14), 
+    tm2 =   c(7.92, 8.25, 9.92, 10.33, 5.00, 0.25, 4.92, 0.50, 6.67, 8.08, 6.92, 8.00, 3.58, 0.17, 3.75, 0.50),
+    ts2 =   c(4.78, 5.33, 4.47, 4.33, 0.87, 0.45, 1.07, 0.23, 3.71, 3.74, 5.02, 4.92, 1.97, 0.11, 2.15, 0.80),
+    cm1 =   c(5.25, 7.42, 5.25, 7.42, 4.17, 0.08, 4.17, 0.08, 5.25, 7.42, 5.25, 7.42, 4.17, 0.08, 4.17, 0.08),
+    cs1 =   c(3.64, 3.95, 3.64, 3.95, 1.59, 0.28, 1.59, 0.28, 3.64, 3.95, 3.64, 3.95, 1.59, 0.28, 1.59, 0.28),
+    cm2 =   c(6.17, 6.58, 8.08, 7.50, 3.83, 0.25, 3.75, 0.33, 6.17, 6.58, 8.08, 7.50, 3.83, 0.25, 3.75, 0.33),
+    cs2 =   c(4.05, 3.33, 4.33, 4.78, 1.70, 0.45, 2.46, 0.48, 4.05, 3.33, 4.33, 4.78, 1.70, 0.45, 2.46, 0.48),
+    r.pp =  c(0.50, 0.50, 0.67, 0.67, 0.95, 0.11, 0.57, -0.13, 0.61, 0.61, 0.70, 0.70, 0.81, -0.32, 0.94, 0.46)) %>% mutate(
       d.rm = ((tm2-tm1)*(sqrt(2*(1-r.pp))))/sqrt(((ts1^2)+(ts2^2))-(2*r.pp*ts1*ts2)), 
       d.ppc = ((tm2-tm1)-(cm2-cm1))/sqrt((((n-1)*(ts1^2)) + ((n-1)*(cs1^2)))/(n + n -2))) %>% add_column(
-      effect_description = c("Counting - Counting aloud at session 3", "Counting - Counting disks at session 3", "Counting NT - Counting aloud at session 6", "Counting NT - Counting disks at session 6", "Counting NT - Cardinality 123 at session 3", "Counting NT - Cardinality 6 at session 3", "Counting NT - Cardinality 10 at session 3", "Counting NT - Cardinality 123 at session 6", "Counting NT - Cardinality 6 at session 6", "Counting NT - Cardinality 10 at session 6", "Cardinality NT - Counting aloud at session 3", "Cardinality  NT - Counting disks at session 3", "Cardinality  NT - Counting aloud at session 6", "Cardinality  NT - Counting disks at session 6", "Cardinality  NT - Cardinality 123 at session 3", "Cardinality  NT - Cardinality 6 at session 3", "Cardinality  NT - Cardinality 10 at session 3", "Cardinality  NT - Cardinality 123 at session 6", "Cardinality NT - Cardinality 6 at session 6", "Cardinality NT - Cardinality 10 at session 6"),
-      effect_id = c("Counting_Counting", "Counting_Counting", "Counting_Counting", "Counting_Counting", "Counting_Cardinality", "Counting_Cardinality", "Counting_Cardinality", "Counting_Cardinality", "Counting_Cardinality", "Counting_Cardinality", "Cardinality_Counting", "Cardinality_Counting", "Cardinality_Counting", "Cardinality_Counting", "Cardinality_Cardinality", "Cardinality_Cardinality", "Cardinality_Cardinality", "Cardinality_Cardinality", "Cardinality_Cardinality", "Cardinality_Cardinality"),
-      year = c(2012, 2012, 2012, 2012, 2012, 2012, 2012, 2012, 2012, 2012, 2012, 2012, 2012, 2012, 2012, 2012, 2012, 2012, 2012, 2012),
-      country = c("US", "US", "US", "US", "US", "US", "US", "US", "US", "US", "US", "US", "US", "US", "US", "US", "US", "US", "US", "US"),
-      study_id = c("mix_et_al.2012", "mix_et_al.2012", "mix_et_al.2012", "mix_et_al.2012", "mix_et_al.2012", "mix_et_al.2012", "mix_et_al.2012", "mix_et_al.2012", "mix_et_al.2012", "mix_et_al.2012", "mix_et_al.2012", "mix_et_al.2012", "mix_et_al.2012", "mix_et_al.2012", "mix_et_al.2012", "mix_et_al.2012", "mix_et_al.2012", "mix_et_al.2012", "mix_et_al.2012", "mix_et_al.2012"),
-      design = c("Experimental", "Experimental", "Experimental", "Experimental", "Experimental", "Experimental", "Experimental", "Experimental", "Experimental", "Experimental", "Experimental", "Experimental", "Experimental", "Experimental", "Experimental", "Experimental", "Experimental", "Experimental", "Experimental", "Experimental"),
-      design.2 = c("Experimental_PPC", "Experimental_PPC", "Experimental_PPC", "Experimental_PPC", "Experimental_PPC","Experimental_PPC", "Experimental_PPC", "Experimental_PPC", "Experimental_PPC", "Experimental_PPC", "Experimental_PPC", "Experimental_PPC", "Experimental_PPC", "Experimental_PPC", "Experimental_PPC","Experimental_PPC", "Experimental_PPC", "Experimental_PPC", "Experimental_PPC", "Experimental_PPC"), 
-      SES = c("Middle", "Middle", "Middle", "Middle", "Middle", "Middle", "Middle", "Middle", "Middle", "Middle", "Middle", "Middle", "Middle", "Middle", "Middle", "Middle", "Middle", "Middle", "Middle", "Middle"),
-      main_language = c("English", "English", "English", "English", "English", "English", "English", "English", "English", "English", "English", "English", "English", "English", "English", "English", "English", "English", "English", "English"),
-      deliverer_type = c("Experimenter", "Experimenter", "Experimenter", "Experimenter", "Experimenter", "Experimenter", "Experimenter", "Experimenter", "Experimenter", "Experimenter", "Experimenter", "Experimenter", "Experimenter", "Experimenter", "Experimenter", "Experimenter", "Experimenter", "Experimenter", "Experimenter", "Experimenter"),
-      mothers = c(NA, NA, NA, NA, NA, NA, NA, NA, NA, NA ,NA, NA, NA, NA, NA, NA, NA, NA, NA, NA),
-      white = c(NA, NA, NA, NA, NA, NA, NA, NA, NA, NA ,NA, NA, NA, NA, NA, NA, NA, NA, NA, NA), 
-      female = c(NA, NA, NA, NA, NA, NA, NA, NA, NA, NA ,NA, NA, NA, NA, NA, NA, NA, NA, NA, NA),
-      child_age_study_start = c(1314.9, 1314.9, 1314.9, 1314.9, 1314.9, 1314.9, 1314.9, 1314.9, 1314.9, 1314.9, 1314.9, 1314.9, 1314.9, 1314.9, 1314.9, 1314.9, 1314.9, 1314.9, 1314.9, 1314.9),
-      child_age_NT_start = c(1314.9, 1314.9, 1314.9, 1314.9, 1314.9, 1314.9, 1314.9, 1314.9, 1314.9, 1314.9, 1314.9, 1314.9, 1314.9, 1314.9, 1314.9, 1314.9, 1314.9, 1314.9, 1314.9, 1314.9),
-      child_age_NT_mid = c(1325.4, 1325.4, 1335.9, 1335.9, 1325.4, 1325.4, 1325.4, 1335.9, 1335.9, 1335.9, 1325.4, 1325.4, 1335.9, 1335.9, 1325.4, 1325.4, 1325.4, 1335.9, 1335.9, 1335.9),
-      child_age_NT_end = c(NA, NA, NA, NA, NA, NA, NA, NA, NA, NA ,NA, NA, NA, NA, NA, NA, NA, NA, NA, NA),
-      child_age_MA = c(1335.9, 1356.9, 1335.9, 1356.9, 1335.9, 1356.9, 1335.9, 1356.9, 1335.9, 1356.9, 1335.9, 1356.9, 1335.9, 1356.9, 1335.9, 1356.9, 1335.9, 1356.9, 1335.9, 1356.9),
-      NT_measure_time = c(NA, NA, NA, NA, NA, NA, NA, NA, NA, NA ,NA, NA, NA, NA, NA, NA, NA, NA, NA, NA),
-      time_between_NT_mid_MA = c(10.5, 10.5, 21, 21, 10.5, 10.5, 10.5, 21, 21, 21, 10.5, 10.5, 21, 21, 10.5, 10.5, 10.5, 21, 21, 21),
-      intervention_dosage = c(21, 21, 42, 42, 21, 21, 21, 42, 42, 42, 21, 21, 42, 42, 21, 21, 21, 42, 42, 42),
-      NT_context = c("School", "School", "School", "School", "School", "School", "School", "School", "School", "School", "School", "School", "School", "School", "School", "School", "School", "School", "School", "School"),
-      MA_context = c("School", "School", "School", "School", "School", "School", "School", "School", "School", "School", "School", "School", "School", "School", "School", "School", "School", "School", "School", "School"),
-      NT_type = c(NA, NA, NA, NA, NA, NA, NA, NA, NA, NA ,NA, NA, NA, NA, NA, NA, NA, NA, NA, NA),
-      NT_type.1 = c("Counting","Counting","Counting","Counting","Counting","Counting","Counting","Counting","Counting","Counting","Cardinality", "Cardinality", "Cardinality", "Cardinality", "Cardinality", "Cardinality", "Cardinality", "Cardinality", "Cardinality", "Cardinality"),
-      NT_type.10 = c(NA, NA, NA, NA, NA, NA, NA, NA, NA, NA ,NA, NA, NA, NA, NA, NA, NA, NA, NA, NA),
-      MA_test = c(NA, NA, NA, NA, NA, NA, NA, NA, NA, NA ,NA, NA, NA, NA, NA, NA, NA, NA, NA, NA),
-      MA_measure = c("Counting", "Counting", "Counting", "Counting", "Cardinality", "Cardinality", "Cardinality", "Cardinality", "Cardinality", "Cardinality", "Counting", "Counting", "Counting", "Counting", "Cardinality", "Cardinality", "Cardinality", "Cardinality", "Cardinality", "Cardinality"),
-      analysis = c(NA, NA, NA, NA, NA, NA, NA, NA, NA, NA ,NA, NA, NA, NA, NA, NA, NA, NA, NA, NA),
-      controlled_variables = c(1, 1, 1, 1, 1, 1, 1, 1, 1, 1,1, 1, 1, 1, 1, 1, 1, 1, 1, 1)) %>% mutate(r = d.ppc/(sqrt((d.rm^2)+4))) %>%  select(effect, effect_description, effect_id, year, country, study_id, design, design.2, SES, main_language, deliverer_type, mothers, white, female, child_age_study_start, child_age_NT_start, child_age_NT_mid, child_age_NT_end, child_age_MA, NT_measure_time, time_between_NT_mid_MA, intervention_dosage, NT_context, MA_context, NT_type, NT_type.1, NT_type.10, MA_test, MA_measure, analysis, controlled_variables, r, n)
+      effect_description = c("Counting - Counting aloud at session 3", "Counting - Counting disks at session 3", "Counting NT - Counting aloud at session 6", "Counting NT - Counting disks at session 6", "Counting NT - Cardinality 123 at session 3", "Counting NT - Cardinality 6 at session 3", "Counting NT - Cardinality 123 at session 6", "Counting NT - Cardinality 6 at session 6", "Cardinality NT - Counting aloud at session 3", "Cardinality  NT - Counting disks at session 3", "Cardinality  NT - Counting aloud at session 6", "Cardinality  NT - Counting disks at session 6", "Cardinality  NT - Cardinality 123 at session 3", "Cardinality  NT - Cardinality 6 at session 3", "Cardinality  NT - Cardinality 123 at session 6", "Cardinality NT - Cardinality 6 at session 6"),
+      effect_id = c("Counting_Counting", "Counting_Counting", "Counting_Counting", "Counting_Counting", "Counting_Cardinality", "Counting_Cardinality", "Counting_Cardinality", "Counting_Cardinality", "Cardinality_Counting", "Cardinality_Counting", "Cardinality_Counting", "Cardinality_Counting", "Cardinality_Cardinality", "Cardinality_Cardinality", "Cardinality_Cardinality", "Cardinality_Cardinality"),
+      year = c(2012, 2012, 2012, 2012, 2012, 2012, 2012, 2012, 2012, 2012, 2012, 2012, 2012, 2012, 2012, 2012),
+      country = c( "US", "US", "US", "US", "US", "US", "US", "US", "US", "US", "US", "US", "US", "US", "US", "US"),
+      study_id = c("mix_et_al.2012", "mix_et_al.2012", "mix_et_al.2012", "mix_et_al.2012", "mix_et_al.2012", "mix_et_al.2012", "mix_et_al.2012", "mix_et_al.2012", "mix_et_al.2012", "mix_et_al.2012", "mix_et_al.2012", "mix_et_al.2012", "mix_et_al.2012", "mix_et_al.2012", "mix_et_al.2012", "mix_et_al.2012"),
+      design = c("Experimental", "Experimental", "Experimental", "Experimental", "Experimental", "Experimental", "Experimental", "Experimental", "Experimental", "Experimental", "Experimental", "Experimental", "Experimental", "Experimental", "Experimental", "Experimental"),
+      design.2 = c("Experimental_PPC","Experimental_PPC", "Experimental_PPC", "Experimental_PPC", "Experimental_PPC", "Experimental_PPC", "Experimental_PPC", "Experimental_PPC", "Experimental_PPC", "Experimental_PPC", "Experimental_PPC","Experimental_PPC", "Experimental_PPC", "Experimental_PPC", "Experimental_PPC", "Experimental_PPC"), 
+      SES = c("Middle", "Middle", "Middle", "Middle", "Middle", "Middle", "Middle", "Middle", "Middle", "Middle", "Middle", "Middle", "Middle", "Middle", "Middle", "Middle"),
+      main_language = c("English", "English", "English", "English", "English", "English", "English", "English", "English", "English", "English", "English", "English", "English", "English", "English"),
+      deliverer_type = c("Experimenter", "Experimenter", "Experimenter", "Experimenter", "Experimenter", "Experimenter", "Experimenter", "Experimenter", "Experimenter", "Experimenter", "Experimenter", "Experimenter", "Experimenter", "Experimenter", "Experimenter", "Experimenter"),
+      mothers = c(NA, NA, NA, NA, NA, NA ,NA, NA, NA, NA, NA, NA, NA, NA, NA, NA),
+      white = c(NA, NA, NA, NA, NA, NA ,NA, NA, NA, NA, NA, NA, NA, NA, NA, NA), 
+      female = c(NA, NA, NA, NA, NA, NA ,NA, NA, NA, NA, NA, NA, NA, NA, NA, NA),
+      child_age_study_start = c(1314.9, 1314.9, 1314.9, 1314.9, 1314.9, 1314.9, 1314.9, 1314.9, 1314.9, 1314.9, 1314.9, 1314.9, 1314.9, 1314.9, 1314.9, 1314.9),
+      child_age_NT_start = c(1314.9, 1314.9, 1314.9, 1314.9, 1314.9, 1314.9, 1314.9, 1314.9, 1314.9, 1314.9, 1314.9, 1314.9, 1314.9, 1314.9, 1314.9, 1314.9),
+      child_age_NT_mid = c(1325.4, 1325.4, 1335.9, 1335.9, 1325.4, 1325.4, 1335.9, 1335.9, 1325.4, 1325.4, 1335.9, 1335.9, 1325.4, 1325.4, 1335.9, 1335.9),
+      child_age_NT_end = c( NA, NA, NA, NA, NA, NA ,NA, NA, NA, NA, NA, NA, NA, NA, NA, NA),
+      child_age_MA = c(1335.9, 1356.9, 1335.9, 1356.9, 1335.9, 1356.9, 1356.9, 1335.9, 1335.9, 1356.9, 1335.9, 1356.9, 1335.9, 1356.9, 1356.9, 1335.9),
+      NT_measure_time = c(NA, NA, NA, NA, NA, NA ,NA, NA, NA, NA, NA, NA, NA, NA, NA, NA),
+      time_between_NT_mid_MA = c(10.5, 10.5, 21, 21, 10.5, 10.5, 21, 21, 10.5, 10.5, 21, 21, 10.5, 10.5, 21, 21),
+      intervention_dosage = c(21, 21, 42, 42, 21, 21, 42, 42, 21, 21, 42, 42, 21, 21, 42, 42),
+      NT_context = c("School", "School", "School", "School", "School", "School", "School", "School", "School", "School", "School", "School", "School", "School", "School", "School"),
+      MA_context = c("School", "School", "School", "School", "School", "School", "School", "School", "School", "School", "School", "School", "School", "School", "School", "School"),
+      NT_type = c(NA, NA, NA, NA, NA, NA ,NA, NA, NA, NA, NA, NA, NA, NA, NA, NA),
+      NT_type.1 = c("Counting","Counting","Counting","Counting","Counting","Counting","Counting","Counting","Cardinality", "Cardinality", "Cardinality", "Cardinality", "Cardinality", "Cardinality", "Cardinality", "Cardinality"),
+      NT_type.10 = c(NA, NA, NA, NA, NA, NA ,NA, NA, NA, NA, NA, NA, NA, NA, NA, NA),
+      MA_test = c(NA, NA, NA, NA, NA, NA ,NA, NA, NA, NA, NA, NA, NA, NA, NA, NA),
+      MA_measure = c("Counting", "Counting", "Counting", "Counting", "Cardinality", "Cardinality", "Cardinality", "Cardinality", "Counting", "Counting", "Counting", "Counting", "Cardinality", "Cardinality", "Cardinality", "Cardinality"),
+      analysis = c(NA, NA, NA, NA, NA, NA ,NA, NA, NA, NA, NA, NA, NA, NA, NA, NA),
+      controlled_variables = c(1, 1, 1, 1, 1, 1,1, 1, 1, 1, 1, 1, 1, 1, 1, 1)) %>% mutate(r = d.ppc/(sqrt((d.rm^2)+4))) %>%  select(effect, effect_description, effect_id, year, country, study_id, design, design.2, SES, main_language, deliverer_type, mothers, white, female, child_age_study_start, child_age_NT_start, child_age_NT_mid, child_age_NT_end, child_age_MA, NT_measure_time, time_between_NT_mid_MA, intervention_dosage, NT_context, MA_context, NT_type, NT_type.1, NT_type.10, MA_test, MA_measure, analysis, controlled_variables, r, n)
 
 
 ```
@@ -822,6 +848,48 @@ silver_et_al.2021_tib <- c(
 
 ```
 
+
+```{r ogul_and_arnas.2021}
+ogul_and_arnas.2021_tib <- c(
+  "ogul_and_arnas.2021a") %>% 
+  data.frame() %>% rename(., effect = .) %>% 
+    add_column(
+      effect_description = c("NT - TEMA-3"),
+      effect_id = c("Overall_Overall"),
+      year = c(2021),
+      country = c("TURKEY"),
+      study_id = c("ogul_and_arnas.2021"),
+      design = c("Correlational"),
+      design.2 = c("Unknown"), 
+      SES = c("Unknown"),
+      main_language = c("English"),
+      deliverer_type = c("Parent"),
+      mothers = c(1),
+      white = c(NA), 
+      female = c(0.675),
+      child_age_study_start = c(1715.153),
+      child_age_NT_start = c(1715.153),
+      child_age_NT_mid = c(NA),
+      child_age_NT_end = c(NA),
+      child_age_MA = c(NA),
+      NT_measure_time = c(180),
+      time_between_NT_mid_MA = c(NA),
+      intervention_dosage = c(NA),
+      NT_context = c("Home"),
+      MA_context = c(NA),
+      NT_type = c("Overall"),
+      NT_type.1 = c("Overall"),
+      NT_type.10 = c("Overall"),
+      MA_test = c("TEMA_3"),
+      MA_measure = c("Overall"),
+      analysis = c("Zero_Order_Correlation"),
+      controlled_variables = c(0),
+      r = c(0.39),
+      n = c(40))
+silver_et_al.2021_tib
+```
+
+
 ```{r constructing_meta_tib}
 meta_tib.p1 <- rbind(
   levine_et_al.2010_tib,
@@ -834,7 +902,8 @@ meta_tib.p1 <- rbind(
   son_and_hur.2020_tib,
   thippana_et_al.2020_tib, 
   gibson_et_al.2020_tib, 
-  silver_et_al.2021_tib) 
+  silver_et_al.2021_tib,
+  ogul_and_arnas.2021_tib) 
 
   zippert_et_al.2019_tib
   boonen_et_al.2011_tib
@@ -943,21 +1012,20 @@ dr <- correlations$r %>% mean() %>% sqrt()
 #Other assumptions
 #Because effect sizes tend not to be measured across time, a compound symmetry variance matrix is assumed
 
-v_CHE <- impute_covariance_matrix(meta_tib$vi, cluster = meta_tib$study_id, r = c(dr))
+v_CHE <- impute_covariance_matrix(meta_tib$vi, cluster = meta_tib$study_id, r = dr)
 
 ml_meta_model.3lCHE <- rma.mv(yi = yi, V = v_CHE, data = meta_tib, struct = "CS", method = "REML", test = "t",
                         random = ~ 1 | study_id/effect)
 ml_meta_model.3lCHE 
 
 ml_meta_model.3lCHE$se
-vardist.3l(ml_meta_model.3lCHE)
+vardist.3l(ml_meta_model.3l)
 
-v_CHE <- impute_covariance_matrix(meta_tib$vi, cluster = meta_tib$study_id, r = c(0.727152))
+ml_meta_model.3lCHE.rbst <- coef_test(ml_meta_model.3lCHE, vcov = "CR2", cluster = meta_tib$study_id)
 
-v_CHE %>% view()
 
-subgroup <- meta_tib %>% filter(study_id != "mix_et_al.2012") %>% pull(effect)
-meta_tib$effect
+coef_test(ml_meta_model.3lCHE, vcov = "CR2", cluster = meta_tib$study_id)
+dpplot <- dependency.sen(data = meta_tib, random = ~ 1 | study_id/effect, cluster = meta_tib$study_id, r = seq(0, 0.9, 0.01))
 
 dependency.sen <- function(data, random = NULL, mods = NULL, b = 0, r, robust = NULL, cluster = cluster){
   c <- cluster
@@ -1005,10 +1073,9 @@ dependency.p <- ggplot(data = ml_meta_model.3lCHE_dependency) + geom_line(mappin
 #Cluster robust with small sample adjustment 
 ml_meta_model.3lCHE.rbst <- robust(ml_meta_model.3lCHE , cluster = meta_tib$study_id, adjust = T, clubSandwich = T)
 conf_int(ml_meta_model.3lCHE, vcov = "CR2") 
-coef_test(ml_meta_model.3lCHE, vcov="CR2", cluster=meta_tib$study_id, test = "z") 
-
-
-
+ml_meta_model.3lCHE.rbst.cs <- coef_test(ml_meta_model.3lCHE, vcov="CR2", cluster=meta_tib$study_id, test = "z") 
+ml_meta_model.3lCHE.rbst.cs %>% as.list()
+coef_test(ml_meta_model.3lCHE, vcov="CR2", cluster=meta_tib$study_id, test = "naive-t") %>% c()
 
 #Comparing all the models
 fitstats(re_meta_model, ml_meta_model.2lre, ml_meta_model.2l, ml_meta_model.3l, ml_meta_model.3lCHE)
@@ -1031,7 +1098,7 @@ ml_meta_model.3lCHE.influence.b1.lev2
 ml_meta_model.3lCHE.influence.b1.lev3 <- rma.mv.influence(data = meta_tib, struct = "CS", method = "REML", random = ~1 | study_id/effect, cluster = "study_id", b = 0, robust = F, robust.cluster = "effect", adjust = T)
 ml_meta_model.3lCHE.influence.b1.lev3 
 #Based on Cook's d, there are no influential studies
-
+library(kableExtra)
 
 #Forest plots
 forest(ml_meta_model.3lCHE, addpred = T, header = T, slab = meta_tib$effect)
@@ -1041,6 +1108,18 @@ forest(ml_meta_model.3lCHE, addpred = T, header = T, slab = meta_tib$effect)
 vardist.3l(model = ml_meta_model.3lCHE, digits =  5)
 
 
+robust(ml_meta_model.3lCHE, cluster = meta_tib$study_id, adjust = T)
+ml_meta_model.3lCHE$call
+ml_meta_model.3lCHE.influence.eff <- rma.mv.influence(random = ~1 | study_id/effect, struct = "CS", data = meta_tib, method = "REML", cluster = "effect", CHE = TRUE, r = dr, robust.cluster = "study_id")
+
+ml_meta_model.3lCHE.influence.stud <- rma.mv.influence(random = ~1 | study_id/effect, struct = "CS", data = meta_tib, method = "REML", cluster = "study_id", CHE = TRUE, r = dr, robust.cluster = "study_id")
+
+
+rma.mv.influence(random = ~1 | study_id/effect, struct = "CS", data = meta_tib, method = "REML", cluster = "study_id", CHE = TRUE, r = dr, robust.cluster = "study_id")
+
+ml_meta_model.3lCHE.influence %>% filter(abs(rstudent) >= 1.96 | abs(cooks.d) >= 1 | abs(DFBETAS) >= 1)
+
+ml_meta_model.3lCHE.influence %>% filter(abs(rstudent)) %>%  dplyr::mutate(dplyr::across(where(is.numeric), ~round(., 2))) %>% kable(format = "html", caption = "Leave1out analysis", col.names = c("Effect", "Studentized residual", "Cook's Distance", "DFBETAS", "Leave1out ES", "SE", "t", "p", "CI lower", "CI upper")) %>% kable_styling(full_width = T, position = "center") %>% row_spec(row = 0, extra_css = "border-bottom: 2px solid black;")
 ```
 
 ```{r doing_the_same_thing_with_metaSEM}
@@ -1156,7 +1235,7 @@ contrasts(meta_tib$NT_type.1) <- cbind(
   countingNT_vs_mean,
   number_identificationNT_vs_mean)
 
-
+meta_tib %>% filter(NT_type.1 == "Number_Identification")
 
 #contrasts(meta_tib$NT_type.1) <- contr.sum(10) - This is for sum coding - The p-values/results are all the same as deviation coding
 
@@ -1390,7 +1469,7 @@ ml_meta_model.3lCHE_mod_MA_measure.rbst <- metafor::robust(ml_meta_model.3lCHE_m
 ml_meta_model.3lCHE_mod_MA_measure.rbst
 
 #CLUBSANDWICH 
-coef_test(ml_meta_model.3lCHE_mod_MA_measure, vcov="CR2", cluster=meta_tib$study_id)
+coef_test(ml_meta_model.3lCHE_mod_MA_measure, vcov="CR2", cluster=meta_tib$study_id, test = "naive-tp")
 
 
 #INFLUENCE
@@ -1444,16 +1523,15 @@ levels(meta_tib$MA_context)
 meta_tib %>% group_by(MA_context) %>% summarise(n = n())
 
 #Setting contrast weights 
-home_vs_mean <-   c(0.5, 0, 0, 0, -0.5)
-lab_vs_mean <-    c(0, 0.5, 0, 0, -0.5)
-school_vs_mean <- c(0, 0, 0.5, 0, -0.5)
-museum_vs_mean <- c(0, 0, 0, 0.5, -0.5)
+home_vs_mean <-   c(0.5, 0, 0, -0.5)
+lab_vs_mean <-    c(0, 0.5, 0, -0.5)
+school_vs_mean <- c(0, 0, 0.5, -0.5)
+
 
 contrasts(meta_tib$MA_context) <- cbind(
   home_vs_mean,
   lab_vs_mean,
-  school_vs_mean,
-  museum_vs_mean)
+  school_vs_mean)
 
 #MODERATOR ANALYSIS 
 #----------------------------------------------------------------------------------------------------
@@ -1495,7 +1573,7 @@ ml_meta_model.3lCHE_mod_MA_context.rbst <- metafor::robust(ml_meta_model.3lCHE_m
 ml_meta_model.3lCHE_mod_MA_context.rbst
 
 #CLUBSANDWICH 
-coef_test(ml_meta_model.3lCHE_mod_MA_context, vcov = "CR2", cluster = meta_tib$study_id)
+coef_test(ml_meta_model.3lCHE_mod_MA_context, vcov = "CR2", cluster = meta_tib$study_id, test = "naive-tp")
 
 #RESULTS 
 #Measuring maths ability at home had a significantly more negative effect (b = -0.4341, p = 0.0299)
@@ -1631,7 +1709,7 @@ assumption(model = ml_meta_model.3lCHE_mod_mothers_cat)
 robust(ml_meta_model.3lCHE_mod_mothers_cat, cluster = meta_tib$study_id)
 
 #CLUBSANDWICH
-coef_test(ml_meta_model.3lCHE_mod_mothers_cat, vcov = "CR2", cluster = meta_tib$study_id)
+coef_test(ml_meta_model.3lCHE_mod_mothers_cat, vcov = "CR2", cluster = meta_tib$study_id, test = "naive-tp")
 
 
 #INFLUENCE
@@ -1710,7 +1788,7 @@ ml_meta_model.3lCHE_mod_child_age_NT_mid.rbst <- robust(ml_meta_model.3lCHE_mod_
 ml_meta_model.3lCHE_mod_child_age_NT_mid.rbst
 
 #CLUBSANDWICH 
-coef_test(ml_meta_model.3lCHE_mod_child_age_NT_mid, vcov = "CR2", cluster=meta_tib$study_id)
+coef_test(ml_meta_model.3lCHE_mod_child_age_NT_mid, vcov = "CR2", cluster=meta_tib$study_id, test = "naive-tp")
 
 #INFLUENCE
 #----------------------------------------------------------------------------------------------------
@@ -1734,14 +1812,13 @@ levels(meta_tib$NT_context)
 meta_tib %>% group_by(NT_context) %>% summarise(n = n())
 
 #Setting contrast weights 
-NThome_vs_mean <-   c(1/2, 0, 0, -1/2)
-NTlab_vs_mean <-    c(0, 1/2, 0, -1/2)
-NTschool_vs_mean <- c(0, 0, 1/2, -1/2)
+NThome_vs_lab <-   c(1/2, -1/2, 0)
+NThome_vs_school <-    c(1/2, 0, -1/2)
+NTlab_vs_school <- c(0, 1/2, -1/2)
 
 contrasts(meta_tib$NT_context) <- cbind(
-  NThome_vs_mean,
-  NTlab_vs_mean,
-  NTschool_vs_mean)
+NThome_vs_lab,
+ NThome_vs_school,NTlab_vs_school)
 
 
 #MODERATOR ANALYSIS 
@@ -1781,20 +1858,24 @@ ml_meta_model.3lCHE_mod_NT_context.rbst <- metafor::robust(ml_meta_model.3lCHE_m
 ml_meta_model.3lCHE_mod_NT_context.rbst
 
 #CLUBSANDWICH 
-coef_test(ml_meta_model.3lCHE_mod_NT_context, cluster = meta_tib$study_id, vcov = "CR2")
+coef_test(ml_meta_model.3lCHE_mod_NT_context, cluster = meta_tib$study_id, vcov = "CR2", test = "naive-tp")
 
 #RESULTS 
 #No significant results 
 ```
 
 
+```{r experimental}
+
+
+```
 
 
 
 ```{r publication_bias}
 #Funnel plot
 #----------------------------------------------------------------------------------------------------
-metafor::funnel(ml_meta_model.3l)
+metafor::funnel(ml_meta_model.3lCHE)
 
 #Egger's test
 #----------------------------------------------------------------------------------------------------
@@ -1805,12 +1886,19 @@ meta_tib_egger <- meta_tib %>% mutate(se = sqrt(vi), snd = yi/se, inv.se = 1/se)
 #Using rma.mv
 rma.mv(yi = snd, V = v_CHE, data = meta_tib_egger, struct = "CS", method = "REML", test = "t", mods = ~ inv.se, random = ~ 1 | study_id/effect) %>% clubSandwich::coef_test(., vcov = "CR2")
 
+egger <- lm(snd ~ inv.se, data = meta_tib_egger) 
+summary(egger)
 
-
+lm.beta::lm.beta(egger )
+parameters::model_parameters(egger, bootstrap = T) %>% summary()
+egger.boot <- bootstrap_model(egger, iterations = 10000)
+egger.boot$`(Intercept)` %>% mean()
 #Regression plot
 ggplot(meta_tib_egger, aes(x = inv.se, y = snd)) + 
   geom_point() +
-  stat_smooth(method = "lm", col = "blue") + theme_minimal()
+  stat_smooth(method = "lm", col = "black") + 
+  scale_x_continuous(limits = c(2.7, 10)) +
+  theme_minimal()
 #RESULTS
 #Egger's test indicated that there is no publication bias 
 
@@ -1824,6 +1912,11 @@ weightfunct(effect = meta_tib$yi, v = meta_tib$vi, steps=c( 0.05, 0.50, 1.00), w
 metafor::funnel(ml_meta_model.3l)
 
 metafor::funnel(ml_meta_model.3lCHE)
+### carry out trim-and-fill analysis
+taf.3lCHE <- trimfill(ml_meta_model.3lCHE)
+ 
+### draw funnel plot with missing studies filled in
+funnel(taf, legend=TRUE)
 
 
 ```
@@ -1848,9 +1941,6 @@ Publication bias is first visually examined through the funnel plot. The funnel 
 
 Moderator analysis 
 Potential moderators are tested through series of simple Generalised Least Squares mixed effect linear regression models, in which only the intercept is random and the slopes are fixed. Violation of assumptions of general linear models are examined and robust SEs with small sample adjustment are estimated by the clubSandwich package if assumptions are violated.  
-
-
-
 
 
 
