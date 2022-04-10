@@ -1,12 +1,20 @@
 working file; full of bugs, check the simplified version, that definitely does not give a bug
 ---
 title: "meta_analysis_NT"
-output: html_document
 date: '2022-03-05'
+output: 
+  html_document:
+    css: meta_analysis_NT.css
+    toc: true
+    toc_float: 
+      toc_depth: '2'
+      collapsed: TRUE
+      smooth_scroll: yes
+
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = TRUE, include = F)
 ```
 
 ```{r packages}
@@ -1222,14 +1230,14 @@ meta_tib %>% view()
 
 ```{r random_effect_meta_analysis}
 #Random-effect meta-analysis
-re_meta_model <- rma(yi = yi, vi = vi, data = meta_tib, method  = "DL")
+re_meta_model <- rma(yi = yi, vi = vi, data = meta_tib, method  = "REML")
 re_meta_model
 
 #Forest Plot
 forest(re_meta_model, addpred = T, header = T)
 
 #Gosh Plot 
-plot(gosh(re_meta_model, subset = 20000), out = 10)
+#plot(gosh(re_meta_model, subset = 20000), out = 10)
 
 #RESULTS
 # Fisher's z = 0.0596
@@ -1283,14 +1291,14 @@ ml_meta_model.3lCHE.dep.plot
 #----------------------------------------------------------------------------------------------------
 #Effect level
 #Beta 0
-ml_meta_model.3lCHE.influence.eff <- rma.mv.influence(random = ~1 | study_id/effect, struct = "CS", data = meta_tib, method = "REML", cluster = "effect", CHE = TRUE, r = dr, robust.cluster = "study_id")
-ml_meta_model.3lCHE.influence.eff
+#ml_meta_model.3lCHE.influence.eff <- rma.mv.influence(random = ~1 | study_id/effect, struct = "CS", data = meta_tib, method = "REML", cluster = "effect", CHE = TRUE, r = dr, robust.cluster = "study_id", robust = F)
+#ml_meta_model.3lCHE.influence.eff %>% filter(abs(DFBETAS) > 1)
 #Based on Cook's d, there are no influential cases
 
 #STUDY LEVEL
 #Beta 0
-ml_meta_model.3lCHE.influence.stud <- rma.mv.influence(random = ~1 | study_id/effect, struct = "CS", data = meta_tib, method = "REML", cluster = "study_id", CHE = TRUE, r = dr, robust.cluster = "study_id")
-ml_meta_model.3lCHE.influence.stud
+#ml_meta_model.3lCHE.influence.stud <- rma.mv.influence(random = ~1 | study_id/effect, struct = "CS", data = meta_tib, method = "REML", cluster = "study_id", CHE = TRUE, r = dr, robust.cluster = "study_id")
+#ml_meta_model.3lCHE.influence.stud
 #Based on Cook's d, there are no influential studies
 
 #Forest plots
@@ -1381,12 +1389,12 @@ ml_meta_model.3lCHE_mod_main_language.rbst.cs
 #----------------------------------------------------------------------------------------------------
 #EFFECT LEVEL
 #Beta 1
-ml_meta_model.3lCHE_mod_main_language.b1.lev2 <- rma.mv.influence(data = meta_tib, struct = "CS", method = "REML", mods = ~ NT_type.1, random = ~1 | study_id/effect, cluster = "effect", b = 1, robust = T, robust.cluster = "study_id", adjust = T)
+#ml_meta_model.3lCHE_mod_main_language.b1.lev2 <- rma.mv.influence(data = meta_tib, struct = "CS", method = "REML", mods = ~ NT_type.1, random = ~1 | study_id/effect, cluster = "effect", b = 1, robust = T, robust.cluster = "study_id", adjust = T)
 #There are no outliers/influential effects
 
 #STUDY LEVEL
 #Beta 1
-ml_meta_model.3lCHE_mod_main_language.b1.lev3 <- rma.mv.influence(data = meta_tib, struct = "CS", method = "REML", mods = ~ NT_type.1, random = ~1 | study_id/effect, cluster = "study_id", b = 1, robust = T, robust.cluster = "study_id", adjust = T)
+#ml_meta_model.3lCHE_mod_main_language.b1.lev3 <- rma.mv.influence(data = meta_tib, struct = "CS", method = "REML", mods = ~ NT_type.1, random = ~1 | study_id/effect, cluster = "study_id", b = 1, robust = T, robust.cluster = "study_id", adjust = T)
 #Based on Cook's d, there is 1 influential study (mutaf_yildiz_et_al.2018 and casey_et_al.2018)
 
 
@@ -1463,7 +1471,7 @@ bonferroni(ml_meta_model.3lCHE_mod_main_language)
 #EFFECT LEVEL
 #Beta 3
 #ml_meta_model.3l_mod_NT_type.1_influence.lev2.b3 <- rma.mv.influence(data = meta_tib, struct = "CS", method = "REML", mods = ~ NT_type.1, random = ~1 | study_id/effect, cluster = "effect", b = 3, robust = T, robust.cluster = "effect",adjust = T)
-#ml_meta_model.3l_mod_NT_type.1_influence.lev2.b3
+#ml_meta_model.3l_mod_NT_type.1_influence.lev2.b3 %>% filter(abs(DFBETAS) >= 1)
 #Based on Cook's d and DFBETAS, There are no outliers and influential cases 
 
 
@@ -1539,21 +1547,21 @@ ml_meta_model.3lCHE_mod_MA_measure.rbst.cs <- coef_test(ml_meta_model.3lCHE_mod_
 #----------------------------------------------------------------------------------------------------
 #EFFECT LEVEL (They are all the same; they are all based on Cook's d)
 #Beta 1
-ml_meta_model.3l_mod_MA_measure.influence.b1.lev2 <- sandwich.influence(data = meta_tib, random = ~1 | study_id/effect, struct = "CS", method = "REML", cluster = "effect", robust.cluster = "study_id", CHE = TRUE, r = dr, mods = ~MA_measure, b = 1, adjust = T)
-ml_meta_model.3l_mod_MA_measure.influence.b1.lev2
+#ml_meta_model.3l_mod_MA_measure.influence.b1.lev2 <- sandwich.influence(data = meta_tib, random = ~1 | study_id/effect, struct = "CS", method = "REML", cluster = "effect", robust.cluster = "study_id", CHE = TRUE, r = dr, mods = ~MA_measure, b = 1, adjust = T)
+#ml_meta_model.3l_mod_MA_measure.influence.b1.lev2
 
 #Beta 5
-ml_meta_model.3l_mod_MA_measure.rbst.influence.b5.lev2 <- sandwich.influence(data = meta_tib, random = ~1 | study_id/effect, struct = "CS", method = "REML", cluster = "effect", robust.cluster = "study_id", CHE = TRUE, r = dr, mods = ~MA_measure, b = 5, adjust = T)
-ml_meta_model.3l_mod_MA_measure.rbst.influence.b5.lev2
+#ml_meta_model.3l_mod_MA_measure.rbst.influence.b5.lev2 <- sandwich.influence(data = meta_tib, random = ~1 | study_id/effect, struct = "CS", method = "REML", cluster = "effect", robust.cluster = "study_id", CHE = TRUE, r = dr, mods = ~MA_measure, b = 5, adjust = T)
+#ml_meta_model.3l_mod_MA_measure.rbst.influence.b5.lev2
 #Based on Cook's d, there are 7 influential cases
 #Beta 6
-ml_meta_model.3l_mod_MA_measure.influence.b6.lev2 <- sandwich.influence(data = meta_tib, random = ~1 | study_id/effect, struct = "CS", method = "REML", cluster = "effect", robust.cluster = "study_id", CHE = TRUE, r = dr, mods = ~MA_measure, b = 6, adjust = T)
+#ml_meta_model.3l_mod_MA_measure.influence.b6.lev2 <- sandwich.influence(data = meta_tib, random = ~1 | study_id/effect, struct = "CS", method = "REML", cluster = "effect", robust.cluster = "study_id", CHE = TRUE, r = dr, mods = ~MA_measure, b = 6, adjust = T)
 
 
 #STUDY LEVEL 
 #Beta 1
-ml_meta_model.3l_mod_MA_measure.influence.b1.lev3 <- sandwich.influence(data = meta_tib, random = ~1 | study_id/effect, struct = "CS", method = "REML", cluster = "study_id", robust.cluster = "study_id", CHE = TRUE, r = dr, mods = ~MA_measure, b = 1, adjust = T)
-ml_meta_model.3l_mod_MA_measure.influence.b1.lev3 
+#ml_meta_model.3l_mod_MA_measure.influence.b1.lev3 <- sandwich.influence(data = meta_tib, random = ~1 | study_id/effect, struct = "CS", method = "REML", cluster = "study_id", robust.cluster = "study_id", CHE = TRUE, r = dr, mods = ~MA_measure, b = 1, adjust = T)
+#ml_meta_model.3l_mod_MA_measure.influence.b1.lev3 
 ```
 
 
@@ -1618,24 +1626,26 @@ ml_meta_model.3lCHE_mod_MA_context.rbst.cs <- coef_test(ml_meta_model.3lCHE_mod_
 #----------------------------------------------------------------------------------------------------
 #EFFECT LEVEL 
 #Beta 1
-ml_meta_model.3l_mod_MA_context.influence.b1 <-  rma.mv.influence(data = meta_tib, random = ~1 | study_id/effect, struct = "CS", method = "REML", cluster = "effect", robust.cluster = "study_id", CHE = TRUE, r = dr, mods = ~ MA_context, b = 1, adjust = T)
-ml_meta_model.3l_mod_MA_context.influence.b1
+#ml_meta_model.3l_mod_MA_context.influence.b1 <-  rma.mv.influence(data = meta_tib, random = ~1 | study_id/effect, struct = "CS", method = "REML", cluster = "effect", robust.cluster = "study_id", CHE = TRUE, r = dr, mods = ~ MA_context, b = 1, adjust = T)
+#ml_meta_model.3l_mod_MA_context.influence.b1
 
 #Based on Cook's d, there are 2 influential cases (mutaf a and mutaf b)
 
 #Beta 2
-ml_meta_model.3l_mod_MA_context.influence.b2 <-  rma.mv.influence(data = meta_tib, random = ~1 | study_id/effect, struct = "CS", method = "REML", cluster = "effect", robust.cluster = "study_id", CHE = TRUE, r = dr, mods = ~ MA_context, b = 2, adjust = T)
-ml_meta_model.3l_mod_MA_context.influence.b2
+#ml_meta_model.3l_mod_MA_context.influence.b2 <-  rma.mv.influence(data = meta_tib, random = ~1 | study_id/effect, struct = "CS", method = "REML", cluster = "effect", robust.cluster = "study_id", CHE = TRUE, r = dr, mods = ~ MA_context, b = 2, adjust = T)
+#ml_meta_model.3l_mod_MA_context.influence.b2
 
 
 #STUDY LEVEL 
 #Beta 1
-ml_meta_model.3l_mod_MA_context.influence.lev3.b1 <-  rma.mv.influence(data = meta_tib, random = ~1 | study_id/effect, struct = "CS", method = "REML", cluster = "study_id", robust.cluster = "study_id", CHE = TRUE, r = dr, mods = ~ MA_context, b = 1, adjust = T)
-ml_meta_model.3l_mod_MA_context.influence.lev3.b1
+#ml_meta_model.3l_mod_MA_context.influence.lev3.b1 <-  rma.mv.influence(data = meta_tib, random = ~1 | study_id/effect, struct = "CS", method = "REML", cluster = "study_id", robust.cluster = "study_id", CHE = TRUE, r = dr, mods = ~ MA_context, b = 1, adjust = T)
+#ml_meta_model.3l_mod_MA_context.influence.lev3.b1
 
 #Beta 2
-ml_meta_model.3l_mod_MA_context.influence.lev3.b2 <-  rma.mv.influence(data = meta_tib, random = ~1 | study_id/effect, struct = "CS", method = "REML", cluster = "study_id", robust.cluster = "study_id", CHE = TRUE, r = dr, mods = ~ MA_context, b = 2, adjust = T)
-ml_meta_model.3l_mod_MA_context.influence.lev3.b2
+#ml_meta_model.3l_mod_MA_context.influence.lev3.b2 <-  rma.mv.influence(data = meta_tib, random = ~1 | study_id/effect, struct = "CS", method = "REML", cluster = "study_id", robust.cluster = "study_id", CHE = TRUE, r = dr, mods = ~ MA_context, b = 2, adjust = T)
+#ml_meta_model.3l_mod_MA_context.influence.lev3.b2
+
+
 ```
 
 ```{r moderator_analysis_mothers}
@@ -1712,13 +1722,13 @@ coef_test(ml_meta_model.3lCHE_mod_mothers_cat, vcov = "CR2", cluster = meta_tib$
 #----------------------------------------------------------------------------------------------------
 #EFFECT LEVEL 
 #Beta 1
-ml_meta_model.3l_mod_mothers_cat.influence.lev2.b1 <- rma.mv.influence( data = meta_tib_mod_mothers, struct = "CS", method = "REML",mods = ~ mothers_cat, random = ~ 1 | study_id/effect, cluster = "effect", b = 1, robust = F, robust.cluster = "effect", adjust = T)
+#ml_meta_model.3l_mod_mothers_cat.influence.lev2.b1 <- rma.mv.influence( data = meta_tib_mod_mothers, struct = "CS", method = "REML",mods = ~ mothers_cat, random = ~ 1 | study_id/effect, cluster = "effect", b = 1, robust = F, robust.cluster = "effect", adjust = T)
 
 
 #STUDY LEVEL 
 #Beta 1
-ml_meta_model.3l_mod_mothers_cat.influence.lev3.b1 <- rma.mv.influence(data = meta_tib_mod_mothers, struct = "CS", method = "REML",mods = ~ mothers_cat, random = ~ 1 | study_id/effect, cluster = "study_id", b = 1, robust = F, robust.cluster = "effect", adjust = T)
-ml_meta_model.3l_mod_mothers_cat.influence.lev3.b1
+#ml_meta_model.3l_mod_mothers_cat.influence.lev3.b1 <- rma.mv.influence(data = meta_tib_mod_mothers, struct = "CS", method = "REML",mods = ~ mothers_cat, random = ~ 1 | study_id/effect, cluster = "study_id", b = 1, robust = F, robust.cluster = "effect", adjust = T)
+#ml_meta_model.3l_mod_mothers_cat.influence.lev3.b1
 
 ```
 
@@ -1766,14 +1776,14 @@ ml_meta_model.3lCHE_mod_child_age_NT_mid.rbst.cs
 #----------------------------------------------------------------------------------------------------
 #EFFECT LEVEL 
 #Beta 1
-ml_meta_model.3l_mod_child_age_NT_mid.influence.b1.lev2 <- rma.mv.influence(data = meta_tib, struct = "CS", method = "REML", mods = ~ child_age_NT_mid, random = ~ 1 | study_id/effect, cluster = "effect",robust.cluster = "study_id", b = 1, robust = F, CHE = T, r = dr)
-ml_meta_model.3l_mod_child_age_NT_mid.influence.b1.lev2
+#ml_meta_model.3l_mod_child_age_NT_mid.influence.b1.lev2 <- rma.mv.influence(data = meta_tib, struct = "CS", method = "REML", mods = ~ child_age_NT_mid, random = ~ 1 | study_id/effect, cluster = "effect",robust.cluster = "study_id", b = 1, robust = F, CHE = T, r = dr)
+#ml_meta_model.3l_mod_child_age_NT_mid.influence.b1.lev2
 
 
 #STUDY LEVEL 
 #Beta 1
-ml_meta_model.3l_mod_child_age_NT_mid.influence.b1.lev3 <- rma.mv.influence(data = meta_tib, struct = "CS", method = "REML", mods = ~ child_age_NT_mid, random = ~ 1 | study_id/effect, cluster = "study_id",robust.cluster = "study_id", b = 1, robust = F, CHE = T, r = dr)
-ml_meta_model.3l_mod_child_age_NT_mid.influence.b1.lev3
+#ml_meta_model.3l_mod_child_age_NT_mid.influence.b1.lev3 <- rma.mv.influence(data = meta_tib, struct = "CS", method = "REML", mods = ~ child_age_NT_mid, random = ~ 1 | study_id/effect, cluster = "study_id",robust.cluster = "study_id", b = 1, robust = F, CHE = T, r = dr)
+#ml_meta_model.3l_mod_child_age_NT_mid.influence.b1.lev3
 
 ```
 
@@ -1857,8 +1867,8 @@ ml_meta_model.3lCHE_mod_time_lag.rbst.cs
 
 #INFLUENCE
 #----------------------------------------------------------------------------------------------------
-ml_meta_model.3lCHE_mod_time_lag_influence.lev2 <- rma.mv.influence(data = meta_tib, struct = "CS", method = "REML", mods = ~ time_between_NT_mid_MA, random = ~ 1 | study_id/effect, cluster = "effect",robust.cluster = "study_id", b = 1, robust = F, CHE = T, r = dr)
-ml_meta_model.3lCHE_mod_time_lag_influence.lev2
+#ml_meta_model.3lCHE_mod_time_lag_influence.lev2 <- rma.mv.influence(data = meta_tib, struct = "CS", method = "REML", mods = ~ time_between_NT_mid_MA, random = ~ 1 | study_id/effect, cluster = "effect",robust.cluster = "study_id", b = 1, robust = F, CHE = T, r = dr)
+#ml_meta_model.3lCHE_mod_time_lag_influence.lev2
 ```
 
 
@@ -1886,35 +1896,117 @@ ggplot(meta_tib_egger, aes(x = inv.se, y = snd)) +
 #Egger's test indicated that there is no publication bias 
 
 
-#Vevea and Wood (2005?)
+#Vevea and Wood (2005)
 #----------------------------------------------------------------------------------------------------
-weightfunct(effect = meta_tib$yi, v = meta_tib$vi, steps=c(0.05, 0.50, 1), weights = c(1, 0.8, 0.6))
+weightfunct(effect = meta_tib$yi, v = meta_tib$vi, steps=c(0.05, 0.20, 1), weights = c(1, 0.7, 0.5))
 
-weightfunct(effect = meta_tib$yi, v = meta_tib$vi, steps=c( 0.05, 0.50, 1.00))
+
+#Negative selection 
+weightfunct(effect = meta_tib$yi, v = meta_tib$vi, steps=c(0.5, 0.975, 1.00), weights = c(0.3, 0.6, 1), fe = F, table = T)
+
+
+cntr.fctr <- (ml_meta_model.3lCHE$b - re_meta_model$b) %>% c()
+
+
+meta_tib_weightr.cntr <-  meta_tib %>% mutate(yi.cntr = yi + cntr.fctr)
+meta_tib_weightr.cntr
+
+
+re_meta_model_weightr.cntr <-  rma(yi = yi.cntr, vi = vi, data = meta_tib_weightr.cntr)
+re_meta_model_weightr.cntr
+
+
+#Modelling moderate negative selection bias 
+mod_neg <- weightfunct(effect = meta_tib_weightr.cntr$yi.cntr, v = meta_tib_weightr.cntr$vi, steps=c(0.95, 1.00), weights = c(0.5, 1), fe = F, table = T)
+mod_neg
+#Modelling severe negative selection bias
+sev_neg <- weightfunct(effect = meta_tib_weightr.cntr$yi.cntr, v = meta_tib_weightr.cntr$vi, steps=c(0.95, 1.00), weights = c(0.2, 1), fe = F, table = T)
+sev_neg
+
+mod_pos <- weightfunct(effect = meta_tib_weightr.cntr$yi.cntr, v = meta_tib_weightr.cntr$vi, steps=c(0.05, 1), weights = c(1, 0.5), fe = F, table = T)
+mod_pos
+#Modelling severe negative selection bias
+sev_pos <- weightfunct(effect = meta_tib_weightr.cntr$yi.cntr, v = meta_tib_weightr.cntr$vi, steps=c(0.05, 1), weights = c(1, 0.2), fe = F, table = T)
+sev_pos
 
 
 ```
 
 
 
+# Methods
+## Search
+<p class="gojira"> Studies are searched through several databases, specifically, PsycInfo, PsycArticles, Scopus, ScienceDirect, and Web of Science, using the same command `AB(("number* talk*") OR ("numer* talk*))`. The reference list of identified studies are checked for any studies not identified through the databases. All corresponding authors of the identified studies are enquired for unpublished data and ongoing studies through email. Ongoing studies are also searched through OSF. </p>
 
-Search and seek and analyse!
-Studies were searched through several databases, specifically, PsycInfo, PsycArticles, Scopus, ScienceDirect, and Web of Science, using the same command line AB("number* talk*"). The reference list of identified studies are checked for studies not identified through the databases. All corresponding authors of the identified studies are enquired for unpublished data and ongoing studies through email. Ongoing studies are also searched through OSF. 
+## Selecting Effect Sizes 
+<p class="gojira"> The majority of the studies are correlational (k = 9) and the rest are experimental (k = 2), thus, Pearson's correlation is used as the effect size (ES) for the meta-analysis. ESs that represent the effect of NT on MA are considered relevant and are included. Most studies have multiple relevant effects. There are 2 sources of multiplicity: differences in specification (e.g. outcome measures) and type of statistical analyses (e.g. Pearson's correlation or regression). With regards to dealing with the first source of multiplicity, there are generally two approaches. The first is to combine all relevant effect sizes as an average, so that each study contributes only one ES. The second is to include all relevant ESs from each study. The latter approach is chosen as it allows moderator analyses. The second source of multiplicity is mainly from correlational studies in which studies tend to provide estimates without covariates (mostly zero-order correlations) and with different covariates within and across studies. Hence, only estimates with no covariates are included to maintain comparability. A total of 48 ESs from 11 studies are included (summarised in Table 1). All ESs are transformed to Fisher's z for statistical analyses. </p>
 
-
-dplyr::selecting effect sizes 
-The majority of the studies are correlational (k = 9) and the rest are experimental (k = 2), thus, Pearson's correlation is used as the ES for the meta-analysis. Effects that represent the effect of NT on MA are considered relevant and are included. Most studies have multiple relevant effects. There are 2 sources of multiplicity: differences in specification (e.g. outcome measures) and type of statistical analyses (e.g. Pearson's correlation or regression). With regards to dealing with the first source of multiplicity, there are generally two approaches. The first is to combine all relevant effect sizes as an average, so that each study contributes only one effect size. The second is to include all relevant effect sizes from each study. The latter approach is chosen as it allows moderator analyses. The second source of multiplicity is mainly from correlational studies in which studies tend to report estimates without covariates (mostly zero-order correlations) followed by linear regression with different covariates within and across studies. Hence, only estimates with no covariates are included to maintain comparability. A total of 48 ESs from 11 studies are included (summarised in Table 1). Lastly, all ESs are converted to Fisher's z for statistical analyses and converted back to Pearson's r for the write up. 
-
-Meta-analysis 
-Since some studies included multiple ESs, a multilevel modelling approach is used to examine heterogeneity more accurately. A 3-level hierarchical structure (Cheung, 2014, 2019; Assink & Wibbelink, 2016), in which sampling variances (level 1) are nested within ESs (level 2), and ESs are nested within studies (level 3). This 3-level model assumes that ESs within studies are independent to each other. However, ESs within each study are based on the same participants, hence, the model is extended to a correlated hierarchical effects approach (Pustejovsky & Tipton, 2018, 2021), in which sampling variances of ESs within each study are assumed to correlate with each other. The degree of correlation is derived from an average of a series of correlations between outcome measures provided by a corresponding author of one of the included studies (r = .73). Most of the ESs within studies are cross-sectional, hence, compound symmetry is assumed. This adjustment to the sampling covariance structure was done by the clubSandwich package (Pustejovsky, 2022). The 3-level model is then fitted by the `metafor` package (Viechtbauer, 2010) with the rma.mv() function and model parameters are estimated using Restricted Maximum Likelihood. 
-
-Publication bias: The ESs that should not be
-Publication bias is first visually examined through the funnel plot. The funnel plot is shows the precision of estimation (SE) against its associated ES. If the ESs are symmetrical around the weighted-average given SE, it suggests no publication bias. However, if ESs are asymmetrical, then it suggests publication bias. Small study bias is then examined. Small study bias is a type of bias in which small studies report larger ESs than expected relative to its precision. This can be tested by Egger's test (Egger et al., 1997), which is a linear regression in which the standard normal deviate (SND) of the ESs is regressed against its precision. The SND is the standardised score of an ES in the normal distribution under the null hypothesis (SND = zi = ESi/sei) and its precision is its inverse SE. When there is no publication bias, studies with a lower precision (inverse SE) are expected to have a smaller SND, and that is a precision of 0 will have an SND of 0. Egger's test tests this hypothesis by testing whether the intercept is 0, in other words, it tests whether the SND is 0 when the inverse SE is 0. A non-significant intercept shows that there are no or very little number of small studies with low precision that report large SND, which suggests no small study bias. On the other hand, a significant intercept shows that there are studies with low precision that report large SND, which suggests small study bias. dplyr::selection bias is then tested by Vevea and Wood's (2005) weight function. 
+## Meta-analysis 
+<p class="gojira"> Since some studies included multiple ESs, a multilevel modelling approach is used to examine heterogeneity more accurately. A 3-level hierarchical structure (Cheung, 2014, 2019; Assink & Wibbelink, 2016), in which sampling variances (level 1) are nested within ESs (level 2), and ESs are nested within studies (level 3) is used. This 3-level model assumes that ESs within studies are independent of each other. However, ESs within each study are based on the same participants, hence, the model is extended to a correlated hierarchical effects approach (Pustejovsky & Tipton, 2018, 2021), in which sampling variances of ESs within each study are assumed to correlate with each other. The degree of correlation is derived from an average of a series of correlations between outcome measures provided by a corresponding author of one of the included studies (r = .73). Most of the ESs within studies are cross-sectional, hence, compound symmetry is assumed. The sampling covariance structure is adjusted by the clubSandwich package (Pustejovsky, 2022) with the impute_covariance_matrix() function. The 3-level model is then fitted by the `metafor` package (Viechtbauer, 2010) with the rma.mv() function with Restricted Maximum Likelihood estimation. Cluster robust standard error (SE) is estimated by the metafor::robust function and its associated results with small sample adjustment are examined. </p>
 
 
 
-Moderator analysis 
-Potential moderators are tested through series of simple Generalised Least Squares mixed effect linear regression models, in which only the intercept is random and the slopes are fixed. Violation of assumptions of general linear models are examined and robust SEs with small sample adjustment are estimated by the clubSandwich package if assumptions are violated.  
+## Publication bias
+### Funnel Plot
+<p class="gojira"> Publication bias is first visually examined through the funnel plot. The funnel plot is shows the precision of estimation (SE) against its associated ES. If the ESs are symmetrical around the weighted-average given SE, it suggests no publication bias. However, asymmetry suggests publication bias. Small study bias is then examined. </p>
+### Egger's test
+<p class="gojira"> Small study bias is a type of bias in which small studies report larger ESs than expected relative to its precision. This can be tested by Egger's test (Egger et al., 1997), which is a linear regression in which the standard normal deviate (SND) of the ESs is regressed against its precision. The SND is the standardised score of an ES in the normal distribution under the null hypothesis (SND = zi = ESi/sei) and its precision is its inverse SE. When there is no publication bias, studies with a lower precision (inverse SE) are expected to have a smaller SND, and that is a precision of 0 will have an SND of 0. Egger's test tests this hypothesis by testing whether the intercept is 0, in other words, it tests whether the SND is 0 when the inverse SE is 0. A non-significant intercept shows that there are no or very little number of small studies with low precision that report large SND, which suggests no small study bias. On the other hand, a significant intercept shows that there are studies with low precision that report large SND, which suggests small study bias. </p>
+### Vevea and Woods' Selection Model
+<p class="gojira"> Lastly, the impact of selection bias on this meta-analysis is assessed through Vevea and Woods' (2005) selection model, which is a type of corrective method that estimates the ES when there is a certain pattern of selection bias based on p-values. The pattern of selection bias based on p-values has to be modelled for the biased ES to be estimated. 2 patterns of selection bias are examined. The first is indicated by the funnel plot, the second is based on a priori pattern according to the hypothesised intention of authors of the included studies. Each pattern is examined at a moderate and severe level. The priori selection bias pattern includes Moderate Upper-tail Selection Bias, in which ESs with p-values in the range 0 < p < .05 have a probability of 1 of being published and those in the range .05 < p < 1 have a probability of 0.6 of being published; and Severe Upper-tail Selection Bias, in which ESs with p-values in the range 0 < p < .05 have a probability of 1 of being published and those in the range .05 < p < 1 have a probability of 0.3 of being published. </p>
+
+
+## Moderator Analysis
+<p class="gojira"> Potential moderators are tested through series of simple Generalised Least Squares mixed effect linear regression models, in which the intercept is random and slopes are fixed. The models are examined for any violations of assumptions of GLM through the model residuals. Cluster robust SEs are estimated and their associated results with small sample adjustment are compared. Outliers and influential cases are examined at the ES level. Outliers are indicated by having absolute studentized residuals larger than 1.96 and influential ESs are indicated by having either an absolute value of Cook's distances or DEBETASs larger than 1 and leave1out analysis is conducted for them.</p>
+
+
+# Results
+## Meta-analyis 
+<p class="gojira"> NT has a small effect on children's MA (zr = 0.114, SE = .052, 95% CI = [0.009, 0.219], t(47) = 2.18, p = .0341). There is a significant amount of heterogeneity among ESs (Q(47) = 171.328, p < .001). The variance and intraclass correlation (ICC) are examined. The sampling variance is estimated using a method described in Higgins and Thompson (2002, equation 9) and the ICCs are estimated using a method described in Hox (2010, p.21, equation 2.16). Level 1 has a variance of .025, level 2 has a variance of .025 and an ICC of .503, and level 3 has a variance of 0 and an ICC of 0. This shows that half of the variance is attributable to sampling error and the other half of the variance is attributable to the true heterogeneity (I^2 = 50.27%). All of the true heterogeneity is attributable to differences between effects within studies and none is attributable to differences between studies. The ICC also shows that ESs within studies are strongly correlated with each other and studies are not correlated with each other. Outliers and influential cases are examined. There are 3 outliers indicated by studentized residual but no influential ESs indicated by Cook's distance or DFBETAS. Leave1out analysis shows that results remain significant except for Levine et al. (2010). Robust SE is estimated and results derived from robust SE with small sample adjustment are estimated for sensitivity analysis. Results are consistent (SE = .040, t(10) = 2.85, p = 0.017). </p>
+
+```{r report_forest, include = TRUE}
+foresttt <- forest(ml_meta_model.3lCHE, slab = meta_tib$effect, header = T)
+```
+
+
+## Publication Bias
+<p class="gojira"> The funnel plot (figure n) shows symmetry for larger studies but asymmetry for smaller studies, specifically, smaller studies more often report smaller and negative ESs than positive and larger ones. The lack of larger ESs for smaller studies suggests some negative publication bias, especially for smaller studies. Egger's test shows the intercept negative but not significant (b0 = -0.736, SE = 0.41017, t(46) = -1.794, p = .0794), which indicates no small study bias. However, it is not far from being significant and has a considerable effect size. The impact of selection bias on the estimate is examined by Vevea and Woods' (2005) selection model. The pattern of selection bias hypothesised at priori is first examined. Results suggest the ES is reduced to .077 and .028 under Moderate and Severe Upper-tail Selection bias respectively. The pattern of selection bias indicated by the funnel plot and Egger's test is examined. As suggested by the funnel plot and Egger's test, there may be some negative selection bias. Hence, the impact of negative selection bias is examined at 2 levels: Moderate Lower-tail Selection Bias, in which ESs with .95 < p < 1 have a probability of 1 of being published and those with 0 < p .95 have a probability of 0.5; and Severe Lower-tail Selection Bias, in which ESs with .95 < p < 1 have a probability of 1 of being published and those with 0 < p .95 have a probability of 0.2. Results suggest the ES is increased to 0.1247 and 0.1387 under Moderate and Severe Lower-tail Selection Bias respectively. Overall, Vevea and Woods' selection model suggests the estimate is small and positive even under various selection biases based on p-values. </p>
+
+
+
+
+```{r report_funnel, include = TRUE, fig.align = 'center', echo = FALSE}
+metafor::funnel(ml_meta_model.3lCHE)
+
+
+```
+
+
+## Moderator Analysis 
+### NT Type
+<p class="gojira"> Some studies examined the effects of specific individual types of NT, meanwhile others either examined the effects of multiple types of NT in combination or did not categorise the type of NT. ESs that represent effects of distinct types of NT are coded for the type of NT according to the definition and examples of the type of NT provided in the study and not their labels as labels for the same definitions and examples, which represent the same types of NT, can vary across studies. 3 types of NT are identified: Cardinality, Counting, and Number Identification. ESs that represent the effect of multiple types of NT in combination or unknown type of NT are coded as 'General'. The type of NT is entered into a simple regression as a categorical with 4 levels with deviation coding. Results suggest no effect of the type of NT (F(3, 44) = 0.5562, p = 0.6468). None of the contrasts is statistically significant. The model is examined for any violations to GLM. Residual plots indicated that the assumption of homoscedasticity may not be met. Hence, cluster robust SE is estimated and results derived from cluster robust SE with small sample adjustment are examined. Results (Table 2) indicated that the type of NT has a significant effect (F(3, 7) = 1.81 * 10^16, p < .001). Compared to the grand mean, Number Identification is significantly lower (-0.2539, SE = 0.0261, p < .001) and Cardinality (b = .089, SE = 0.2371, p = 0.3752) and Count (b = .133, SE = 0.1482, p = 0.3983) are not significantly different. Outliers and influential cases are examined. There are 3 outliers indicated by studentized residuals and 2 other influential ESs indicated by Cook's distance. Leave1out analysis is conducted for these 4 ESs (A1). In sum, the effect of NT may be moderated by the type of NT, particularly, Number Identification NT has a smaller (and negative) effect than other types of NT. </p>
+
+
+
+### MA Type
+<p class="gojira"> Outcome measures representing different types of MA on which the effect of NT is evaluated differ across ESs. Some studies evaluated the effect of NT on distinct types of MA while others evaluated that on a combination of different types of MA. ESs representing the effect of NT on distinct types of MA are coded for their specific types of MA according to the description of the outcome measure. 6 types of MA are identified: Calculation, Cardinality, Counting, Number Identification, Number Line Estimation, and Quantity Comparison. ESs representing the effect of NT on several types of MA in combination are coded as 'general'. MA type is entered into a simple regression as a categorical variable with deviation coding. Results indicated no effect of the MA type (F(6, 41) = 1.6818, p = .150). Examining the contrasts (Table n), compared to average, Quantity Comparison has a significantly larger effect and calculation has a significantly lower effect. The model is examined for any violations of model assumptions. Residual plots suggest the assumption of normality of residuals may not be met. Hence, cluster robust SEs are estimated and the associated results with small sample adjustment are examined. Results are consistent, in addition, Number Line Estimation has a significantly larger effect than average. Outliers and influential ESs are examined. There are 4  outliers indicated by studentized residual and 4 influential cases based on Cook's distance. Leave1out analysis for these ESs are shown in table n. In sum, the effect of NT may be moderated by the type of MA, particularly, NT may have larger (and positive) effects on Quantity Comparison and Number Line Estimation but smaller (and negative) effect on Calculation. </p>
+
+
+### NT context
+<p class="gojira"> NT is delivered in different contexts across studies. The ESs are coded for the context in which NT is delivered (NT context). All studies provided information about the NT context. 3 NT contexts are identified: Home, Lab, and School. NT context is entered in a simple regression as a categorical variable with deviation coding. Results indicated no effects of NT context (F stats). Since deviation coding does not compare all 3 levels, and all 3 levels are genuine, levels are compared with each other in a multiple comparison. None of the comparisons is significant. Overall, the effect of NT on MA may not be moderated by the context in which NT is delivered. </p>
+
+
+
+### MA context
+<p class="gojira"> MA is measured in different context across studies. The ESs are coded for the context in which MA is measured (MA context) according to information in the paper. Some studies specified the context while others did not. For ESs in studies that specified the MA context, 3 contexts are identified: Home, Lab, and School. ESs with unknown MA context are coded as 'unknown'. MA context is entered into a simple regression as a categorical variable with deviation coding. Results indicated no effect of MA context (F stats). None of the contrasts is significant (Table n). The model is examined for any violations of GLM assumptions. Residual plots indicated that normality of residuals and homoscedasticity may not be met. Hence, cluster robust SEs are estimated and associated results with small sample adjustment are examined. Results indicated that measuring NT at home has a smaller (and negative) effect and measuring NT in a lab has a larger effect than average (Table n). Outliers and influential cases are examined. There are 2 outlying ESs indicated by studentized residual and 2 influential ESs indicated by Cook's distance and DFBETAS. Leave1out analysis is conducted for the only significant contrast and is presented in Table n. </p>
+
+
+### Child Age
+<p class="gojira"> The age of the children around which NT is delivered varies across studies. Child age during NT is defined as the mean age of the sample at the mid-point when NT is measured. Child age is entered in a simple regression. Results indicated no effect of child age. The model is examined for any violations of assumptions of GLM. Residual plots suggest GLM assumptions are met. Nonetheless, cluster robust SEs are estimated and associated results with small sample adjustment are examined for sensitivity analysis.  Results are consistent. Outliers and influential cases are examined. There is 1 outlier indicated by studentized residual and no influential ES indicated by either Cook's distance or DFBETAS. Leave1out analysis shows that leave1out estimates are consistently non-significantly except for 1 ES (Elliott et al. 2017a). Overall, the effect of NT on MA may not be moderated by child age during which NT is delivered.  </p>
+
+### Time Lag
+<p class="gojira"> The length of time between NT delivery and outcome measure differs across ESs. This time lag is defined as the length of time between the mid point of NT delivered is and the time at which MA is measured in days. Time lag is entered in a simple regression. Results indicated no effect of time lag. The model is examined for any violations of GLM assumptions. Residual plots indicated that assumptions of GLM are met. Nonetheless, cluster robust SE is estimated and the associated results with small sample adjustment are examined for sensitivity analysis. Results are consistent. Outliers and influential cases are examined. There are 3 outliers indicated by studentised residuals but no influential ESs indicated by either Cook's distance or DFBETAS. Leave1out analysis is conducted for those outliers (Table n) </p>
+
+
 
 
 
