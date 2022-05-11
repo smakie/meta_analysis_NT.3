@@ -1,17 +1,32 @@
 ---
 title: "meta_analysis_NT"
 date: '2022-03-05'
+author: 
+  - name          : "First Author"
+    affiliation   : "1"
+    corresponding : yes    # Define only one corresponding author
+    address       : "Postal address"
+    email         : "my@email.com"
+    role:         # Contributorship roles (e.g., CRediT, https://casrai.org/credit/)
+      - "Conceptualization"
+      - "Writing - Original Draft Preparation"
+      - "Writing - Review & Editing"
+  - name          : "Ernst-August Doelle"
+    affiliation   : "1,2"
+    role:
+      - "Writing - Review & Editing"
+      - "Supervision"
+
+affiliation:
+  - id            : "1"
+    institution   : "Wilhelm-Wundt-University"
+  - id            : "2"
+    institution   : "Konstanz Business School"
+
 output: papaja::apa6_word
 always_allow_html: true
-header-includes:
-  - \usepackage{floatrow}
-  - \floatsetup[figure]{capposition=top}
 floatsintext: yes
 linenumbers: no
-author:
-  - name: Samuel Mak
-affiliation:
-  - institution: "University of Sussex"
 ---
 
 ```{r setup, include=FALSE}
@@ -32,6 +47,7 @@ library(papaja)
 library(here)
 library(multcomp)
 library(cowplot) 
+library(openxlsx)
 ```
 
 
@@ -143,9 +159,9 @@ dependency <- function(data, random = NULL, mods = ~ NULL, b = 0, r, robust = NU
       v_r <- impute_covariance_matrix(data$vi, cluster = c, r = rlevelz.1)
       model.r <- rma.mv(yi = yi, V = v_r, data = data, struct = "CS", method = "REML", test = "t", random = random, mods =  mods)
       estimate <- c(estimate, tanh(model.r$b[b+1]))
-      se <- c(se, model.r$se[b+1]) 
-      ci.lb <- c(ci.lb, model.r$ci.lb[b+1])
-      ci.ub <- c(ci.ub, model.r$ci.ub[b+1])
+      se <- c(se, tanh(model.r$se[b+1])) 
+      ci.lb <- c(ci.lb, tanh(model.r$ci.lb[b+1]))
+      ci.ub <- c(ci.ub, tanh(model.r$ci.ub[b+1]))
       tval <- c(tval, model.r$zval[b+1])
       pval <- c(pval, model.r$pval[b+1])
       lev3var <- c(lev3var, model.r$sigma2[1])
@@ -157,7 +173,7 @@ dependency <- function(data, random = NULL, mods = ~ NULL, b = 0, r, robust = NU
       model.r.p1 <- rma.mv(yi = yi, V = v_r, data = data, struct = "CS", method = "REML", test = "t", random = random, mods =  mods)
       model.r <- as.tibble(coef_test(model.r.p1, vcov = "CR2", cluster = c))
       estimate <- c(estimate, tanh(unlist(array(c((model.r[(b+1),][2]))))))
-      se <- c(se, unlist(array(c((model.r[(b+1),][3])))))
+      se <- c(se, tanh(unlist(array(c((model.r[(b+1),][3]))))))
       tval <- c(tval, unlist(array(c((model.r[(b+1),][4])))))
       pval <- c(pval, unlist(array(c((model.r[(b+1),][6])))))}}
 
@@ -360,13 +376,13 @@ assumption <- function(model){
 #Report table for regression with non-robust and robust statistics 
 rmatib2 <- function(mod1, mod2, elabs, dp){
   meshuggah <- paste0('%.', dp, 'f')
-  cbind(cbind(tanh(mod1$b), mod1$se, mod1$zval, mod1$pval, mod1$ci.lb, mod1$ci.ub, mod1$ddf) %>% as.data.frame() %>% rownames_to_column(var = "Effect_Description.p1") %>% rename(estimate = V1, se = V2, t = V3, p = V4, ci.l = V5, ci.u = V6, df = V7) %>% add_column(Effect_Description = elabs) %>% dplyr::select(Effect_Description, estimate, se, t, p, ci.l, ci.u, df), cbind(mod2$b, mod2$se, mod2$zval, mod2$pval, mod2$ci.lb, mod2$ci.ub, mod2$ddf) %>% as.data.frame() %>% rownames_to_column(var = "Effect_Description.p1") %>% rename(estimate.rbst = V1, se.rbst = V2, t.rbst = V3, p.rbst = V4, ci.l.rbst = V5, ci.u.rbst = V6, df.rbst = V7) %>% add_column(Effect_Description.rbst = elabs) %>% dplyr::select(Effect_Description.rbst, estimate.rbst, se.rbst, t.rbst, p.rbst, ci.l.rbst, ci.u.rbst, df.rbst)) %>% dplyr::select(Effect_Description, estimate, se, se.rbst, ci.l, ci.l.rbst, ci.u, ci.u.rbst, t, t.rbst, df, df.rbst, p, p.rbst) %>% rename(Effect = Effect_Description, "b" = estimate) %>% dplyr::mutate(p = report.p(p), p.rbst = report.p(p.rbst)) %>% mutate(across(c(2, 3, 4, 5, 6, 7, 8, 9, 10, 12), ~sprintf(meshuggah, round(.,100)))) %>% mutate(across(c(4, 6, 8, 10, 12, 14), ~sub("(.{0})(.*)", "\\1(\\2)", .))) %>% tidyr::unite("SE", se:se.rbst, sep= " ", remove = T) %>% tidyr::unite("CI.lower", ci.l:ci.l.rbst, sep= " ", remove = T) %>% tidyr::unite("CI.upper", ci.u:ci.u.rbst, sep= " ", remove = T) %>% tidyr::unite("t", t:t.rbst, sep= " ", remove = T) %>% tidyr::unite("df", df:df.rbst, sep= " ", remove = T) %>% tidyr::unite("p", p:p.rbst, sep= " ", remove = T) %>% mutate(across(c(4), ~sub("(.{0})(.*)", "\\1[\\2,", .))) %>% mutate(across(c(5), ~sub("(.*)", "\\1]", .))) %>% tidyr::unite("95% CI", CI.lower:CI.upper, sep= " ", remove = T)}
+  cbind(cbind(tanh(mod1$b), tanh(mod1$se), mod1$zval, mod1$pval, tanh(mod1$ci.lb), tanh(mod1$ci.ub), mod1$ddf) %>% as.data.frame() %>% rownames_to_column(var = "Effect_Description.p1") %>% rename(estimate = V1, se = V2, t = V3, p = V4, ci.l = V5, ci.u = V6, df = V7) %>% add_column(Effect_Description = elabs) %>% dplyr::select(Effect_Description, estimate, se, t, p, ci.l, ci.u, df), cbind(mod2$b, mod2$se, mod2$zval, mod2$pval, mod2$ci.lb, mod2$ci.ub, mod2$ddf) %>% as.data.frame() %>% rownames_to_column(var = "Effect_Description.p1") %>% rename(estimate.rbst = V1, se.rbst = V2, t.rbst = V3, p.rbst = V4, ci.l.rbst = V5, ci.u.rbst = V6, df.rbst = V7) %>% add_column(Effect_Description.rbst = elabs) %>% dplyr::select(Effect_Description.rbst, estimate.rbst, se.rbst, t.rbst, p.rbst, ci.l.rbst, ci.u.rbst, df.rbst)) %>% dplyr::select(Effect_Description, estimate, se, se.rbst, ci.l, ci.l.rbst, ci.u, ci.u.rbst, t, t.rbst, df, df.rbst, p, p.rbst) %>% rename(Effect = Effect_Description, "b" = estimate) %>% dplyr::mutate(p = report.p(p), p.rbst = report.p(p.rbst)) %>% mutate(across(c(2, 3, 4, 5, 6, 7, 8, 9, 10, 12), ~sprintf(meshuggah, round(.,100)))) %>% mutate(across(c(4, 6, 8, 10, 12, 14), ~sub("(.{0})(.*)", "\\1(\\2)", .))) %>% tidyr::unite("SE", se:se.rbst, sep= " ", remove = T) %>% tidyr::unite("CI.lower", ci.l:ci.l.rbst, sep= " ", remove = T) %>% tidyr::unite("CI.upper", ci.u:ci.u.rbst, sep= " ", remove = T) %>% tidyr::unite("t", t:t.rbst, sep= " ", remove = T) %>% tidyr::unite("df", df:df.rbst, sep= " ", remove = T) %>% tidyr::unite("p", p:p.rbst, sep= " ", remove = T) %>% mutate(across(c(4), ~sub("(.{0})(.*)", "\\1[\\2,", .))) %>% mutate(across(c(5), ~sub("(.*)", "\\1]", .))) %>% tidyr::unite("95% CI", CI.lower:CI.upper, sep= " ", remove = T)}
 
 ######################################################################
 #Report table for regression with non-robust and robust statistics for ClubSandwich
 rmatib2.cs <- function(mod1, mod2, elabs, dp){
   meshuggah <- paste0('%.', dp, 'f')
-cbind(cbind(tanh(mod1$b), mod1$se, mod1$ci.lb, mod1$ci.ub, mod1$zval, mod1$ddf, mod1$pval) %>% as.data.frame() %>% rownames_to_column(var = "Effect_Description.p1") %>% rename(estimate = V1, se = V2, ci.l = V3, ci.u = V4, t = V5, df = V6, p = V7) %>% add_column(Effect_Description = elabs) %>% dplyr::select(Effect_Description, estimate, se, ci.l, ci.u,  t, df, p),
+cbind(cbind(tanh(mod1$b), tanh(mod1$se), tanh(mod1$ci.lb), tanh(mod1$ci.ub), mod1$zval, mod1$ddf, mod1$pval) %>% as.data.frame() %>% rownames_to_column(var = "Effect_Description.p1") %>% rename(estimate = V1, se = V2, ci.l = V3, ci.u = V4, t = V5, df = V6, p = V7) %>% add_column(Effect_Description = elabs) %>% dplyr::select(Effect_Description, estimate, se, ci.l, ci.u,  t, df, p),
 
 cbind(mod2$beta, mod2$SE, mod2$tstat, mod2$df_Satt, mod2$p_Satt) %>% as.data.frame() %>% rownames_to_column(var = "Effect_Description.p1") %>% rename(estimate.rbst = V1, se.rbst = V2, t.rbst = V3, df.rbst = V4, p.rbst = V5) %>% add_column(Effect_Description.rbst = elabs) %>% dplyr::select(Effect_Description.rbst, estimate.rbst, se.rbst, t.rbst, df.rbst, p.rbst) %>% dplyr::mutate(ci.l.rbst = (estimate.rbst - (qt(p = 0.025, df = df.rbst))*se.rbst), ci.u.rbst = (estimate.rbst + (qt(p = 0.025, df = df.rbst))*se.rbst)) %>% dplyr::select(Effect_Description.rbst, estimate.rbst, se.rbst, ci.l.rbst, ci.u.rbst, t.rbst, df.rbst, p.rbst)) %>% dplyr::select(Effect_Description, estimate, se, se.rbst, ci.l, ci.l.rbst, ci.u, ci.u.rbst, t, t.rbst, df, df.rbst, p, p.rbst) %>% rename(Effect = Effect_Description, "b" = estimate) %>% dplyr::mutate(p = report.p(p), p.rbst = report.p(p.rbst)) %>% mutate(across(c(2, 3, 4, 5, 6, 7, 8, 9, 10, 12), ~sprintf(meshuggah, round(.,100)))) %>% mutate(across(c(4, 6, 8, 10, 12, 14), ~sub("(.{0})(.*)", "\\1(\\2)", .))) %>% tidyr::unite("SE", se:se.rbst, sep= " ", remove = T) %>% tidyr::unite("CI.lower", ci.l:ci.l.rbst, sep= " ", remove = T) %>% tidyr::unite("CI.upper", ci.u:ci.u.rbst, sep= " ", remove = T) %>% tidyr::unite("t", t:t.rbst, sep= " ", remove = T) %>% tidyr::unite("df", df:df.rbst, sep= " ", remove = T) %>% tidyr::unite("p", p:p.rbst, sep= " ", remove = T) %>% mutate(across(c(4), ~sub("(.{0})(.*)", "\\1[\\2,", .))) %>% mutate(across(c(5), ~sub("(.*)", "\\1]", .))) %>% tidyr::unite("95% CI", CI.lower:CI.upper, sep= " ", remove = T)}
 
@@ -431,6 +447,8 @@ son_and_hur.2020_tib <- c(
     controlled_variables = c(0, 0),
     r = c(0.27, 0.12),
     n = c(29, 29))
+
+
 
 
 ```
@@ -988,9 +1006,6 @@ meta_tib.p1 <- rbind(
 
 
 
-
-
-
 meta_tib <- escalc(measure = "ZCOR", ri = r, ni = n, data = meta_tib.p1) %>% data.frame() %>% 
     mutate(
     effect = as.factor(effect),
@@ -1045,7 +1060,7 @@ meta_tib <- escalc(measure = "ZCOR", ri = r, ni = n, data = meta_tib.p1) %>% dat
 #REPORT TABLE
 #The number of effects in each study
 num_eff_tib <- meta_tib %>% dplyr::select(study_id, year) %>% group_by(study_id) %>% summarise(effects = n()) %>% add_column(as.tibble(str_sub(.$study_id, - 4, - 1))) %>% rename(year = value) %>%  mutate(year = as.numeric(year)) %>% arrange(year) %>% dplyr::select(study_id, effects)
-num_eff_tib 
+num_eff_tib %>% apa_table()
 
 #Stem and leaf diagram
 stem(meta_tib$yi) %>% summary()
@@ -1055,9 +1070,12 @@ stem(meta_tib$yi) %>% summary()
 #write.xlsx(meta_tib, "meta_tib.xlsx", overwrite = T)
 
 #Summary table
-data_table <- meta_tib %>% dplyr::select(effect.2, year, effect.3, design, main_language,  NT_type.1,  MA_measure, NT_context, MA_context, child_age_NT_mid, time_between_NT_mid_MA, yi, n) %>% tidyr::unite("Effect.p1", effect.2:year, sep= "", remove = T) %>% tidyr::unite("Effect", Effect.p1:effect.3, sep= "", remove = T) %>% dplyr::mutate(across(8:10, ~sprintf("%.3f", round(., digits = 5)))) %>% apa_table(., caption = "Effects",  
-          col.names = c("Effect size", "Design", "Language",  "NT Type", "MA Measure", "NT context", "MA Context", "Child Age During NT", "Time Lag","Fisher's z", "n"), escape = FALSE, note = "$\\beta$ is the standardized parameter estimate.")
 
+
+meta_data <- meta_tib %>% dplyr::select(effect.2, year, effect.3, design, main_language,  NT_type.1,  MA_measure, NT_context, MA_context, child_age_NT_mid, time_between_NT_mid_MA, r, yi, n) %>% tidyr::unite("Effect.p1", effect.2:year, sep= "", remove = T) %>% tidyr::unite("Effect", Effect.p1:effect.3, sep= "", remove = T) %>% dplyr::mutate(across(8:10, ~sprintf("%.3f", round(., digits = 5)))) 
+
+
+#write.xlsx(meta_data, "./data/meta_tib.xlsx", overwrite = T)
 ```
 
 
@@ -1198,8 +1216,7 @@ ml_meta_model.3lCHE.influence <- rma.mv.influence(random = ~1 | study_id/effect,
 ml_meta_model.3lCHE.influence %>% dplyr::filter(abs(rstudent) > 3) 
 #Based on Cook's d, there are no influential cases
 
-ml_meta_model.3lCHE.influence <- influence.apa(ml_meta_model.3lCHE.influence, label = "Delete this col") %>% dplyr::select(-effect)
-ml_meta_model.3lCHE.influence
+
 
 ```
 
@@ -1396,7 +1413,7 @@ ml_meta_model.3lCHE_mod_MA_measure.rbst.cs
 #REPORT TABLE
 #----------------------------------------------------------------------------------------------------
 #Regression 
-MA_type_tab <- rmatib2.cs(mod1 = ml_meta_model.3lCHE_mod_MA_measure, mod2 = ml_meta_model.3lCHE_mod_MA_measure.rbst.cs, elabs = c("Intercept","Calculation", "Cardinality", "Counting", "Number Identification", "Number Line Estimation", "Quantity Comparison"), dp = 3)
+MA_type_tab <- rmatib2.cs(mod1 = ml_meta_model.3lCHE_mod_MA_measure, mod2 = ml_meta_model.3lCHE_mod_MA_measure.rbst.cs, elabs = c("Intercept","Calculation", "Cardinality", "Counting", "Number Identification", "Number Line Estimation", "Quantity Comparison"), dp = 2)
 MA_type_tab 
 
 
@@ -1499,34 +1516,34 @@ ml_meta_model.3lCHE_mod_MA_context.rbst.cs <- coef_test(ml_meta_model.3lCHE_mod_
 
 
 #REPORT TABLE
-MA_context_tab <- rmatib2(mod1 = ml_meta_model.3lCHE_mod_MA_context, mod2 = ml_meta_model.3lCHE_mod_MA_context.rbst.metafor, elabs = c("Intercept","Home", "Lab", "School"), dp = 3)
+MA_context_tab <- rmatib2(mod1 = ml_meta_model.3lCHE_mod_MA_context, mod2 = ml_meta_model.3lCHE_mod_MA_context.rbst.metafor, elabs = c("Intercept","Home", "Lab", "School"), dp = 2)
 
 
 #INFLUENCE
 #----------------------------------------------------------------------------------------------------
 #EFFECT LEVEL 
 #Beta 1
-ml_meta_model.3l_mod_MA_context.influence.b1 <- rma.mv.influence(data = meta_tib, struct = "CS", method = "REML", mods = ~ MA_context, random = ~1 | study_id/effect, cluster = "effect", b = 1, robust = T, robust.cluster = "study_id",adjust = T, CHE = TRUE, r = dr, clubSandwich = T)
-ml_meta_model.3l_mod_MA_context.influence.b1
+#ml_meta_model.3l_mod_MA_context.influence.b1 <- rma.mv.influence(data = meta_tib, struct = "CS", method = "REML", mods = ~ MA_context, random = ~1 | study_id/effect, cluster = "effect", b = 1, robust = T, robust.cluster = "study_id",adjust = T, CHE = TRUE, r = dr, clubSandwich = T)
+#ml_meta_model.3l_mod_MA_context.influence.b1
 
 
 #Beta 2
-ml_meta_model.3l_mod_MA_context.influence.b2 <-  rma.mv.influence(data = meta_tib, struct = "CS", method = "REML", mods = ~ MA_context, random = ~1 | study_id/effect, cluster = "effect", b = 2, robust = T, robust.cluster = "study_id",adjust = T, CHE = TRUE, r = dr, clubSandwich = T)
-ml_meta_model.3l_mod_MA_context.influence.b2
+#ml_meta_model.3l_mod_MA_context.influence.b2 <-  rma.mv.influence(data = meta_tib, struct = "CS", method = "REML", mods = ~ MA_context, random = ~1 | study_id/effect, cluster = "effect", b = 2, robust = T, robust.cluster = "study_id",adjust = T, CHE = TRUE, r = dr, clubSandwich = T)
+#ml_meta_model.3l_mod_MA_context.influence.b2  %>% dplyr::filter(abs(rstudent) > 3| abs(cooks.d) > 1 | abs(DFBETAS) > 1)
 
 
 #Beta 3
-ml_meta_model.3l_mod_MA_context.influence.b3 <-  rma.mv.influence(data = meta_tib, struct = "CS", method = "REML", mods = ~ MA_context, random = ~1 | study_id/effect, cluster = "effect", b = 3, robust = T, robust.cluster = "study_id",adjust = T, CHE = TRUE, r = dr, clubSandwich = T)
-ml_meta_model.3l_mod_MA_context.influence.b3
+#ml_meta_model.3l_mod_MA_context.influence.b3 <-  rma.mv.influence(data = meta_tib, struct = "CS", method = "REML", mods = ~ MA_context, random = ~1 | study_id/effect, cluster = "effect", b = 3, robust = T, robust.cluster = "study_id",adjust = T, CHE = TRUE, r = dr, clubSandwich = T)
+#ml_meta_model.3l_mod_MA_context.influence.b3  %>% dplyr::filter(abs(rstudent) > 3| abs(cooks.d) > 1 | abs(DFBETAS) > 1)
 
 
 #INFLUENCE REPORT 
 #----------------------------------------------------------------------------------------------------
-influence.MA_context.b1 <- influence.apa(ml_meta_model.3l_mod_MA_context.influence.b1, label = "b1") %>% dplyr::select(-tval)
-influence.MA_context.b2 <- influence.apa(ml_meta_model.3l_mod_MA_context.influence.b2, label = "b2") %>% dplyr::select(-tval)
-influence.MA_context.b3 <- influence.apa(ml_meta_model.3l_mod_MA_context.influence.b3, label = "b3") %>% dplyr::select(-tval)
 
-influence.MA_context <- rbind(influence.MA_context.b1, influence.MA_context.b2, influence.MA_context.b3)
+#influence.MA_context.b2 <- influence.apa(ml_meta_model.3l_mod_MA_context.influence.b2, label = "b2") %>% dplyr::select(-tval)
+#influence.MA_context.b3 <- influence.apa(ml_meta_model.3l_mod_MA_context.influence.b3, label = "b3") %>% dplyr::select(-tval)
+
+#influence.MA_context <- rbind(influence.MA_context.b1, influence.MA_context.b2, influence.MA_context.b3)
 
 ```
 
@@ -1565,7 +1582,7 @@ ml_meta_model.3lCHE_mod_child_age_NT_mid.rbst.cs
 
 #REGRESSION REPORT 
 #----------------------------------------------------------------------------------------------------
-child_age_during_NT <- rmatib2(mod1 = ml_meta_model.3lCHE_mod_child_age_NT_mid, mod2 = ml_meta_model.3lCHE_mod_child_age_NT_mid.rbst.metafor, elabs = c("Intercept","Child Age During NT"), dp = 3)
+child_age_during_NT <- rmatib2(mod1 = ml_meta_model.3lCHE_mod_child_age_NT_mid, mod2 = ml_meta_model.3lCHE_mod_child_age_NT_mid.rbst.metafor, elabs = c("Intercept","Child Age During NT"), dp = 2)
 child_age_during_NT
 
 #INFLUENCE
@@ -1577,8 +1594,8 @@ ml_meta_model.3l_mod_child_age_NT_mid.influence.b1
 
 #INFLUENCE REPORT 
 #---------------------------------------------------------------------------------------------------
-influence.child_age_NT_mid.b1 <- influence.apa(ml_meta_model.3l_mod_child_age_NT_mid.influence.b1, label = "Child Age During NT") %>% dplyr::select(-tval)
-ml_meta_model.3l_mod_child_age_NT_mid.influence.b1 %>% dplyr::filter(abs(rstudent) >= 3 | abs(cooks.d) >= 1 | abs(DFBETAS) >= 1)
+#influence.child_age_NT_mid.b1 <- influence.apa(ml_meta_model.3l_mod_child_age_NT_mid.influence.b1, label = "Child Age During NT") %>% dplyr::select(-tval)
+
 meta_tib
 qplot(child_age_NT_mid, yi, data = meta_tib)
 
@@ -1586,11 +1603,11 @@ qplot(child_age_NT_mid, yi, data = meta_tib)
 
 #FURTHER ANALYSIS: EXPONENTIAL DECAY
 #---------------------------------------------------------------------------------------------------
-exponential_decay <- ggplot(data = meta_tib, mapping = aes(x = child_age_NT_mid, y = yi)) + geom_point() + stat_smooth(method = "lm",  formula = "y ~ log(x)") + theme_apa()
-
+exponential_decay <- ggplot(data = meta_tib, mapping = aes(x = child_age_NT_mid, y = tanh(yi))) + geom_point() + stat_smooth(method = "lm",  formula = "y ~ log(x)", color = "black", span = 2) + scale_x_continuous(breaks = seq(700, 2500, by = 200), expand = expansion(mult = c(0.008, 0.02))) + labs(x = "Child Age During NT (Days)", y = "Correlation") + theme_apa()
+exponential_decay
 ggplot(data = meta_tib, mapping = aes(x = child_age_NT_mid, y = yi)) + geom_point() + stat_smooth(method = "lm") + theme_apa()
 
-
+exponential_decay
 
 ```
 
@@ -1619,7 +1636,7 @@ ml_meta_model.3lCHE_mod_time_lag.rbst.cs
 
 #REPORT TABLE
 #----------------------------------------------------------------------------------------------------
-time_lag_tab <- rmatib2(mod1 = ml_meta_model.3lCHE_mod_time_lag, mod2 = ml_meta_model.3lCHE_mod_time_lag.rbst.metafor, elabs = c("Intercept","Time Lag"), dp = 3)
+time_lag_tab <- rmatib2(mod1 = ml_meta_model.3lCHE_mod_time_lag, mod2 = ml_meta_model.3lCHE_mod_time_lag.rbst.metafor, elabs = c("Intercept","Time Lag"), dp = 2)
 
 
 #INFLUENCE
@@ -1670,20 +1687,20 @@ re_meta_model_weightr.cntr
 #Modelling moderate negative selection bias 
 mod_neg <- weightfunct(effect = meta_tib_weightr.cntr$yi.cntr, v = meta_tib_weightr.cntr$vi, steps=c(0.95, 1.00), weights = c(0.5, 1), fe = F, table = T)
 mod_neg
-mod_neg.report <- rd(tanh(mod_neg$adj_est[2]), digits = 3)
+mod_neg.report <- rd(tanh(mod_neg$adj_est[2]), digits = 2)
 
 #Modelling severe negative selection bias
 sev_neg <- weightfunct(effect = meta_tib_weightr.cntr$yi.cntr, v = meta_tib_weightr.cntr$vi, steps=c(0.95, 1.00), weights = c(0.2, 1), fe = F, table = T)
 sev_neg
-sev_neg.report <- rd(tanh(sev_neg$adj_est[2]), digits = 3)
+sev_neg.report <- rd(tanh(sev_neg$adj_est[2]), digits = 2)
 
 mod_pos <- weightfunct(effect = meta_tib_weightr.cntr$yi.cntr, v = meta_tib_weightr.cntr$vi, steps=c(0.05, 1), weights = c(1, 0.5), fe = F, table = T)
 mod_pos
-mod_pos.report <- rd(tanh(mod_pos$adj_est[2]), digits = 3)
+mod_pos.report <- rd(tanh(mod_pos$adj_est[2]), digits = 2)
 
 #Modelling severe negative selection bias
 sev_pos <- weightfunct(effect = meta_tib_weightr.cntr$yi.cntr, v = meta_tib_weightr.cntr$vi, steps=c(0.05, 1), weights = c(1, 0.2), fe = F, table = T)
-sev_pos.report <- rd(tanh(sev_pos$adj_est[2]), digits = 3)
+sev_pos.report <- rd(tanh(sev_pos$adj_est[2]), digits = 2)
 
 
 
@@ -1701,45 +1718,96 @@ n.es.below.zero <- (nrow(dplyr::filter(dplyr::mutate(meta_tib, correlations = ta
 
 
 
+# Abstract
+
+
+
+# Introduction 
+As science and mathematics are becoming more valued and relied on in today’s society, the demand for people with scientific and mathematical backgrounds has been increasing in the workforce (National Research Council, 2009). An increasing amount of focus has been drawn to meet this demand by fostering the essential scientific and mathematical skills in, encouraging, and improving accessibility for young ones.
+
+Since early childhood experiences have been shown to impact later academic achievements (e.g. Duncan et al., 2007; Torpa et al., 2007), developmental science may have something to offer. The sociocultural theory (Vygotsky, 1978), a classic developmental theory, posits that the sociocultural context is instrumental for learning. More specifically, it suggests that guidance and the use of mediators, particularly language, in social interactions enable cognitive development more efficiently than learning independently. Accordingly, researchers began to examine sociocultural factors during early childhood that may be related to mathematical learning and preschool mathematical ability/attainment (MA). The Home Numeracy Environment (HNE; LeFevre et al., 2009) was of particular interest, most likely because the home is one of the few environments in which children spend a lot of time, others being nurseries or preschools. As this line of research became more refined, specific factors in the HNE were examined. Since exposure to language was found to predict literacy (e.g. Hart & Risley, 1992) and previous researchers have suggested that exposure to number words may develop children’s understanding of more abstract mathematical concepts (e.g. Mix et al., 2002; Wynn, 1990), researchers began to examine whether exposure to number talk (NT), that is number words spoken by an adult to children, would stimulate mathematical learning and predict later MA. Levine et al. (2010) was one of the first studies to examine this. They found that the amount of number words spoken by parents to their children in natural interactions when the children were between 14-30 months old was moderately associated with cardinal knowledge when the children were 46 months old. In addition, different types of NT have been identified. Types of NT are distinguished by the purpose for which number words are used (see A2). However, they only examined the overall effect of NT and not specific types of NT and suggested that future studies should investigate whether different types of NT are more effective. Following this promising finding, there was a steady flow of studies examining both the overall effect and the effects of different types of NT. However, findings were less promising. Some studies found much smaller effects that are also statistically nonsignificant. For example, Susperreguy and Davis-Kean (2016) and Elliott et al. (2017) found nonsignificant correlations of .17 and .16 respectively. This suggests that the true effect could be smaller than that estimated by Levine et al. (2010). Moreover, some studies even found negative effects. For example, Mutaf-Yildiz et al. (2018) found a correlation of -.35. These inconsistencies led to difficulties in concluding the effect of NT.
+
+This brings us to the current study. The current study attempts to synthesise evidence from the NT literature through a meta-analysis. This synthesis attempts to determine whether or not the effect of NT is true and to estimate its true effect size with a greater precision and statistical power than any one of the individual studies in the NT literature. It also attempts to examine how consistent the current findings are and identify factors that may contribute to any inconsistencies, which could not be easily identified from any one of the individual studies. Lastly, it attempts to assess whether there was publication bias in the literature and determine the impact potential publication bias has on the true estimate as well as the literature as a whole. 
+
+
+
 # Methods
 ## Search
-<p class="gojira"> Studies are searched through several databases, specifically, PsycInfo, PsycArticles, Scopus, ScienceDirect, and Web of Science, using the same command `AB(("number* talk*") OR ("numer* talk*))`. The reference list of identified studies are checked for any studies not identified through the databases. All corresponding authors of the identified studies are enquired for unpublished data and ongoing studies through email. Ongoing studies are also searched through OSF. </p>
+Studies were searched through PsycInfo, PsycArticles, Scopus, ScienceDirect, and Web of Science with the same command `AB(("number* talk*") OR ("numer* talk*))`. The reference lists of identified studies were checked for studies not identified in the databases. All corresponding authors of the identified studies were enquired for unpublished data and ongoing studies through email. Ongoing studies were additionally searched through OSF.. 
 
 ## Selecting Effect Sizes 
-<p class="gojira"> The majority of the studies are correlational (k = 9) and the rest are experimental (k = 2), thus, Pearson's correlation is used as the effect size (ES) for the meta-analysis. All ESs that represent the effect of NT on MA are considered relevant and are included. Most studies have multiple relevant effects. There are 2 sources of multiplicity: differences in effect specification (e.g. outcome measures) and type of statistical analyses (e.g. Pearson's correlation or regression). The first source of multiplicity can be dealt by combining all relevant effect sizes as an average, so that each study contributes only one ES, or by including all relevant ESs from each study. The latter approach is chosen to enable moderator analyses. The second source of multiplicity is mainly from correlational studies in which studies provide estimates without covariates (mostly zero-order correlations) and those with different covariates. Since most studies provided estimates without covariates, only ESs without covariates are included to maintain comparability. Studies that do not provide ESs without covariates are excluded. A total of 48 ESs from 11 studies are included (summarised in Table x). The ESs are transformed to Fisher's z for statistical analyses. </p>
+The majority of the studies were correlational (k = 10) and the rest were experimental (k = 2), thus, Pearson’s correlation was used as the effect size for the meta-analysis. All effect sizes that represent the effect of NT on children’s MA were considered relevant and were included. Most studies had multiple relevant effects. Multiplicity arose from two sources, which were differences in effect specification (e.g. outcome measures) and differences in the type of statistical analysis (e.g. correlation or multiple regression with a different number of covariates). The first source of multiplicity could be dealt with by combining all relevant effect sizes as an average so that each study contributes only one effect size, or by including all relevant effect sizes from each study. The latter approach was chosen to enable moderator analyses. The second source of multiplicity was mainly from correlational studies in which studies provided effect sizes with a different number of covariates. Since most studies provided effect sizes without covariates and covariates differed across effect sizes and studies, only those without covariates were included to maintain comparability. Studies that did not provide effect sizes without covariates were excluded. A total of 49 effect sizes from 12 studies were included (data is available in the attached .csv file). The effect sizes were transformed to Fisher’s z for statistical analyses.
 
 ## Meta-analysis 
-<p > Since some studies included multiple ESs, a multilevel modelling approach is used to examine heterogeneity more accurately. A 3-level hierarchical structure (Cheung, 2014, 2019; Assink & Wibbelink, 2016), in which sampling variances (level 1) are nested within ESs (level 2), and ESs are nested within studies (level 3) is used. This 3-level model assumes that ESs within studies are independent of each other. However, ESs within each study are based on the same participants, hence, the model is extended to a correlated hierarchical effects approach (Pustejovsky & Tipton, 2018, 2021), in which sampling variances of ESs within studies are assumed to correlate with each other. The degree of correlation is estimated from an average of a series of correlations between outcome measures provided by a corresponding author of one of the included studies (r = .73). Most of the ESs within studies are cross-sectional, hence, compound symmetry is assumed. Lastly, constant sampling correlation is assumed as correlations between outcome measures could only be obtained from 1 study and there is no reason not to assume participants are not correlated to the same degree. The sampling covariance structure is adjusted by the `clubSandwich package` (Pustejovsky, 2022) with the `impute_covariance_matrix` function. The 3-level model is then fitted by the `metafor` package (Viechtbauer, 2010) with the `rma.mv` function with Restricted Maximum Likelihood estimation. Cluster robust standard error (SE) is estimated by the `metafor::robust` function and its associated results with small sample adjustment are examined. </p>
+Since some studies included multiple effect sizes, a multilevel modelling approach was used to model the dependency and examine heterogeneity more accurately. A three-level hierarchical structure, in which sampling variances (level 1) were nested within effect sizes (level 2), and effect sizes were nested within studies (level 3) (Cheung, 2014, 2019; Assink & Wibbelink, 2016) was used. This model assumes that effect sizes within studies were independent of each other. However, effect sizes within each study were based on the same participants, hence, the model was extended to a correlated hierarchical effects model (Pustejovsky & Tipton, 2018, 2021), in which sampling variances of effect sizes within each study (level 1) in the three-level hierarchical structure were assumed to correlate with each other. The degree to which they correlate was estimated from an average of a series of correlations between outcome measures provided by a corresponding author of one of the included studies (Mix et al., 2012; r = .73). Most of the effect sizes within studies were cross-sectional, hence, compound symmetry was assumed. Lastly, constant sampling correlation (Pustejovsky & Tipton, 2021), that is having the same degree of correlation across all studies, was assumed as correlations between outcome measures could only be obtained from one study and there was no reason not to assume participants were not correlated to the same degree across studies. The sampling covariance structure was adjusted by the impute_covariance_matrix() function from the clubSandwich package (Pustejovsky, 2022). The three-level model was then fitted by the rma.mv() function from the metafor package (Viechtbauer, 2010) with Restricted Maximum Likelihood estimation. Since the sample size was small and there was dependency among effect sizes within studies, cluster robust standard error, specifically, ‘CR2’, and its associated results with small sample adjustment were estimated by the ‘robust()’ function from the metafor package and were examined for sensitivity analysis. The correlation used to estimate the sampling covariance structure was assumed and can change the results, hence, results at different levels of correlation were examined as a sensitivity analysis for sampling variance dependency. Outliers and influential cases were examined at the effect size level and they were indicated by having an absolute studentized residual larger than three and an absolute value of Cook’s distance or DEBETAS larger than one respectively. Leave-one-out analysis was conducted for outliers and/or influential cases as a sensitivity analysis.
 
 
 
 
 ## Publication bias
 ### Funnel Plot
-<p class="gojira"> Publication bias is first examined visually through the funnel plot. The funnel plot shows the precision of estimation (SE) against its associated ES. If the ESs are symmetrical around the weighted-average given SE, it suggests no publication bias. However, asymmetry shows there is an imbalance of studies reporting either larger or smaller ESs, which suggests publication bias.   </p>
-### Egger's test
-<p class="gojira"> Small study bias is then examined. Small study bias is a type of bias in which small studies report more extreme ESs relative to its precision. This can be tested by Egger's test (Egger et al., 1997), which is a linear regression in which the standard normal deviate (SND) of the ESs is regressed against its precision. The SND is the standardised score of an ES in the normal distribution under the null hypothesis (SND = zi = ESi/sei) and its precision is its inverse SE (1/sei). When there is no publication bias, studies with a lower precision are expected to have an SND closer to 0, and that a precision of 0 will have an SND of 0. Egger's test tests this hypothesis by testing whether the intercept is 0, in other words, it tests whether the SND is 0 when the inverse SE is 0. A non-significant intercept shows that there are no or very little number of small studies with low precision that report relatively large SND, which suggests no small study bias. On the other hand, a significant intercept shows that there are studies with low precision that report relatively large SND, which suggests small study bias.  </p>
+Publication bias was first examined visually through the funnel plot (Light and Pillerner, 1984). The funnel plot shows the precision of estimation (SE) against its associated effect size. If effect sizes are symmetrical around the average given SE, it suggests no publication bias. On the other hand, asymmetry given SE shows there is an imbalance of studies reporting either larger or smaller effect sizes than average, which suggests publication bias.
+
+### Egger's regression test
+Small study bias was then examined. Small study bias is a type of publication bias in which small studies report more extreme effect sizes relative to larger studies. This can be tested by Egger’s regression test (Egger et al., 1997), which is a linear regression in which the standard normal deviate (SND) of the effect size is regressed against its precision. The SND is the standardised score of the effect size in the normal distribution under the null hypothesis (SNDi = ESi/sei) and its precision is its inverse SE (1/sei). When there is no publication bias, studies with a lower precision are expected to have an SND asymptotically closer to 0. Egger’s regression test tests this hypothesis by testing whether the intercept is zero, in other words, it tests whether the SND is zero when the inverse SE is zero. A non-significant intercept shows that there are no or very few studies with low precision that report more extreme SNDs relative to larger studies, which suggests no small study bias. On the other hand, a significant intercept shows that there are studies with low precision that report more extreme SNDs relative to larger studies, which suggests small study bias.
+
 ### Vevea and Woods' Selection Model
-<p class="gojira"> The impact of selection bias on this meta-analysis is assessed by Vevea and Woods' (2005) selection model, which is a type of corrective method that estimates the weighted-average under certain pattern of selection bias based on p-values. Selection bias based on p-values has to be modelled by a weight function for the biased ES to be estimated. 2 models of selection bias are examined. The first is indicated by the funnel plot, the second is determined a priori according to the hypothesised intention of authors of the included studies. Each model is examined at a moderate and severe level. The model of selection bias determined a priori are Moderate Upper-tail Selection Bias, in which ESs with p-values in the range 0 < p < .05 have a probability of 1 of being published and those in the range .05 < p < 1 have a probability of 0.5 of being published; and Severe Upper-tail Selection Bias, in which ESs with p-values in the range 0 < p < .05 have a probability of 1 of being published and those in the range .05 < p < 1 have a probability of 0.2 of being published. </p>
+The impact of potential selection bias on this meta-analysis was assessed by Vevea and Woods’ (2005) selection model. Vevea and Wood’s (2005) selection model is a type of corrective method that estimates the average ‘corrected’ for specific patterns of selection bias based on statistical significance (i.e. p-values) using a weight function. Two specific patterns of selection bias based on statistical significance were examined. The first was indicated by the funnel plot and the second was determined a priori according to the hypothesised intention of the authors of the included studies. Each pattern was examined at a moderate and severe level. The model of selection bias determined a priori were: Moderate Upper-tail Selection Bias, in which effect sizes with p-values in the range 0 < p < .05 have a probability of 1 of being published and those in the range .05 < p < 1 have a probability of .50 of being published; and Severe Upper-tail Selection Bias, in which effect sizes with p-values in the range 0 < p < .05 have a probability of 1 of being published and those in the range .05 < p < 1 have a probability of .20 of being published. 
 
 
 ## Moderator Analysis
-<p > Potential moderators are tested through series of simple Generalised Least Squares mixed effect linear regression models, in which the intercept is random and slopes are fixed. The models are examined for any violations of assumptions of GLM through the model residuals. Cluster robust SEs are estimated and their associated results with small sample adjustment are compared. Outliers and influential cases are examined at the ES level. Outliers are indicated by having an absolute studentized residual larger than 1.96 and influential ESs are indicated by having either an absolute value of Cook's distances or DEBETASs larger than 1. Leave1out analysis is conducted for ESs that are considered as outliers or influential.</p>
+The effect sizes were coded for potential moderator variables. Although the reliability of coding was not assessed, the risk of error due to coding inaccuracies was minimised by only coding and examining moderators that were clearly described or defined within studies and were consistent across studies. Each potential moderator was then tested through a simple Generalised Least Squares mixed-effect linear regression model with random intercept and fixed slopes. The models were examined for any violations of assumptions of the General Linear Model (GLM) through the model residuals. Likewise, cluster robust SEs and their associated results with small sample adjustment were estimated and concluded if assumptions of the GLM were violated or examined as a sensitivity analysis if the assumptions were not violated. Outliers and influential cases were examined at the effect size level and were indicated as described previously. Similarly, a leave-one-out analysis was conducted for the outliers and/or influential cases as a sensitivity analysis.
 
-```{r forest, echo = F, fig.align='center', include = T, fig.cap= "Sensitivity Analysis for Dependency", out.width="100%"}
-png(file = "forest_plot1.png", res = 100, width = 1250, height = 1500, type = c("quartz"))
-metafor::forest(ml_meta_model.3lCHE, slab=paste(meta_tib$effect.2, meta_tib$year, meta_tib$effect.3, sep=""),header = T, xlim=c(-3.5,2), cex = 1.2)
+```{r forest, echo = F, include = T, fig.cap= "Forest Plot", out.width="100%"}
+png(file = "images/forest_plot2.png", res = 100, width = 1250, height = 1500, type = c("quartz"))
+metafor::forest(ml_meta_model.3lCHE, slab=paste(meta_tib$effect.2, meta_tib$year, meta_tib$effect.3, sep=""), atransf = tanh,header = T, xlim=c(-3.5,2), cex = 1.2)
 dev.off()
-knitr::include_graphics("images/forest_plot1.png")
+knitr::include_graphics("images/forest_plot2.png")
 ```
 
+```{r}
+
+  
+reporta <- function(x, digits, leading = T){
+  meshuggah <- paste0('%.', digits, 'f')
+  
+  if(isTRUE(leading)){sprintf(meshuggah, round(x,100))}
+  else if(isFALSE(leading)){sub("^0+", "", sprintf(meshuggah, round(x,100)))}
+  }
+
+reporta(c(tanh(ml_meta_model.3lCHE$beta)), 3, leading = F)
+
+Q.p <- report.p(ml_meta_model.3lCHE$QEp)
+
+meta.p <- report.p(ml_meta_model.3lCHE$pval)
+
+ml_meta_model.3lCHE
+I_2 <- ((vardist$variances[2] + vardist$variances[3])/(vardist$variances[1] + vardist$variances[2] + vardist$variances[3]))*100
+
+
+ml_meta_model.3lCHE.rbst.metafor
+```
 
 # Results
 ## Meta-analyis 
-<p> NT has a small effect on children's MA (zr = 0.114, SE = .052, 95% CI = [0.009, 0.219], t(47) = 2.18, p = .0341). There is a significant amount of heterogeneity among ESs (Q(47) = 171.328, p < .001). The variance and intraclass correlation (ICC) are examined. The sampling variance is estimated using a method described in Higgins and Thompson (2002, equation 9) and the ICCs are estimated using a method described in Hox (2010, p.21, equation 2.16). Level 1 has a variance of .025, level 2 has a variance of .025 and an ICC of .503, and level 3 has a variance of 0 and an ICC of 0. This shows that half of the variance is attributable to sampling error and the other half is attributable to the true heterogeneity (I^2 = 50.27%). All of the true heterogeneity is attributable to differences between effects within studies and none is attributable to differences between studies. The ICC also shows that ESs within studies are strongly correlated with each other and studies are not correlated with each other. Outliers and influential cases are examined. There are 3 outliers indicated by studentized residual but no influential ESs indicated by Cook's distance or DFBETAS. Leave1out analysis shows that results remain significant except for Levine et al. (2010). Robust SE is estimated and results derived from robust SE with small sample adjustment are estimated for sensitivity analysis. Results are consistent (SE = .040, t(10) = 2.85, p = 0.017).  </p>
+A forest plot is presented in figure 1. NT had a small and positive effect (*r* = `r reporta(c(tanh(ml_meta_model.3lCHE$beta)), 2, leading = F)`, *SE* = `r reporta(c(tanh(ml_meta_model.3lCHE$se)), 2, leading = T)`, 95% CI [`r reporta(c(tanh(ml_meta_model.3lCHE$ci.lb)), 2, leading = T)`, `r reporta(c(tanh(ml_meta_model.3lCHE$ci.ub)), 2, leading = T)`], *t*(`r reporta(c(ml_meta_model.3lCHE$ddf), 0, leading = T)`) = `r reporta(c(ml_meta_model.3lCHE$zval), 2, leading = T)`, *p* = `r meta.p`). There was a substantial amount of heterogeneity among effect sizes (*Q*(`r reporta(c(ml_meta_model.3lCHE$ddf), 0, leading = T)`) = `r reporta(c(ml_meta_model.3lCHE$QE), 2, leading = F)`, *p* `r Q.p`). The variance and intraclass correlation (ICC) were examined. The sampling variance was estimated using a method described in Higgins and Thompson (2002, equation 9) and the ICCs were estimated using a method described in Hox (2010, p.21). Regarding variances, levels one, two and three had variances of `r reporta(vardist$variances[1], 2, leading = T)`,`r reporta(vardist$variances[2], 2, leading = T)`, and `r reporta(vardist$variances[3], 2, leading = T)` respectively. 
+
+This shows that most of the total variance was attributable to the true heterogeneity (*I^2^* = `r reporta(I_2, 2, leading = T)`%) and rest was attributable to sampling error. Further, all of the true heterogeneity was attributable to the effect size level and none was attributable to the study level. Regarding ICCs, levels two and three had ICCs of `r reporta(ICC_lev2, 2, leading = T)` and `r reporta(ICC_lev3, 2, leading = T)` respectively, which indicates that effect sizes within studies were strongly related to each other and studies were not related to each other.
 
 
-```{r dependency, echo = F, fig.align='center', include = T, fig.cap= "Sensitivity Analysis for Dependency", out.width="100%"}
+
+```{r}
+ml_meta_model.3lCHE.rbst.metafor$zval
+```
+
+
+Sensitivity analysis of sampling covariance shows that, comparing to a correlation of zero, that is assuming that sampling variances were independent, adjusting the sampling covariance for dependency led to a larger estimate (Figure 2A & 2B) and more conservative statistical significance (Figure 2A & E). The estimates (range = `r reporta(min(dplyr::select(dplyr::mutate(ml_meta_model.3lCHE.dep.data, estimate.r = tanh(estimate)), estimate.r)), 2, leading = F)` - `r reporta(max(dplyr::select(dplyr::mutate(ml_meta_model.3lCHE.dep.data, estimate.r = tanh(estimate)), estimate.r)), 2, leading = F)`) were consistently small and positive and significant regardless of dependency (Figure 2A, 2B, & 2E). Cluster robust SE and its associated results with small sample adjustment were examined as a sensitivity analysis. Results were consistent (*SE* = `r reporta(c(tanh(ml_meta_model.3lCHE.rbst.metafor$se)), 2, leading = T)`, *t*(`r reporta(ml_meta_model.3lCHE.rbst.metafor$ddf, 2, leading = T)`) = `r reporta(ml_meta_model.3lCHE.rbst.metafor$zval, 2, leading = T)`, *p* = `r report.p(ml_meta_model.3lCHE.rbst.metafor$pval)`). No outliers or influential cases were identified. To conclude, NT had a small and positive effect on children’s MA.
+ 
+## Publication Bias
+The funnel plot (Figure 3) shows asymmetry only for smaller studies, specifically, smaller studies more often report smaller effect sizes than larger studies and there is a lack of larger effect sizes among smaller studies, which suggests negative small study bias. Egger’s regression test shows that the intercept was negative but not significant (*b_0* = `r reporta(egger_metafor$beta[1], 2, leading = T)`, *SE* = `r reporta(egger_metafor$se[1], 2, leading = T)`, *t*(47) = `r reporta(egger_metafor$zval[1], 2, leading = T)`, *p* = `r report.p(egger_metafor$pval[1])`), which suggests a trend in negative study bias but might not be severe.
+
+
+```{r dependency, echo = F, include = T, fig.cap= "Sensitivity Analysis for Dependency", out.width="100%"}
 
 
 png(file = "images/dependency_fig.2.png", res = 100, width = 1000, height = 1100)
@@ -1750,31 +1818,25 @@ knitr::include_graphics("images/dependency_fig.2.png")
 
 ```
 
+The impact of potential selection bias based on statistical significance on the estimate was then examined by Vevea and Woods’ (2005) selection model. The pattern of selection bias hypothesised a priori was first examined. Results show that the effect size was reduced to `r mod_pos.report` and `r sev_pos.report` after correcting for Moderate and Severe Upper-tail Selection bias respectively. Since both funnel plot and Egger’s test indicated minor negative publication bias, the impact of negative selection bias based on p-values was examined at two levels: Moderate Lower-tail Selection Bias, in which effect sizes with .95 < p < 1 have a probability of 1 of being published and those with 0 < p < .95 have a probability of .50; and Severe Lower-tail Selection Bias, in which effect sizes with .95 < p < 1 have a probability of 1 of being published and those with 0 < p .95 have a probability of .20. Results suggest that the effect size was increased to `r mod_neg.report` and `r sev_neg.report` after correcting for Moderate and Severe Lower-tail Selection Bias respectively. Overall, the effect remains small and positive even after adjusting for either positive or negative selection biases based on statistical significance at two levels.
 
 
-
-
-
-
-
-## Publication Bias
-<p>The funnel plot (figure n) shows symmetry for larger studies but asymmetry for smaller studies, specifically, smaller studies more often report smaller ESs than larger studies. The lack of larger ESs for smaller studies suggests some negative publication bias in smaller studies. Egger's test shows the intercept is negative but not significant (b0 = -0.736, SE = 0.41017, t(46) = -1.794, p = .0794), which indicates no small study bias. However, it is not far from being significant and has a considerable effect size, which suggests minor negative publication bias. The impact of selection bias on the estimate is examined by Vevea and Woods' (2005) selection model. The model of selection bias hypothesised a priori is first examined. Results suggest the ES is reduced to .077 and .028 under Moderate and Severe Upper-tail Selection bias respectively. As suggested by the funnel plot and Egger's test, there may be some negative selection bias. Hence, a model of negative selection bias is examined at 2 levels: Moderate Lower-tail Selection Bias, in which ESs with .95 < p < 1 have a probability of 1 of being published and those with 0 < p .95 have a probability of 0.5; and Severe Lower-tail Selection Bias, in which ESs with .95 < p < 1 have a probability of 1 of being published and those with 0 < p .95 have a probability of 0.2. Results suggest the ES is increased to 0.1247 and 0.1387 under Moderate and Severe Lower-tail Selection Bias respectively. Overall, Vevea and Woods' selection model suggests the estimate is small and positive even under various selection biases based on p-values.</p>
-
-
-```{r funnel, echo = F, fig.align='center', include = T, fig.cap= "Funnel Plot", out.width="70%"}
+```{r funnel, echo = F, include = T, fig.cap= "Funnel Plot", out.width="70%"}
 png(file = "images/funnel_plot1.png", res = 100, width = 700, height = 500)
 metafor::funnel(ml_meta_model.3lCHE)
 dev.off()
 
 knitr::include_graphics("images/funnel_plot1.png")
+
+
 ```
 
 ## Moderator Analysis 
 ### NT Type
-<p>  Some studies examined the effects of specific individual types of NT, meanwhile others either examined the effects of multiple types of NT in combination or did not categorise the type of NT. ESs that represent effects of distinct types of NT are coded for the type of NT according to the definition and examples of the type of NT provided in the study and not their labels as labels for the same definitions and examples, which represent the same types of NT, can vary across studies. 3 types of NT are identified: Cardinality, Counting, and Number Identification. ESs that represent the effect of multiple types of NT in combination or unknown type of NT are coded as 'General'. The type of NT is entered into a simple regression as a categorical with 4 levels with deviation coding. Results suggest no effect of the type of NT (F(3, 44) = 0.5562, p = 0.6468). None of the contrasts is statistically significant (Table 1). Residual plots indicated that the assumption of homoscedasticity may not be met. Hence, cluster robust SE is estimated and results derived from cluster robust SE with small sample adjustment are examined. Results indicated that the type of NT has a significant effect (F(3, 7) = 1.81 * 10^16, p < .001). Compared to the grand mean, Number Identification is significantly lower (-0.2539, SE = 0.0261, p < .001) and Cardinality (b = .089, SE = 0.2371, p = 0.3752) and Count (b = .133, SE = 0.1482, p = 0.3983) are not significantly different (Table 1). Outliers and influential cases are examined. There are 3 outliers indicated by studentized residuals and 2 other influential ESs indicated by Cook's distance. Leave1out analysis is conducted for these 4 ESs (A1). In sum, the effect of NT may be moderated by the type of NT, particularly, Number Identification NT has a smaller (and negative) effect than other types of NT.  </p>
+Some studies examined the effects of specific types of NT, meanwhile, others either examined the effects of multiple types of NT in combination or did not categorise the type of NT. Effect sizes for specific types of NT were coded for the type of NT according to the descriptions of the type of NT provided in the study and not their labels as labels for the same types of NT varied across studies. Three types of NT were identified: Cardinality, Counting, and Number Identification. Effect sizes that represent the effect of multiple types of NT in combination or an unknown type of NT were coded as ‘General’. The type of NT was entered into the regression as a categorical variable with deviation coding. Results suggest no effect of NT type (*F*(3, 45) = `r reporta(ml_meta_model.3lCHE_mod_NT_type.1$QM, 2, leading = T)`, *p* = `r report.p(ml_meta_model.3lCHE_mod_NT_type.1$QMp)`). None of the contrasts was significant (Table 1). Residual plots indicated that the assumption of homoscedasticity may not be met. Hence, cluster robust SE and its associated results with small sample adjustment were examined and concluded. Although the F-statistic was not available in the robust() function, the results for the contrasts were different. Compared to the average, Number Identification had a lower effect, meanwhile, Cardinality and Counting were not significantly different (Table 1). It also appears that Number Identification had a negative trend. There were two influential cases. Leave-one-out analysis for these influential cases shows that results for Cardinality and Counting were consistent in statistical significance, meanwhile, Number Identity had the same direction of effect but was non-significant after excluding either one of the two influential cases (A1). In sum, the effect of NT may be moderated by a specific type of NT, particularly, Number Identification had a smaller effect (and a negative trend) than other types of NT.
 
 
-```{r table1, echo = FALSE, fig.align='center', include = TRUE}
+```{r table1, echo = FALSE, include = TRUE}
 NT_type.tab %>% apa_table(., caption = "Effects of types of NT",  
           col.names = c("Effect", "$b$", "SE","95\\% CI", "t", "df","$p$"),
           escape = FALSE,
@@ -1786,9 +1848,9 @@ NT_type.tab %>% apa_table(., caption = "Effects of types of NT",
 
 
 ### MA Type
-<p> Outcome measures representing different types of MA on which the effect of NT is evaluated differ across ESs. Some studies evaluated the effect of NT on distinct types of MA while others evaluated that on a combination of different types of MA. ESs representing the effect of NT on distinct types of MA are coded for their specific types of MA according to the description of the outcome measure. 6 types of MA are identified: Calculation, Cardinality, Counting, Number Identification, Number Line Estimation, and Quantity Comparison. ESs representing the effect of NT on several types of MA in combination are coded as 'general'. MA type is entered into a simple regression as a categorical variable with deviation coding. Results indicated no effect of the MA type (F(6, 41) = 1.6818, p = .150). Examining the contrasts (Table n), compared to average, Quantity Comparison has a significantly larger effect and calculation has a significantly lower effect. The model is examined for any violations of model assumptions. Residual plots suggest the assumption of normality of residuals may not be met. Hence, cluster robust SEs are estimated and the associated results with small sample adjustment are examined. Results are consistent, in addition, Number Line Estimation has a significantly larger effect than average. Outliers and influential ESs are examined. There are 4  outliers indicated by studentized residual and 4 influential cases based on Cook's distance. Leave1out analysis for these ESs are shown in table n. In sum, the effect of NT may be moderated by the type of MA, particularly, NT may have larger (and positive) effects on Quantity Comparison and Number Line Estimation but smaller (and negative) effect on Calculation. </p>
+Outcome measures representing different types of MA on which the effect of NT was evaluated differed across effect sizes. Some studies evaluated the effect of NT on specific types of MA while others evaluated that on a combination of different types of MA. Effect sizes representing the effect of NT on specific types of MA were coded for their specific types of MA according to the description of the outcome measure within the papers. Six types of MA were identified: Calculation, Cardinality, Counting, Number Identification, Number Line Estimation, and Quantity Comparison. Effect sizes representing the effect of NT on several types of MA in combination were coded as ‘general’. MA type was entered into a simple regression as a categorical variable with deviation coding. Results indicated no effects of MA type (*F*(6, 42) = `r reporta(ml_meta_model.3lCHE_mod_MA_measure$QM, 2, leading = T)`, *p* = `r report.p(ml_meta_model.3lCHE_mod_MA_measure$QMp)`). However, the contrasts showed that, compared to the average, Quantity Comparison had a significantly larger effect and Calculation had a significantly lower (and negative) effect (Table 2). The model was examined for any violations of assumptions of the GLM. Residual plots suggest that the assumption of normality of residuals might not be met. Hence, cluster robust SEs and their associated results with small sample adjustments were examined and concluded. Results were consistent, in addition, Number Line Estimation had a significantly larger effect than average (Table 2). There were two influential cases. Leave-one-out analysis for the two influential cases shows that results for Counting, Number Identification, and Quantity Comparison were all consistent, meanwhile, Number Line Estimation had minor inconsistencies in terms of statistical significance, specifically, it was non-significant when one of the two influential cases was excluded (A2). In sum, the effect of NT may be moderated by specific types of MA, particularly, NT may have larger (and positive) effects on Quantity Comparison and Number Line Estimation but a smaller (and negative) effect on Calculation.
 
-```{r table3, echo = FALSE, fig.align='center', include = TRUE}
+```{r table3, echo = FALSE,  include = TRUE}
 MA_type_tab  %>% apa_table(., caption = "Effects of MA measures",  
           col.names = c("Effect", "$b$", "se","95\\% CI", "t", "df","$p$"),
           escape = FALSE,
@@ -1798,53 +1860,48 @@ MA_type_tab  %>% apa_table(., caption = "Effects of MA measures",
 ```
 
 
-### NT context
-<p> NT is delivered in different contexts across studies. The ESs are coded for the context in which NT is delivered (NT context). All studies provided information about the NT context. 3 NT contexts are identified: Home, Lab, and School. NT context is entered in a simple regression as a categorical variable with deviation coding. Results indicated no effects of NT context (F stats). Since deviation coding does not compare all 3 levels, and all 3 levels are genuine, levels are compared with each other in a multiple comparison. None of the comparisons is significant. Overall, the effect of NT on MA may not be moderated by the context in which NT is delivered. </p>
 
-
-
-```{r table3 , echo = FALSE, fig.align='center', include = TRUE}
-NT_context_pairwise_tib %>% apa_table(., caption = "Pairwise t for MA context",  
-          col.names = c("Effect", "$b$", "se","95\\% CI", "t", "df","$p$"),
-          escape = FALSE,
-          note = "Cluster Robust SEs and associated results with small sample adjustment are in brackets",
-          landscape = TRUE)
-```
 
 
 ### MA context
-<p> tudies specified the context while others did not. For ESs in studies that specified the MA context, 3 contexts are identified: Home, Lab, and School. ESs with unknown MA context are coded as 'unknown'. MA context is entered into a simple regression as a categorical variable with deviation coding. Results indicated no effect of MA context (F stats). None of the contrasts is significant (Table n). The model is examined for any violations of GLM assumptions. Residual plots indicated that normality of residuals and homoscedasticity may not be met. Hence, cluster robust SEs are estimated and associated results with small sample adjustment are examined. Results indicated that measuring NT at home has a smaller (and negative) effect and measuring NT in a lab has a larger effect than average (Table n). Outliers and influential cases are examined. There are 2 outlying ESs indicated by studentized residual and 2 influential ESs indicated by Cook's distance and DFBETAS. Leave1out analysis is conducted for the only significant contrast and is presented in Table n. </p>
+MA was measured in different contexts across studies. The effect sizes were coded for the context in which MA was measured according to the information provided in the studies. Some studies specified the context while others did not. For effect sizes with specified MA contexts, three MA contexts were identified: Home, Lab, and School. Effect sizes with unknown MA context were coded as ‘unknown’. MA context was entered into the regression as a categorical variable with deviation coding. Results indicated no effects of MA context (*F*(3, 45) = `r reporta(ml_meta_model.3lCHE_mod_MA_context$QM, 2, leading = T)`, *p* = `r report.p(ml_meta_model.3lCHE_mod_MA_context$QMp)`). None of the contrasts was significant (Table 4). The model was examined for any violations of assumptions of the GLM. Residual plots indicated that normality of residuals and homoscedasticity might not be met. Hence, cluster robust SEs and their associated results with small sample adjustment were examined and concluded. Results were consistent (F stats). However, results for the contrasts were different, specifically, compared to the average, measuring NT at home had a smaller (and negative) effect (Table 4). There were no outliers or influential cases. In sum, the effect of NT may be moderated by a specific context in which MA was measured, specifically, measuring MA at home may have a negative effect.
 
 
 
 
 
-```{r table4 , echo = FALSE, fig.align='center', include = TRUE}
+
+```{r table4 , echo = FALSE, include = TRUE}
 MA_context_tab %>% apa_table(., caption = "Effects of MA context",  
           col.names = c("Effect", "$b$", "SE","95\\% CI", "t", "df","$p$"),
           escape = FALSE,
           note = "Cluster Robust SEs and associated results with small sample adjustment are in brackets",
           landscape = TRUE)
+
 ```
 
 
-### Child Age
-<p class="gojira"> The age of the children around which NT is delivered varies across studies. Child age during NT is defined as the mean age of the sample at the mid-point when NT is measured. Child age is entered in a simple regression. Results indicated no effect of child age. The model is examined for any violations of assumptions of GLM. Residual plots suggest GLM assumptions are met. Nonetheless, cluster robust SEs are estimated and associated results with small sample adjustment are examined for sensitivity analysis.  Results are consistent. Outliers and influential cases are examined. There is 1 outlier indicated by studentized residual and no influential ES indicated by either Cook's distance or DFBETAS. Leave1out analysis shows that leave1out estimates are consistently non-significantly except for 1 ES (Elliott et al. 2017a). Overall, the effect of NT on MA may not be moderated by child age during which NT is delivered.  </p>
 
-```{r table5 , echo = FALSE, fig.align='center', include = TRUE}
-child_age_during_NT %>% apa_table(., caption = "Effects of Child Age During NT",  
+### Child Age
+The age of children around which NT was delivered varied across studies. Child age during NT was defined as the mean age of the sample at the mid-point when NT was measured. Results indicated no effect of child age (*F*(1, 47) = `r reporta(ml_meta_model.3lCHE_mod_child_age_NT_mid$QM, 2, leading = T)`, *p* = `r report.p(ml_meta_model.3lCHE_mod_child_age_NT_mid$QMp)`; Table 5). The model was examined for any violations of assumptions of the GLM. Residual plots suggest that GLM assumptions were met. Nonetheless, cluster robust SEs and their associated results with small sample adjustment were examined for sensitivity analysis. Results were consistent (Table 5). There were no outliers or influential cases. In sum, the effect of NT may not be moderated by the children’s age during which NT was delivered.
+
+```{r table5 , echo = FALSE, include = TRUE}
+child_age_during_NT %>% apa_table(., caption = "Child Age During NT",  
           col.names = c("Effect", "$b$", "SE","95\\% CI", "t", "df","$p$"),
           escape = FALSE,
           note = "Cluster Robust SEs and associated results with small sample adjustment are in brackets",
           landscape = TRUE)
 ```
 
+
+
+
 ### Time Lag
-<p class="gojira"> The length of time between NT delivery and outcome measure differs across ESs. This time lag is defined as the length of time between the mid point of NT delivered is and the time at which MA is measured in days. Time lag is entered in a simple regression. Results indicated no effect of time lag. The model is examined for any violations of GLM assumptions. Residual plots indicated that assumptions of GLM are met. Nonetheless, cluster robust SE is estimated and the associated results with small sample adjustment are examined for sensitivity analysis. Results are consistent. Outliers and influential cases are examined. There are 3 outliers indicated by studentised residuals but no influential ESs indicated by either Cook's distance or DFBETAS. Leave1out analysis is conducted for those outliers (Table n) </p>
+The time lag between NT delivery and outcome measure varied across effect sizes. The time lag was defined as the length of time between the mid-point during which NT was delivered and the time at which MA was measured in the unit of days. Results indicated no effect of time lag (*F*(1, 46) = `r reporta(ml_meta_model.3lCHE_mod_time_lag$QM, 2, leading = T)`, *p* = `r report.p(ml_meta_model.3lCHE_mod_time_lag$QMp)`; Table 6). The model was examined for any violations of assumptions of the GLM. Residual plots indicated that assumptions of GLM were met. Nonetheless, cluster robust SEs and their associated results with small sample adjustment were examined for sensitivity analysis. Results were consistent (Table 6). There were no outliers or influential cases. Hence, the effect of NT may not be moderated by time lag.
 
 
-```{r table6 , echo = FALSE, fig.align='center', include = TRUE}
-time_lag_tab %>% apa_table(., caption = "Effects of Time Lag",  
+```{r table6 , echo = FALSE, include = TRUE}
+time_lag_tab %>% apa_table(., caption = "Time Lag",  
           col.names = c("Effect", "$b$", "SE","95\\% CI", "t", "df","$p$"),
           escape = FALSE,
           note = "Cluster Robust SEs and associated results with small sample adjustment are in brackets",
@@ -1861,42 +1918,71 @@ time_lag_tab %>% apa_table(., caption = "Effects of Time Lag",
 influence.NT_type %>%  apa_table(.,caption = "Outliers and influential cases and Leave-one-out analysis for NT type",  
             col.names = c("Effect","Effect Size","$t_{residual}$", "Cook's d", "DFBETAS", "Estimate", "se", "95\\% CI", "p"),
             note = "$t_{residual}$ = Studentized residuals;",
-            escape = FALSE,
             landscape = TRUE,
             font_size = "small") 
 
 ```
 
 
-```{r influence_MA_context}
-influence.MA_context %>%  apa_table(.,caption = "Outliers and influential cases and Leave-one-out analysis for MA context",  
-            col.names = c("Effect","Effect Size","$t_{residual}$", "Cook's d", "DFBETAS", "Estimate", "se", "95\\% CI", "p"),
-            note = "$t_{residual}$ = Studentized residuals;",
-            escape = FALSE,
-            landscape = TRUE,
-            font_size = "small") 
+
+
+
+
+# Discussion 
+
+## Summary
+The effect of NT on children’s MA was systematically reviewed through a meta-analysis. On average, NT was found to have a small and positive effect. Although there seemed to be minor negative publication bias, especially for smaller studies, the impacts of potential positive or negative publication bias on the meta-analysis were likely to be small. The effect sizes were highly heterogeneous and a considerable portion of which was negative (`r n.es.below.zero`%), which suggests that the average may be less representative. Moderator analysis was conducted to examine if the heterogeneity was attributable to potential moderators. Results suggest that the effect of NT was moderated by a specific type of NT, two specific types of MA on which the effect of NT was evaluated, and a specific context in which MA was measured, but not by the age of children around which NT was delivered, and the time lag between delivery of NT and the time at which MA was measured. Specifically for the type of NT, compared to the average, Number Identification had a smaller (and slightly negative) effect. Regarding the type of MA, compared to the average, NT had a larger effect on Quantity Comparison and Number Line Estimation, meanwhile, NT had a smaller (and negative) effect on Calculation. Regarding the context in which MA was measured, compared to the average, measuring MA at home had a smaller (and negative) effect on MA. Notable findings, limitations, and future directions are discussed.
+
+## NT type
+Different types of NT appear to differ in effectiveness, with Cardinality and Counting having a small and positive effect and Number Identification having a negative trend. However, the findings for Number Identification should be cautioned as there were only two effect sizes from one study that examined Number Identification. Future studies should examine the replicability of the effect of Number Identification. In terms of promoting MA in children, having identified that Cardinality and Counting may be particularly effective, this does not implicate that children should be exposed only to those that are the most effective. It may be beneficial for children to be exposed to a diverse range of NT that have no effect or positive effect, perhaps with more emphasis on more effective ones, as this may facilitate children to learn to generalise their understanding and use of numbers across contexts. Likewise, some types of NT should be combined in a specific way for particular mathematical understanding to develop (Mix et al., 2012). This brings to the suggestion that future studies should also examine the specific structures and combinations of NT that yield the best effect. Only three types of NT could be examined, which was less than the number of types of NT that have been described in the literature. This was because some studies were excluded as they did not report effect sizes without covariates, not all of the included studies categorised the type of NT that was measured, and for those that did only a few of them were examined. The latter may be due to the fact that some types of NT do not occur or occur less than others in natural interactions, which has been observed throughout the literature. From a practical standpoint, it would be beneficial to also know the effects of other types of NT, even those that do not occur or occur less in natural interactions, as not only could NT be implemented through natural parent-child interactions, it could also be implemented artificially (or intentionally) through encouraging parents or caregivers or teachers to increase certain types of NT, or specially designed activities or books, and it could inform which types of NT should be weighted more or avoided. Hence, future studies should examine the effects of other types of NT, even those that do not occur or occur less often in natural parent-child interactions. This could be facilitated by manipulating the occurrence of different types of NT through specially designed activities or books, much like Gibson et al. (2020) did for the size of numbers.
+
+## MA type
+It appeared that NT had different effects on different aspects of MA, with NT having greater positive effects on Quantity Comparison and Number Line Estimation and smaller (and negative) effects on Calculation compared to other aspects of MA. This implicates that NT should not be solely relied on but should be used alongside other effective techniques to foster different aspects of MA in preschoolers. However, the effect on Calculation should be cautioned as there were only two effect sizes, both of which were from Mutaf-Yildiz et al. (2018), that evaluated NT on Calculation. It is possible that the negative trend was confounded by the country of the study (or ethnicity of the participants) as that was the only study conducted in Belgium and all other studies were US studies. Future studies could disambiguate this by replicating Mutaf-Yildiz et al. (2018) with non-Belgium samples (or outside Belgium) as well as to examine the effect of NT on other types of MA with Belgium samples (or in Belgium). Finally in this respect, the aspects of MA examined in the studies did not necessarily have clear distinctions between them and some might be related to others, for example, Cardinality has been conceptualised as a facet or prerequisite of Counting (Ryoo et al., 2015). Similarly, Ramani et al. (2015) grouped different aspects of MA as either foundational or advanced MA. It is important to consider the structure of MA, that is, what aspects does MA constitute and whether and how they are related to one another, as this could facilitate both research and practice with regards to conceptualising MA, communication/collaboration, and targeting specific types of MA more effectively. Nevertheless, they were not combined and were analysed separately as the NT literature, on the whole, does not seem to consider the structure of MA, and the aforementioned grouping by Ramani et al. (2015) seemed to be study-specific and may not be agreed upon by other studies. Although some formal structural research on children’s MA has been done (e.g. Ryoo et al., 2015; Yao et al., 2017), factors identified in these studies were not entirely consistent with those in the NT literature, for example, Cardinality, Number Identification, and Number Line Estimation were not identified as factors in these structural studies. This may be because these structural studies were scale-specific as both of the aforementioned structural studies focused only on the factor structure of TEMA-3, which was a scale developed as a general test for MA for children aged 3 to 8.11 years, and therefore may lack comprehensiveness and developmental specificity. Hence, future research should formally examine the structure of preschoolers’ MA and the HME literature should base their research on that.
+
+## Child Age During NT
+It was found that the age of the children during which they were exposed to NT did not moderate the average effect. However, the data suggests a minor negative trend. A negative association between children’s age and the average effect is probable as it is sensical that NT may be more relevant for younger children but becomes less effective as children mature to the extent that their mathematical knowledge becomes more sophisticated. However, it is not sensical that the average effect would continuously decrease below 0 and become increasingly negative as children age, hence, the average effect may decrease to zero and remains constant. Indeed, the data could suggest an exponential decay (Figure 1000) as it showed that the largest effect size was at the lowest mean age and the average effect at the mean age of 2000 was around 0. However, this could not be tested as it was constrained by the small sample size and age range. Nevertheless, to extend this further, it may not be a simple exponential decay that descends from the highest effect at the intercept as it is not sensical that the effect is at the peak for newborns. The average effect is likely to be essentially zero at birth as newborns may not benefit from NT without acquiring some prerequisites, such as language, and then increases with age as children acquire more prerequisites. In addition, the increase could be exponential as prerequisites may interact with each other rendering children even more receptive to NT. Thus, linking the initial exponential increase and later exponential decay together, the effect of NT may follow a function similar to a normal distribution, with the peak representing a ‘sensitive period’ during which children become especially susceptive to the effect of NT. Future research may examine whether and how the effect of NT varies across a wider age range, as this could explain some of the heterogeneity in the effect sizes and identify any ‘sensitive periods’ to potentially maximise the effect of NT, which could be around 500 days old, as suggested by the current data.
+
+## Limitations
+Some limitations of this study and the literature are discussed. Not all identified relevant studies were included as effect sizes without covariates were not provided in those papers and could not be obtained from corresponding authors. Some potential moderators of interest could not be examined due to a lack of variation and non-standardised reporting of information across studies. To illustrate the lack of variation, 83.33% (10/12) of the studies were conducted in the US, English was the main language for the majority of the participants in 81.82% (9/11) of the studies, mostly it was mothers who delivered NT, and children were mostly from the general population or were ‘typically developing’. This suggests that generalisability is restricted. It would also be of interest to examine NT in different populations. There is an ongoing study conducted by Cahoon and colleagues that attempts to replicate Susperreguy and Davis-Kean (2016) in Northern Ireland, Cuba, and Mexico. That would provide some insight into the generalisability of the current findings. To illustrate non-standardised reporting of information, SES was measured differently across studies, with some using income-to-needs ratio, annual family income, or parental education. It may be helpful for future studies to report these information using either the same metric or standardised scores to facilitate syntheses.
+
+A series of simple regressions and one-way ANOVA, each for a moderator, was conducted in the moderator analysis. This inflates the familywise error rate (FWER; Polanin & Pigott, 2015). Due to the exploratory nature of this study, however, FWER was not controlled. Results from the moderator analysis should be interpreted with caution with respect to type I error and require confirmation by future studies.
+
+The last limitation relates to publication bias. Although there was funnel plot asymmetry, specifically, there was a lack of effect sizes in the bottom right region, more careful examination shows that all the effect sizes in the bottom left were from Mix et al. (2012), which shows that this study tended to report smaller effect sizes than average. However, it does not necessarily mean that there was publication bias in smaller studies nor in Mix et al. (2012). Publication bias is only one of many reasons for asymmetry (Egger et al., 1997; Stern, Gavaghan, & Egger, 2000). The specific reasons for the lower-than-average results from Mix et al. (2012) could be methodology, as it was one of two experimental studies or simply chance. The lack of studies in the bottom right of the funnel plot may be due to the simple fact that the sample size in Mix et al. (2012) was especially small (n = 12) and there were no studies with such a small sample size that Mix et al. (2012) could compare against. Hence, future studies may replicate Mix et al. (2012) and perhaps use both experimental and correlational designs. This also highlights that the funnel plot should be interpreted with extra caution in multilevel or correlated hierarchical meta-analyses, it may be more helpful to evaluate the funnel plot at the study level rather than the effect size level. Finally, Vevea and Wood’s (2005) corrective method was used to estimate the effect sizes ‘corrected’ for selection bias, however, this method was based on the assumption of the traditional random effect model with regards to the data structure, where each study is assumed to contribute only one effect size, and hence, the data structure is assumed to have sampling variances (level 1) nested within studies (level 2). Since the ‘corrected’ effect size is a function of variances of the levels in the hierarchical structure and does not account for any dependency among sampling error and effect sizes, (mis)applying this method to the current data structure may render the ‘corrected’ effect sizes less or not accurate. Nevertheless, it was used as there is currently a lack of appropriate or well-established methods for assessing and correcting publication bias in the context of multilevel and correlated hierarchical models. In fact, most meta-analytic methods were developed based on the aforementioned assumptions of the traditional random effect model (Rogers & Pustejovsky, 2021) and not much focus on methodology has been attended to meta-analyses with complex data structures. In practice, however, meta-analyses with complex data structures are highly common in the field of psychology, education, and medicine (Tipton, Pustejovsky, & Ahmadi, 2019), as demonstrated by this study. This calls for a greater methodological focus on meta-analyses with complex data structures, particularly in terms of assessing and correcting for publication bias.
+
+
+
+## Conclusion
+To conclude, on average, NT was found to have a small and positive effect on preschoolers’ MA. However, a substantial amount of heterogeneity was found among effect size estimates and a considerable proportion of which were negative, which suggests that the average may not be representative. The heterogeneity was examined and it was found that the effect of NT was moderated by a specific type of NT, a specific type of MA, and the context in which MA was measured. Methods for assessing publication bias suggest minor negative publication bias, however, interpretation should be cautioned and any impacts of publication bias would be small. Several recommendations for future research have been suggested.
+
+
+
+
+```{r exponential_decay, echo = FALSE, include = TRUE}
+
+
+png(file = "images/exponential_decay.png", res = 100, width = 800, height = 500)
+exponential_decay
+dev.off()
+
+knitr::include_graphics("images/exponential_decay.png")
+
 ```
 
 
-```{r influence.child_age_NT_mid}
-influence.child_age_NT_mid.b1 %>%  apa_table(.,caption = "Outliers and influential cases and Leave-one-out analysis for MA context",  
-            col.names = c("Effect","Effect Size","$t_{residual}$", "Cook's d", "DFBETAS", "Estimate", "se", "95\\% CI", "p"),
-            note = "$t_{residual}$ = Studentized residuals;",
-            escape = FALSE,
-            landscape = TRUE,
-            font_size = "small") 
+
+
+
+
+```{r studies_table, echo = FALSE, include = TRUE}
+num_eff_tib %>% apa_table(caption = "Studies",  
+            col.names = c("Study", "Number of effect sizes"),
+            landscape = TRUE) 
 ```
 
-```{r influence.ml_meta_model.3l_mod_time_between_NT_mid_MA}
-influence.ml_meta_model.3l_mod_time_between_NT_mid_MA.b1 %>% apa_table(.,caption = "Outliers and influential cases and Leave-one-out analysis for MA context",  
-            col.names = c("Effect","Effect Size","$t_{residual}$", "Cook's d", "DFBETAS", "Estimate", "se", "95\\% CI", "p"),
-            note = "$t_{residual}$ = Studentized residuals;",
-            escape = FALSE,
-            landscape = TRUE,
-            font_size = "small") 
-```
 
-![image](https://user-images.githubusercontent.com/101008617/167606869-02d5f503-63fa-4d66-a1ad-72beaeb5c11c.png)
+
+
+
 
 
 
